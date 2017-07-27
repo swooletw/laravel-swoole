@@ -1,0 +1,25 @@
+{
+    "name": "huang-yi/laravel-swoole-http",
+    "description": "High performance HTTP server based on Swoole. Speed up your Laravel and Lumen applications.",
+    "keywords": ["swoole", "laravel", "lumen", "performance", "http", "server"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Huang Yi",
+            "email": "coodeer@163.com"
+        }
+    ],
+    "require": {
+        "ext-swoole": ">=1.9.3"
+    },
+    "require-dev": {
+        "laravel/framework": "~5.1",
+        "laravel/lumen-framework": "~5.1",
+        "eaglewu/swoole-ide-helper": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "HuangYi\\Http\\": "src"
+        }
+    }
+}
