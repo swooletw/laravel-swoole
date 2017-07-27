@@ -9,10 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace HuangYi\Http;
+namespace HuangYi\Http\Server;
 
 use Illuminate\Http\Request as IlluminateRequest;
-use HuangYi\Http\Transformer\RequestTransformer;
 use Swoole\Http\Request as SwooleRequest;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
@@ -27,12 +26,12 @@ class Request
      * Make a request.
      *
      * @param \Swoole\Http\Request $swooleRequest
-     * @return \HuangYi\Http\Request
+     * @return \HuangYi\Http\Server\Request
      */
     public static function make(SwooleRequest $swooleRequest)
     {
         list($get, $post, $cookie, $files, $server, $content)
-            = RequestTransformer::toIlluminateParameters($swooleRequest);
+            = self::toIlluminateParameters($swooleRequest);
 
         return new static($get, $post, $cookie, $files, $server, $content);
     }
@@ -115,5 +114,55 @@ class Request
     public function getIlluminateRequest()
     {
         return $this->illuminateRequest;
+    }
+
+    /**
+     * Transforms request parameters.
+     *
+     * @param \Swoole\Http\Request $request
+     * @return array
+     */
+    protected static function toIlluminateParameters(SwooleRequest $request)
+    {
+        $get = isset($request->get) ? $request->get : [];
+        $post = isset($request->post) ? $request->post : [];
+        $cookie = isset($request->cookie) ? $request->cookie : [];
+        $files = isset($request->files) ? $request->files : [];
+        $header = isset($request->header) ? $request->header : [];
+        $server = isset($request->server) ? $request->server : [];
+        $server = self::transformServerParameters($server, $header);
+        $content = $request->rawContent();
+
+        return [$get, $post, $cookie, $files, $server, $content];
+    }
+
+    /**
+     * Transforms $_SERVER array.
+     *
+     * @param array $server
+     * @param array $header
+     * @return array
+     */
+    protected static function transformServerParameters(array $server, array $header)
+    {
+        $__SERVER = [];
+
+        foreach ($server as $key => $value) {
+            $key = strtoupper($key);
+            $__SERVER[$key] = $value;
+        }
+
+        foreach ($header as $key => $value) {
+            $key = str_replace('-', '_', $key);
+            $key = strtoupper($key);
+
+            if (! in_array($key, ['REMOTE_ADDR', 'SERVER_PORT', 'HTTPS'])) {
+                $key = 'HTTP_' . $key;
+            }
+
+            $__SERVER[$key] = $value;
+        }
+
+        return $__SERVER;
     }
 }
