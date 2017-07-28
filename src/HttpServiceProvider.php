@@ -11,9 +11,10 @@
 
 namespace HuangYi\Http;
 
+use HuangYi\Http\Console\Commands\HttpServerCommand;
 use Illuminate\Support\ServiceProvider;
 
-class HttpServiceProvider extends ServiceProvider
+abstract class HttpServiceProvider extends ServiceProvider
 {
     /**
      * Indicates if loading of the provider is deferred.
@@ -29,6 +30,46 @@ class HttpServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->mergeConfig();
+        $this->registerCommands();
+    }
 
+    /**
+     * Register manager.
+     *
+     * @return void
+     */
+    abstract protected function registerManager();
+
+    /**
+     * Boot the service provider.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        if (function_exists('config_path')) {
+            $this->publishes([
+                __DIR__ . '/../config/http.php' => config_path('http.php')
+            ], 'config');
+        }
+    }
+
+    /**
+     * Merge configurations.
+     */
+    protected function mergeConfig()
+    {
+        $this->mergeConfigFrom(__DIR__ . '/../config/http.php', 'http');
+    }
+
+    /**
+     * Register commands.
+     */
+    protected function registerCommands()
+    {
+        $this->commands([
+            HttpServerCommand::class,
+        ]);
     }
 }
