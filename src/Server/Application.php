@@ -62,7 +62,8 @@ class Application
         $this->loadApplication();
 
         if ($this->framework == 'laravel') {
-            $this->loadApplication()->make(Kernel::class)->bootstrap();
+            $bootstrappers = $this->getBootstrappers();
+            $this->application->bootstrapWith($bootstrappers);
         }
     }
 
@@ -117,6 +118,28 @@ class Application
         $application = $this->loadApplication();
 
         return $application->dispatch($request);
+    }
+
+    /**
+     * Get bootstrappers.
+     *
+     * @return array
+     */
+    protected function getBootstrappers()
+    {
+        $kernel = $this->loadApplication()->make(Kernel::class);
+
+        // Reflect Kernel
+        $reflection = new \ReflectionObject($kernel);
+
+        $bootstrappersMethod = $reflection->getMethod('bootstrappers');
+        $bootstrappersMethod->setAccessible(true);
+
+        $bootstrappers = $bootstrappersMethod->invoke($kernel);
+
+        array_splice($bootstrappers, -2, 0, ['Illuminate\Foundation\Bootstrap\SetRequestForConsole']);
+
+        return $bootstrappers;
     }
 
     /**
