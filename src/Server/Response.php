@@ -36,7 +36,7 @@ class Response
      * @param \Swoole\Http\Response $swooleResponse
      * @return \HuangYi\Http\Server\Response
      */
-    public function make($illuminateResponse, SwooleResponse $swooleResponse)
+    public static function make($illuminateResponse, SwooleResponse $swooleResponse)
     {
         return new static($illuminateResponse, $swooleResponse);
     }
