@@ -31,6 +31,7 @@ abstract class HttpServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfig();
+        $this->registerManager();
         $this->registerCommands();
     }
 
