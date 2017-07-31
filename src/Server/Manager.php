@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace HuangYi\Http;
+namespace HuangYi\Http\Server;
 
 use HuangYi\Http\Server\Application;
 use HuangYi\Http\Server\Request;
@@ -42,6 +42,11 @@ class Manager
     protected $framework;
 
     /**
+     * @var string
+     */
+    protected $basePath;
+
+    /**
      * Server events.
      *
      * @var array
@@ -57,11 +62,13 @@ class Manager
      *
      * @param \Illuminate\Contracts\Container\Container $container
      * @param string $framework
+     * @param string $basePath
      */
-    public function __construct(Container $container, $framework)
+    public function __construct(Container $container, $framework, $basePath = null)
     {
         $this->container = $container;
         $this->framework = $framework;
+        $this->basePath = $basePath;
 
         $this->initialize();
     }
@@ -72,6 +79,14 @@ class Manager
     public function run()
     {
         $this->server->start();
+    }
+
+    /**
+     * Stop swoole_http_server.
+     */
+    public function stop()
+    {
+        $this->server->shutdown();
     }
 
     /**
@@ -188,7 +203,7 @@ class Manager
      */
     protected function createApplication()
     {
-        return $this->application = Application::make($this->framework);
+        return $this->application = Application::make($this->framework, $this->basePath);
     }
 
     /**
