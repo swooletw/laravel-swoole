@@ -49,11 +49,9 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if (function_exists('config_path')) {
-            $this->publishes([
-                __DIR__ . '/../config/http.php' => config_path('http.php')
-            ], 'config');
-        }
+        $this->publishes([
+            __DIR__ . '/../config/http.php' => base_path('config/http.php')
+        ], 'config');
     }
 
     /**
