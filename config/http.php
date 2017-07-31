@@ -19,9 +19,9 @@ return [
 
         'options' => [
 
-            'pid_file' => env('HTTP_SERVER_OPTIONS_PID_FILE', storage_path('logs/http.pid')),
+            'pid_file' => env('HTTP_SERVER_OPTIONS_PID_FILE', base_path('storage/logs/http.pid')),
 
-            'log_file' => env('HTTP_SERVER_OPTIONS_LOG_FILE', storage_path('logs/http.log')),
+            'log_file' => env('HTTP_SERVER_OPTIONS_LOG_FILE', base_path('storage/logs/http.logs')),
 
             'daemonize' => env('HTTP_SERVER_OPTIONS_DAEMONIZE', 1),
 
