@@ -13,10 +13,8 @@
         "ext-swoole": ">=1.9.3"
     },
     "require-dev": {
-        "eaglewu/swoole-ide-helper": "dev-master",
         "laravel/framework": "~5.1",
         "laravel/lumen-framework": "~5.1",
-        "mockery/mockery": "0.9.*",
         "orchestra/testbench": "~3.1",
         "phpunit/phpunit": "~4.0|~5.0"
     },
@@ -27,7 +25,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "HuangYi\\Http\\Tests\\": "tests"
+            "HuangYi\\Http\\Tests\\": "tests",
+            "HuangYi\\Http\\Tests\\Fixtures\\Laravel\\App\\": "tests/fixtures/laravel/app"
         }
     }
 }
