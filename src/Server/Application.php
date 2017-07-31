@@ -92,6 +92,14 @@ class Application
     }
 
     /**
+     * @return \Illuminate\Contracts\Foundation\Application
+     */
+    public function getApplication()
+    {
+        return $this->application;
+    }
+
+    /**
      * Run framework.
      *
      * @param \Illuminate\Http\Request $request
