@@ -25,6 +25,13 @@ class Application
     protected $framework;
 
     /**
+     * The framework base path.
+     *
+     * @var string
+     */
+    protected $basePath;
+
+    /**
      * Laravel|Lumen Application.
      *
      * @var \Illuminate\Contracts\Foundation\Application
@@ -34,22 +41,25 @@ class Application
     /**
      * Make an application.
      *
-     * @param $framework
+     * @param string $framework
+     * @param string $basePath
      * @return \HuangYi\Http\Server\Application
      */
-    public static function make($framework)
+    public static function make($framework, $basePath = null)
     {
-        return new static($framework);
+        return new static($framework, $basePath);
     }
 
     /**
      * Application constructor.
      *
      * @param string $framework
+     * @param string $basePath
      */
-    public function __construct($framework)
+    public function __construct($framework, $basePath = null)
     {
-        $this->framework = $framework;
+        $this->setFramework($framework);
+        $this->setBasePath($basePath);
 
         $this->bootstrap();
     }
@@ -75,7 +85,7 @@ class Application
     protected function loadApplication()
     {
         if (! $this->application instanceof ApplicationContract) {
-            $this->application = require base_path() . '/bootstrap/app.php';
+            $this->application = require $this->basePath . '/bootstrap/app.php';
         }
 
         return $this->application;
@@ -85,7 +95,7 @@ class Application
      * Run framework.
      *
      * @param \Illuminate\Http\Request $request
-     * @return mixed
+     * @return \Illuminate\Http\Response
      */
     public function run(Request $request)
     {
@@ -140,6 +150,33 @@ class Application
         array_splice($bootstrappers, -2, 0, ['Illuminate\Foundation\Bootstrap\SetRequestForConsole']);
 
         return $bootstrappers;
+    }
+
+    /**
+     * Set framework.
+     *
+     * @param string $framework
+     * @throws \Exception
+     */
+    protected function setFramework($framework)
+    {
+        $framework = strtolower($framework);
+
+        if (! in_array($framework, ['laravel', 'lumen'])) {
+            throw new \Exception(sprintf('Not support framework "%s".', $this->framework));
+        }
+
+        $this->framework = $framework;
+    }
+
+    /**
+     * Set base path.
+     *
+     * @param string $basePath
+     */
+    protected function setBasePath($basePath)
+    {
+        $this->basePath = is_null($basePath) ? base_path() : $basePath;
     }
 
     /**
