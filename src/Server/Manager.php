@@ -77,7 +77,7 @@ class Manager
     /**
      * Initialize.
      */
-    public function initialize()
+    protected function initialize()
     {
         $this->setProcessName('manager process');
 
