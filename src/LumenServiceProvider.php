@@ -2,6 +2,8 @@
 
 namespace HuangYi\Http;
 
+use HuangYi\Http\Server\Manager;
+
 class LumenServiceProvider extends HttpServiceProvider
 {
     /**
