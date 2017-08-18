@@ -39,6 +39,11 @@ class Application
     protected $application;
 
     /**
+     * @var \Illuminate\Contracts\Http\Kernel
+     */
+    protected $kernel;
+
+    /**
      * Make an application.
      *
      * @param string $framework
@@ -69,11 +74,9 @@ class Application
      */
     protected function bootstrap()
     {
-        $this->loadApplication();
-
         if ($this->framework == 'laravel') {
             $bootstrappers = $this->getBootstrappers();
-            $this->application->bootstrapWith($bootstrappers);
+            $this->getApplication()->bootstrapWith($bootstrappers);
         }
     }
 
@@ -84,11 +87,7 @@ class Application
      */
     protected function loadApplication()
     {
-        if (! $this->application instanceof ApplicationContract) {
-            $this->application = require $this->basePath . '/bootstrap/app.php';
-        }
-
-        return $this->application;
+        return require $this->basePath . '/bootstrap/app.php';
     }
 
     /**
@@ -96,7 +95,23 @@ class Application
      */
     public function getApplication()
     {
+        if (! $this->application instanceof ApplicationContract) {
+            $this->application = $this->loadApplication();
+        }
+
         return $this->application;
+    }
+
+    /**
+     * @return \Illuminate\Contracts\Http\Kernel
+     */
+    public function getKernel()
+    {
+        if (! $this->kernel instanceof Kernel) {
+            $this->kernel = $this->getApplication()->make(Kernel::class);
+        }
+
+        return $this->kernel;
     }
 
     /**
@@ -120,9 +135,7 @@ class Application
      */
     protected function runLaravel(Request $request)
     {
-        $kernel = $this->loadApplication()->make(Kernel::class);
-
-        return $kernel->handle($request);
+        return $this->getKernel()->handle($request);
     }
 
     /**
@@ -133,9 +146,7 @@ class Application
      */
     protected function runLumen(Request $request)
     {
-        $application = $this->loadApplication();
-
-        return $application->dispatch($request);
+        return $this->getApplication()->dispatch($request);
     }
 
     /**
@@ -145,7 +156,7 @@ class Application
      */
     protected function getBootstrappers()
     {
-        $kernel = $this->loadApplication()->make(Kernel::class);
+        $kernel = $this->getKernel();
 
         // Reflect Kernel
         $reflection = new \ReflectionObject($kernel);
@@ -206,7 +217,7 @@ class Application
      */
     protected function terminateLaravel(Request $request, $response)
     {
-        $this->loadApplication()->make(Kernel::class)->terminate($request, $response);
+        $this->getKernel()->terminate($request, $response);
     }
 
     /**
@@ -217,7 +228,7 @@ class Application
      */
     protected function terminateLumen(Request $request, $response)
     {
-        $application = $this->loadApplication();
+        $application = $this->getApplication();
 
         // Reflections
         $reflection = new \ReflectionObject($application);
