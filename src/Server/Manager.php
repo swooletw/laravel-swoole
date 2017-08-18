@@ -179,8 +179,6 @@ class Manager
 
         Response::make($illuminateResponse, $swooleResponse)->send();
 
-        $this->getApplication()->terminate($illuminateRequest, $illuminateResponse);
-
         // Unset request and response.
         $swooleRequest = null;
         $swooleResponse = null;
