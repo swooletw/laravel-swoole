@@ -123,8 +123,11 @@ class Application
     public function run(Request $request)
     {
         $method = sprintf('run%s', ucfirst($this->framework));
+        $response = $this->$method($request);
 
-        return $this->$method($request);
+        $this->terminate($request, $response);
+
+        return $response;
     }
 
     /**
