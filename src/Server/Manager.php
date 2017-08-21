@@ -11,9 +11,6 @@
 
 namespace HuangYi\Http\Server;
 
-use HuangYi\Http\Server\Application;
-use HuangYi\Http\Server\Request;
-use HuangYi\Http\Server\Response;
 use Illuminate\Contracts\Container\Container;
 use Swoole\Http\Server;
 
