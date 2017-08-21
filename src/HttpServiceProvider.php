@@ -11,7 +11,7 @@
 
 namespace HuangYi\Http;
 
-use HuangYi\Http\Console\Commands\HttpServerCommand;
+use HuangYi\Http\Commands\HttpServerCommand;
 use Illuminate\Support\ServiceProvider;
 
 abstract class HttpServiceProvider extends ServiceProvider
