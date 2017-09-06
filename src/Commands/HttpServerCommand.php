@@ -115,7 +115,12 @@ class HttpServerCommand extends Command
      */
     protected function restart()
     {
-        $this->stop();
+        $pid = $this->getPid();
+
+        if ($this->isRunning($pid)) {
+            $this->stop();
+        }
+
         $this->start();
     }
 
