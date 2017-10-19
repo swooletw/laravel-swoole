@@ -14,6 +14,7 @@ namespace HuangYi\Http\Server;
 use Illuminate\Http\Request as IlluminateRequest;
 use Swoole\Http\Request as SwooleRequest;
 use Symfony\Component\HttpFoundation\ParameterBag;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
 class Request
 {
@@ -88,7 +89,7 @@ class Request
             }
         }
 
-        $request = new IlluminateRequest($get, $post, [], $cookie, $files, $server, $content);
+        $request = new SymfonyRequest($get, $post, [], $cookie, $files, $server, $content);
 
         if (0 === strpos($request->headers->get('CONTENT_TYPE'), 'application/x-www-form-urlencoded')
             && in_array(strtoupper($request->server->get('REQUEST_METHOD', 'GET')), array('PUT', 'DELETE', 'PATCH'))
