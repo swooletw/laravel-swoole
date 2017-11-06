@@ -66,7 +66,7 @@ class HttpServerCommand extends Command
         }
 
         $this->info('Starting swoole http server...');
-
+        $this->info("Swoole http server listend on http://{$this->getHost()}:{$this->getPort()}.");
         $this->info('> (You can run this command to ensure the ' .
             'swoole_http_server process is running: ps aux|grep "swoole")');
 
@@ -85,7 +85,7 @@ class HttpServerCommand extends Command
             exit(1);
         }
 
-        $this->info('Stopping swoole_http_server...');
+        $this->info('Stopping swoole http server...');
 
         $isRunning = $this->killProcess($pid, SIGTERM, 15);
 
@@ -131,7 +131,7 @@ class HttpServerCommand extends Command
 
         $isRunning = $this->killProcess($pid, SIGUSR1);
 
-        if (! $isRunning) {
+        if (!$isRunning) {
             $this->error('> failure');
             exit(1);
         }
@@ -160,13 +160,13 @@ class HttpServerCommand extends Command
      */
     protected function isRunning($pid)
     {
-        if (! $pid) {
+        if (!$pid) {
             return false;
         }
 
         Process::kill($pid, 0);
 
-        return ! swoole_errno();
+        return !swoole_errno();
     }
 
     /**
@@ -185,7 +185,7 @@ class HttpServerCommand extends Command
             $start = time();
 
             do {
-                if (! $this->isRunning($pid)) {
+                if (!$this->isRunning($pid)) {
                     break;
                 }
 
@@ -213,7 +213,7 @@ class HttpServerCommand extends Command
         if (file_exists($path)) {
             $pid = (int) file_get_contents($path);
 
-            if (! $pid) {
+            if (!$pid) {
                 $this->removePidFile();
             } else {
                 $this->pid = $pid;
@@ -241,5 +241,21 @@ class HttpServerCommand extends Command
         if (file_exists($this->getPidPath())) {
             unlink($this->getPidPath());
         }
+    }
+
+    /**
+     * Return server host.
+     */
+    protected function getHost()
+    {
+        return $this->laravel['config']->get('http.server.host');
+    }
+
+    /**
+     * Return server host.
+     */
+    protected function getPort()
+    {
+        return $this->laravel['config']->get('http.server.port');
     }
 }
