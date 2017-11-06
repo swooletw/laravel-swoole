@@ -37,6 +37,23 @@ class HttpServerCommand extends Command
     protected $pid;
 
     /**
+     * The configs for this package.
+     *
+     * @var array
+     */
+    protected $configs;
+
+    /**
+     * Constructor.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->loadConfigs();
+    }
+
+    /**
      * Execute the console command.
      *
      * @return void
@@ -45,6 +62,14 @@ class HttpServerCommand extends Command
     {
         $this->initAction();
         $this->runAction();
+    }
+
+    /**
+     * Load configs.
+     */
+    protected function loadConfigs()
+    {
+        $this->configs = $this->laravel['config']->get('swoole_http');
     }
 
     /**
@@ -65,10 +90,15 @@ class HttpServerCommand extends Command
             exit(1);
         }
 
+        $host = $this->configs['server']['host'];
+        $port = $this->configs['server']['port'];
+
         $this->info('Starting swoole http server...');
-        $this->info("Swoole http server listend on http://{$this->getHost()}:{$this->getPort()}.");
-        $this->info('> (You can run this command to ensure the ' .
+        $this->info("Swoole http server listend on http://{$host}:{$port}.");
+        if ($this->isDaemon()) {
+            $this->info('> (You can run this command to ensure the ' .
             'swoole_http_server process is running: ps aux|grep "swoole")');
+        }
 
         $this->laravel->make('swoole.http')->run();
     }
@@ -230,7 +260,7 @@ class HttpServerCommand extends Command
      */
     protected function getPidPath()
     {
-        return $this->laravel['config']->get('http.server.options.pid_file');
+        return $this->configs['server']['options']['pid_file'];
     }
 
     /**
@@ -244,18 +274,10 @@ class HttpServerCommand extends Command
     }
 
     /**
-     * Return server host.
+     * Return daemonize config.
      */
-    protected function getHost()
+    protected function isDaemon()
     {
-        return $this->laravel['config']->get('http.server.host');
-    }
-
-    /**
-     * Return server host.
-     */
-    protected function getPort()
-    {
-        return $this->laravel['config']->get('http.server.port');
+        return $this->configs['server']['options']['daemonize'];
     }
 }

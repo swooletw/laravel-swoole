@@ -7,6 +7,8 @@ use Swoole\Http\Server;
 
 class Manager
 {
+    const MAC_OSX = 'Darwin';
+
     /**
      * @var \Swoole\Http\Server
      */
@@ -94,8 +96,8 @@ class Manager
      */
     protected function createSwooleHttpServer()
     {
-        $host = $this->container['config']->get('http.server.host');
-        $port = $this->container['config']->get('http.server.port');
+        $host = $this->container['config']->get('swoole_http.server.host');
+        $port = $this->container['config']->get('swoole_http.server.port');
 
         $this->server = new Server($host, $port);
     }
@@ -105,7 +107,7 @@ class Manager
      */
     protected function configureSwooleHttpServer()
     {
-        $config = $this->container['config']->get('http.server.options');
+        $config = $this->container['config']->get('swoole_http.server.options');
 
         $this->server->set($config);
     }
@@ -213,7 +215,7 @@ class Manager
      */
     protected function getPidFile()
     {
-        return $this->container['config']->get('http.server.options.pid_file');
+        return $this->container['config']->get('swoole_http.server.options.pid_file');
     }
 
     /**
@@ -256,6 +258,9 @@ class Manager
      */
     protected function setProcessName($process)
     {
+        if (PHP_OS === static::MAC_OSX) {
+            return;
+        }
         $serverName = 'swoole_http_server';
         $appName = $this->container['config']->get('app.name', 'Laravel');
 

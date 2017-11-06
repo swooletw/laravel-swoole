@@ -41,7 +41,7 @@ abstract class HttpServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../config/http.php' => base_path('config/http.php')
+            __DIR__ . '/../config/swoole_http.php' => base_path('config/swoole_http.php')
         ], 'config');
     }
 
@@ -50,7 +50,7 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function mergeConfig()
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/http.php', 'http');
+        $this->mergeConfigFrom(__DIR__ . '/../config/swoole_http.php', 'swoole_http');
     }
 
     /**
