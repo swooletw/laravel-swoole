@@ -19,7 +19,7 @@ $ composer require huang-yi/laravel-swoole-http
 ```php
 [
     'providers' => [
-        HuangYi\Http\LaravelServiceProvider::class,
+        SwooleTW\Http\LaravelServiceProvider::class,
     ],
 ]
 ```
@@ -27,7 +27,7 @@ $ composer require huang-yi/laravel-swoole-http
 如果你正在使用Lumen框架开发应用，添加下面这行代码到`bootstrap/app.php`文件：
 
 ```php
-$app->register(HuangYi\Http\LumenServiceProvider::class);
+$app->register(SwooleTW\Http\LumenServiceProvider::class);
 ```
 
 ## 配置信息

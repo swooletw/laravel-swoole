@@ -14,7 +14,7 @@ $app->singleton(
     Illuminate\Foundation\Console\Kernel::class
 );
 
-$app->register(HuangYi\Http\LumenServiceProvider::class);
+$app->register(SwooleTW\Http\LumenServiceProvider::class);
 
 $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
     require __DIR__ . '/../routes/web.php';

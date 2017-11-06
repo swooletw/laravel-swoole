@@ -1,15 +1,6 @@
 <?php
 
-/*
- * This file is part of the huang-yi/laravel-swoole-http package.
- *
- * (c) Huang Yi <coodeer@163.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-namespace HuangYi\Http\Server;
+namespace SwooleTW\Http\Server;
 
 use Illuminate\Contracts\Container\Container;
 use Swoole\Http\Server;
@@ -29,7 +20,7 @@ class Manager
     protected $container;
 
     /**
-     * @var \HuangYi\Http\Server\Application
+     * @var \SwooleTW\Http\Server\Application
      */
     protected $application;
 
@@ -204,7 +195,7 @@ class Manager
     /**
      * Get application.
      *
-     * @return \HuangYi\Http\Server\Application
+     * @return \SwooleTW\Http\Server\Application
      */
     protected function getApplication()
     {

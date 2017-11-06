@@ -19,7 +19,7 @@ If you are using Laravel, add the service provider to the providers array in `co
 ```php
 [
     'providers' => [
-        HuangYi\Http\LaravelServiceProvider::class,
+        SwooleTW\Http\LaravelServiceProvider::class,
     ],
 ]
 ```
@@ -27,7 +27,7 @@ If you are using Laravel, add the service provider to the providers array in `co
 If you are using Lumen, add the following code to `bootstrap/app.php`:
 
 ```php
-$app->register(HuangYi\Http\LumenServiceProvider::class);
+$app->register(SwooleTW\Http\LumenServiceProvider::class);
 ```
 
 ## Configuration

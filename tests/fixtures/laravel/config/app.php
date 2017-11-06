@@ -49,8 +49,8 @@ return [
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
 
-        HuangYi\Http\LaravelServiceProvider::class,
-        HuangYi\Http\Tests\Fixtures\Laravel\App\Providers\RouteServiceProvider::class,
+        SwooleTW\Http\LaravelServiceProvider::class,
+        SwooleTW\Http\Tests\Fixtures\Laravel\App\Providers\RouteServiceProvider::class,
 
     ],
 

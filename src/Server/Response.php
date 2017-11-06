@@ -1,15 +1,6 @@
 <?php
 
-/*
- * This file is part of the huang-yi/laravel-swoole-http package.
- *
- * (c) Huang Yi <coodeer@163.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-namespace HuangYi\Http\Server;
+namespace SwooleTW\Http\Server;
 
 use Illuminate\Http\Response as IlluminateResponse;
 use Swoole\Http\Response as SwooleResponse;
@@ -34,7 +25,7 @@ class Response
      *
      * @param $illuminateResponse
      * @param \Swoole\Http\Response $swooleResponse
-     * @return \HuangYi\Http\Server\Response
+     * @return \SwooleTW\Http\Server\Response
      */
     public static function make($illuminateResponse, SwooleResponse $swooleResponse)
     {
@@ -119,7 +110,7 @@ class Response
 
     /**
      * @param \Swoole\Http\Response $swooleResponse
-     * @return \HuangYi\Http\Server\Response
+     * @return \SwooleTW\Http\Server\Response
      */
     protected function setSwooleResponse(SwooleResponse $swooleResponse)
     {
@@ -138,7 +129,7 @@ class Response
 
     /**
      * @param mixed illuminateResponse
-     * @return \HuangYi\Http\Server\Response
+     * @return \SwooleTW\Http\Server\Response
      */
     protected function setIlluminateResponse($illuminateResponse)
     {
