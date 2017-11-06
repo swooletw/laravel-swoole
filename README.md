@@ -1,4 +1,4 @@
-# Laravel-Swoole-Http
+# Laravel-Swoole
 
 This package provides a high performance HTTP server which based on [Swoole](http://www.swoole.com/).
 
