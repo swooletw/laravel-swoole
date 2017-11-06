@@ -44,22 +44,13 @@ class HttpServerCommand extends Command
     protected $configs;
 
     /**
-     * Constructor.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->loadConfigs();
-    }
-
-    /**
      * Execute the console command.
      *
      * @return void
      */
     public function handle()
     {
+        $this->loadConfigs();
         $this->initAction();
         $this->runAction();
     }
