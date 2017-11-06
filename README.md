@@ -13,7 +13,7 @@ This package provides a high performance HTTP server which based on [Swoole](htt
 Require this package with composer by using the following command:
 
 ```
-$ composer require swooletw/laravel-swoole-http
+$ composer require swooletw/laravel-swoole
 ```
 
 Then, add the service provider:
