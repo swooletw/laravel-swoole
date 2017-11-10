@@ -85,7 +85,7 @@ class HttpServerCommand extends Command
         $port = $this->configs['server']['port'];
 
         $this->info('Starting swoole http server...');
-        $this->info("Swoole http server listend on http://{$host}:{$port}.");
+        $this->info("Swoole http server started: <http://{$host}:{$port}>");
         if ($this->isDaemon()) {
             $this->info('> (You can run this command to ensure the ' .
             'swoole_http_server process is running: ps aux|grep "swoole")');
