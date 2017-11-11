@@ -167,9 +167,15 @@ class Manager
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
         $illuminateResponse = $this->getApplication()->run($illuminateRequest);
 
-        Response::make($illuminateResponse, $swooleResponse)->send();
+        $response = Response::make($illuminateResponse, $swooleResponse);
+        // To prevent 'connection[...] is closed' error.
+        if (!$this->server->exist($response->getSwooleResponse()->fd)) {
+            return;
+        }
+        $response->send();
 
         // Unset request and response.
+        $response = null;
         $swooleRequest = null;
         $swooleResponse = null;
         $illuminateRequest = null;
