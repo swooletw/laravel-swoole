@@ -4,7 +4,7 @@
 [![packagist-badge](https://img.shields.io/packagist/v/swooletw/laravel-swoole.svg)](https://packagist.org/packages/swooletw/laravel-swoole)
 [![Total Downloads](https://poser.pugx.org/swooletw/laravel-swoole/downloads)](https://packagist.org/packages/swooletw/laravel-swoole)
 
-This package provides a high performance HTTP server to spped up your laravel/lumen application based on [Swoole](http://www.swoole.com/).
+This package provides a high performance HTTP server to speed up your laravel/lumen application based on [Swoole](http://www.swoole.com/).
 
 ## Version Compatibility
 
