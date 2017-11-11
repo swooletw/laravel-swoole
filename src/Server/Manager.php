@@ -164,6 +164,8 @@ class Manager
      */
     public function onRequest($swooleRequest, $swooleResponse)
     {
+        $this->container['events']->fire('http.onRequest');
+
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
         $illuminateResponse = $this->getApplication()->run($illuminateRequest);
 
