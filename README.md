@@ -2,7 +2,7 @@
 
 ![php-badge](https://img.shields.io/badge/php-%3E%3D%205.5.9-8892BF.svg)
 [![packagist-badge](https://img.shields.io/packagist/v/swooletw/laravel-swoole.svg)](https://packagist.org/packages/swooletw/laravel-swoole)
-[![Total Downloads](https://poser.pugx.org/swooletw/laravel-swoole/downloads)](https://packagist.org/packages/albertcht/invisible-recaptcha)
+[![Total Downloads](https://poser.pugx.org/swooletw/laravel-swoole/downloads)](https://packagist.org/packages/swooletw/laravel-swoole)
 
 This package provides a high performance HTTP server to spped up your laravel/lumen application based on [Swoole](http://www.swoole.com/).
 
