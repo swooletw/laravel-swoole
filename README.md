@@ -181,7 +181,7 @@ Transfer/sec:      1.55MB
 
 1. Please reload or restart the swoole_http_server after released your code. Because the Laravel program will be kept in memory after the swoole_http_server started. That's why the swoole_http_server has high performance.
 2. Never use `dd()`, `exit()` or `die()` function to print your debug message. It will terminate your swoole worker unexpectedly.
-3. You should have basic knowledge of multi-process programming and swoole. If you still write your code with a single-process conception, your app might have unexpected bugs.
+3. You should have basic knowledge about multi-process programming and swoole. If you still write your code with traditional php concept, your app might have unexpected bugs.
 
 ## Support
 
