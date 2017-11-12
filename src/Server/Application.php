@@ -25,7 +25,7 @@ class Application
     /**
      * Laravel|Lumen Application.
      *
-     * @var \Illuminate\Contracts\Foundation\Application
+     * @var \Illuminate\Container\Container
      */
     protected $application;
 
