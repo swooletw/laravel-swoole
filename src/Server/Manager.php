@@ -171,7 +171,7 @@ class Manager
 
         $response = Response::make($illuminateResponse, $swooleResponse);
         // To prevent 'connection[...] is closed' error.
-        if (!$this->server->exist($response->getSwooleResponse()->fd)) {
+        if (! $this->server->exist($swooleRequest->fd)) {
             return;
         }
         $response->send();
