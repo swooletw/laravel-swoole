@@ -177,12 +177,6 @@ Requests/sec:   8717.00
 Transfer/sec:      1.55MB
 ```
 
-## Notices
-
-1. Please reload or restart the swoole_http_server after released your code. Because the Laravel program will be kept in memory after the swoole_http_server started. That's why the swoole_http_server has high performance.
-2. Never use `dd()`, `exit()` or `die()` function to print your debug message. It will terminate your swoole worker unexpectedly.
-3. You should have basic knowledge about multi-process programming and swoole. If you still write your code with traditional php concept, your app might have unexpected bugs.
-
 ## Lifecycle
 
 > This is a rough description of the lifecycle in Swoole and Laravel. It may be helpful for you to know more about how this pakcage launches your Laravel application with swoole server.
@@ -207,6 +201,13 @@ Transfer/sec:      1.55MB
 
 * onShutdown()
     * Remove pid file.
+    
+## Notices
+
+1. Please reload or restart the swoole_http_server after released your code. Because the Laravel program will be kept in memory after the swoole_http_server started. That's why the swoole_http_server has high performance.
+2. Never use `dd()`, `exit()` or `die()` function to print your debug message. It will terminate your swoole worker unexpectedly.
+3. You should have basic knowledge about multi-process programming and swoole. If you still write your code with traditional php concept, your app might have unexpected bugs.
+
 
 ## Support
 
