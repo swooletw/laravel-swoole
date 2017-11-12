@@ -86,7 +86,7 @@ class Application
      */
     public function getApplication()
     {
-        if (!$this->application instanceof Container) {
+        if (! $this->application instanceof Container) {
             $this->application = $this->loadApplication();
         }
 
@@ -98,7 +98,7 @@ class Application
      */
     public function getKernel()
     {
-        if (!$this->kernel instanceof Kernel) {
+        if (! $this->kernel instanceof Kernel) {
             $this->kernel = $this->getApplication()->make(Kernel::class);
         }
 
@@ -175,7 +175,7 @@ class Application
     {
         $framework = strtolower($framework);
 
-        if (!in_array($framework, ['laravel', 'lumen'])) {
+        if (! in_array($framework, ['laravel', 'lumen'])) {
             throw new \Exception(sprintf('Not support framework "%s".', $this->framework));
         }
 
