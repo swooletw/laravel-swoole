@@ -183,6 +183,31 @@ Transfer/sec:      1.55MB
 2. Never use `dd()`, `exit()` or `die()` function to print your debug message. It will terminate your swoole worker unexpectedly.
 3. You should have basic knowledge about multi-process programming and swoole. If you still write your code with traditional php concept, your app might have unexpected bugs.
 
+## Lifecycle
+
+> This is a rough description of the lifecycle in Swoole and Laravel. It may be helpful for you to know more about how this pakcage launches your Laravel application with swoole server.
+
+* onStart()
+    * Create pid file.
+
+* onWorkerStart()
+    * Clear APC and Opcache.
+    * Set framework type and base path.
+    * Load `/bootstrap/app.php`.
+    * Bootstrap framework.
+
+* onRequest()
+    * Convert swoole request to illuminate request.
+    * Make `Illuminate\Contracts\Http\Kernel` (Laravel).
+    * Handle/dispatch HTTP request.
+    * Terminate request in Laravel, or reset middleware in Lumen.
+    * Convert illuminate response to swoole response.
+    * Send response to client.
+    * Unset request and response.
+
+* onShutdown()
+    * Remove pid file.
+
 ## Support
 
 Bugs and feature request are tracked on [Github](https://github.com/swooletw/laravel-swoole-http/issues).
