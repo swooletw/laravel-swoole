@@ -42,7 +42,7 @@ $app->register(SwooleTW\Http\LumenServiceProvider::class);
 
 ## Configuration
 
-If you want to change the default configurations, please run the following command to generate a configuration file `http.php` in directory `config/`:
+If you want to change the default configurations, please run the following command to generate a configuration file `swoole_http.php` in directory `config/`:
 
 ```
 $ php artisan vendor:publish
