@@ -15,6 +15,9 @@ $app->singleton(
 );
 
 $app->register(SwooleTW\Http\LumenServiceProvider::class);
+$app->register(SwooleTW\Http\Tests\Fixtures\Lumen\App\Providers\TestServiceProvider::class);
+
+$app->configure('swoole_http');
 
 $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
     require __DIR__ . '/../routes/web.php';

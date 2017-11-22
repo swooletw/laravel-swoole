@@ -175,6 +175,9 @@ class Manager
     {
         $this->container['events']->fire('http.onRequest');
 
+        // Reset user-customized providers
+        $this->getApplication()->resetProviders();
+
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
         $illuminateResponse = $this->getApplication()->run($illuminateRequest);
 

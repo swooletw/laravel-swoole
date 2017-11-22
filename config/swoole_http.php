@@ -18,4 +18,7 @@ return [
             'daemonize' => env('SWOOLE_HTTP_DAEMONIZE', 0),
         ],
     ],
+    'providers' => [
+        // App\Providers\AuthServiceProvider::class,
+    ]
 ];

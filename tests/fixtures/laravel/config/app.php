@@ -51,6 +51,7 @@ return [
 
         SwooleTW\Http\LaravelServiceProvider::class,
         SwooleTW\Http\Tests\Fixtures\Laravel\App\Providers\RouteServiceProvider::class,
+        SwooleTW\Http\Tests\Fixtures\Laravel\App\Providers\TestServiceProvider::class,
 
     ],
 

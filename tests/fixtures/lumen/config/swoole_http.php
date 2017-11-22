@@ -12,19 +12,14 @@ return [
     */
 
     'server' => [
-
         'host' => '127.0.0.1',
-
         'port' => '1215',
-
         'options' => [
-
-            'pid_file' => base_path('storage/logs/http.pid'),
-
+            'pid_file' => base_path('storage/logs/swoole_http.pid'),
             'daemonize' => 0,
-
         ],
-
     ],
-
+    'providers' => [
+        SwooleTW\Http\Tests\Fixtures\Lumen\App\Providers\TestServiceProvider::class,
+    ]
 ];
