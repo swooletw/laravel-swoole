@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Server;
 
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class Application
     /**
      * Laravel|Lumen Application.
      *
-     * @var \Illuminate\Contracts\Foundation\Application
+     * @var \Illuminate\Container\Container
      */
     protected $application;
 
@@ -33,6 +34,13 @@ class Application
      * @var \Illuminate\Contracts\Http\Kernel
      */
     protected $kernel;
+
+    /**
+     * Preserved service providers to be reset.
+     *
+     * @var array
+     */
+    protected $providers = [];
 
     /**
      * Make an application.
@@ -58,6 +66,7 @@ class Application
         $this->setBasePath($basePath);
 
         $this->bootstrap();
+        $this->initProviders();
     }
 
     /**
@@ -72,6 +81,38 @@ class Application
     }
 
     /**
+     * Initialize customized service providers.
+     */
+    protected function initProviders()
+    {
+        $app = $this->getApplication();
+        $providers = $app['config']->get('swoole_http.providers');
+
+        foreach ($providers as $provider) {
+            if (! $provider instanceof ServiceProvider) {
+                $provider = new $provider($app);
+            }
+            $this->providers[get_class($provider)] = $provider;
+        }
+    }
+
+    /**
+     * Re-register and reboot service providers.
+     */
+    public function resetProviders()
+    {
+        foreach ($this->providers as $key => $provider) {
+            if (method_exists($provider, 'register')) {
+                $provider->register();
+            }
+
+            if (method_exists($provider, 'boot')) {
+                $this->getApplication()->call([$provider, 'boot']);
+            }
+        }
+    }
+
+    /**
      * Load application.
      *
      * @return \Illuminate\Contracts\Foundation\Application
@@ -82,11 +123,11 @@ class Application
     }
 
     /**
-     * @return \Illuminate\Contracts\Foundation\Application
+     * @return \Illuminate\Container\Container
      */
     public function getApplication()
     {
-        if (!$this->application instanceof Container) {
+        if (! $this->application instanceof Container) {
             $this->application = $this->loadApplication();
         }
 
@@ -98,7 +139,7 @@ class Application
      */
     public function getKernel()
     {
-        if (!$this->kernel instanceof Kernel) {
+        if (! $this->kernel instanceof Kernel) {
             $this->kernel = $this->getApplication()->make(Kernel::class);
         }
 
@@ -175,7 +216,7 @@ class Application
     {
         $framework = strtolower($framework);
 
-        if (!in_array($framework, ['laravel', 'lumen'])) {
+        if (! in_array($framework, ['laravel', 'lumen'])) {
             throw new \Exception(sprintf('Not support framework "%s".', $this->framework));
         }
 

@@ -13,42 +13,38 @@ class ApplicationTest extends TestCase
 
     public function testMake()
     {
-        $application = Application::make('laravel', $this->basePath . '/laravel');
+        $application = $this->makeApplication();
 
         $this->assertInstanceOf(Application::class, $application);
     }
 
-    public function testRunLaravel()
+    public function testMakeInvalidFramework()
     {
-        $application = Application::make('laravel', $this->basePath . '/laravel');
+        $this->expectException(\Exception::class);
+
+        $this->makeApplication('other');
+    }
+
+    public function testRun()
+    {
+        $application = $this->makeApplication();
         $response = $application->run(Request::create('/'));
 
         $this->assertInstanceOf(Response::class, $response);
         $this->assertSame('welcome', $response->getContent());
     }
 
-    public function testRunLumen()
-    {
-        $application = Application::make('lumen', $this->basePath . '/lumen');
-        $response = $application->run(Request::create('/'));
-
-        $this->assertInstanceOf(Response::class, $response);
-        $this->assertSame('hello', $response->getContent());
-    }
-
-    public function testRunOther()
-    {
-        $this->expectException(\Exception::class);
-
-        $application = Application::make('other', $this->basePath . '/laravel');
-        $application->run(Request::create('/'));
-    }
-
     public function testTerminate()
     {
         $flag = false;
 
-        $application = Application::make('laravel', $this->basePath . '/laravel');
+        if (class_exists('\Laravel\Lumen\Application')) {
+            $this->assertTrue(true);
+
+            return;
+        }
+
+        $application = $this->makeApplication();
         $request = Request::create('/');
         $response = $application->run($request);
 
@@ -59,5 +55,41 @@ class ApplicationTest extends TestCase
         $application->terminate($request, $response);
 
         $this->assertTrue($flag);
+    }
+
+    public function testResetProvider()
+    {
+        $application = $this->makeApplication();
+        $response = $application->run(Request::create('/'));
+
+        $app = $application->getApplication();
+
+        $this->assertSame('bar', $app['singleton.test']->foo);
+
+        $app->singleton('singleton.test', function () {
+            $obj = new \stdClass;
+            $obj->foo = 'foo';
+
+            return $obj;
+        });
+        $this->assertSame('foo', $app['singleton.test']->foo);
+
+        $response = $application->resetProviders();
+        $this->assertSame('bar', $app['singleton.test']->foo);
+    }
+
+    protected function makeApplication($forceFramework = null)
+    {
+        if (! is_null($forceFramework)) {
+            $framework = $forceFramework;
+        } elseif (class_exists('\Illuminate\Foundation\Application')) {
+            $framework = 'laravel';
+        } elseif (class_exists('\Laravel\Lumen\Application')) {
+            $framework = 'lumen';
+        } else {
+            $framework = 'other';
+        }
+
+        return Application::make($framework, $this->basePath . '/' . $framework);
     }
 }

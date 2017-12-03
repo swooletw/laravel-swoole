@@ -1,0 +1,75 @@
+language: php
+dist: trusty
+sudo: false
+
+matrix:
+  include:
+    - php: 7.0
+      env: FRAMEWORK_VERSION=laravel/framework:5.1.*
+    - php: 7.0
+      env: FRAMEWORK_VERSION=laravel/framework:5.2.*
+    - php: 7.0
+      env: FRAMEWORK_VERSION=laravel/framework:5.3.*
+    - php: 7.0
+      env: FRAMEWORK_VERSION=laravel/framework:5.4.*
+    - php: 7.0
+      env: FRAMEWORK_VERSION=laravel/framework:5.5.*
+    - php: 7.0
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.1.*
+    - php: 7.0
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.2.*
+    - php: 7.0
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.3.*
+    - php: 7.0
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.4.*
+    - php: 7.0
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.5.*
+    - php: 7.1
+      env: FRAMEWORK_VERSION=laravel/framework:5.1.*
+    - php: 7.1
+      env: FRAMEWORK_VERSION=laravel/framework:5.2.*
+    - php: 7.1
+      env: FRAMEWORK_VERSION=laravel/framework:5.3.*
+    - php: 7.1
+      env: FRAMEWORK_VERSION=laravel/framework:5.4.*
+    - php: 7.1
+      env: FRAMEWORK_VERSION=laravel/framework:5.5.*
+    - php: 7.1
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.1.*
+    - php: 7.1
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.2.*
+    - php: 7.1
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.3.*
+    - php: 7.1
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.4.*
+    - php: 7.1
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.5.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/framework:5.1.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/framework:5.2.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/framework:5.3.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/framework:5.4.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/framework:5.5.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.1.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.2.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.3.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.4.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.5.*
+
+before_install:
+  - pecl install swoole
+
+install:
+  - composer require "${FRAMEWORK_VERSION}" --no-update -n
+  - travis_retry composer install --no-suggest --prefer-dist -n -o
+
+script: vendor/bin/phpunit

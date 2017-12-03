@@ -27,6 +27,13 @@ class Manager
     protected $application;
 
     /**
+     * Laravel|Lumen Application.
+     *
+     * @var \Illuminate\Container\Container
+     */
+    protected $app;
+
+    /**
      * @var string
      */
     protected $framework;
@@ -154,6 +161,8 @@ class Manager
         $this->container['events']->fire('http.workerStart', func_get_args());
 
         $this->createApplication();
+        $this->setLaravelApp();
+        $this->bindSwooleHttpServer();
     }
 
     /**
@@ -164,12 +173,17 @@ class Manager
      */
     public function onRequest($swooleRequest, $swooleResponse)
     {
+        $this->container['events']->fire('http.onRequest');
+
+        // Reset user-customized providers
+        $this->getApplication()->resetProviders();
+
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
         $illuminateResponse = $this->getApplication()->run($illuminateRequest);
 
         $response = Response::make($illuminateResponse, $swooleResponse);
         // To prevent 'connection[...] is closed' error.
-        if (!$this->server->exist($response->getSwooleResponse()->fd)) {
+        if (! $this->server->exist($swooleRequest->fd)) {
             return;
         }
         $response->send();
@@ -212,6 +226,24 @@ class Manager
         }
 
         return $this->application;
+    }
+
+    /**
+     * Set Laravel app.
+     */
+    protected function setLaravelApp()
+    {
+        $this->app = $this->getApplication()->getApplication();
+    }
+
+    /**
+     * Bind swoole server to Laravel app container.
+     */
+    protected function bindSwooleHttpServer()
+    {
+        $this->app->singleton('swoole.server', function () {
+            return $this->server;
+        });
     }
 
     /**

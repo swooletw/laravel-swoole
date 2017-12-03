@@ -12,5 +12,5 @@
 */
 
 $app->get('/', function () use ($app) {
-    return 'hello';
+    return 'welcome';
 });
