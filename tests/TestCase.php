@@ -2,7 +2,7 @@
 
 namespace SwooleTW\Http\Tests;
 
-use Orchestra\Testbench\TestCase as BaseTestCase;
+use PHPUnit\Framework\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
 {
