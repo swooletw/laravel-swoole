@@ -3,6 +3,7 @@
 ![php-badge](https://img.shields.io/badge/php-%3E%3D%205.5.9-8892BF.svg)
 [![packagist-badge](https://img.shields.io/packagist/v/swooletw/laravel-swoole.svg)](https://packagist.org/packages/swooletw/laravel-swoole)
 [![Total Downloads](https://poser.pugx.org/swooletw/laravel-swoole/downloads)](https://packagist.org/packages/swooletw/laravel-swoole)
+![travis-badge](https://api.travis-ci.org/swooletw/laravel-swoole.svg?branch=master)
 
 This package provides a high performance HTTP server to speed up your laravel/lumen application based on [Swoole](http://www.swoole.com/).
 
@@ -66,30 +67,40 @@ For example, if you want to set the 'max_request':
 ]
 ```
 
+`providers`: The service providers you want to reset on every request. It will re-register and reboot those service providers before requesting every time.
+
+```php
+[
+    'providers' => [
+        App\Providers\AuthServiceProvider::class,
+    ]
+]
+```
+
 ## Command
 
 > The swoole_http_server can only run in cli environment, and this package provides convenient artisan commands to manage it.
 > By default, you can visit your site at http://127.0.0.1:1215
 
-Start the swoole_http_server:
+Start
 
 ```
 $ php artisan swoole:http start
 ```
 
-Stop the swoole_http_server:
+Stop
 
 ```
 $ php artisan swoole:http stop
 ```
 
-Restart the swoole_http_server:
+Restart
 
 ```
 $ php artisan swoole:http restart
 ```
 
-Reload the swoole_http_server:
+Reload
 
 ```
 $ php artisan swoole:http reload
