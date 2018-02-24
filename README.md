@@ -77,34 +77,21 @@ For example, if you want to set the 'max_request':
 ]
 ```
 
-## Command
+## Commands
 
 > The swoole_http_server can only run in cli environment, and this package provides convenient artisan commands to manage it.
 > By default, you can visit your site at http://127.0.0.1:1215
 
-Start
+> `php artisan swoole:http {start|stop|restart|reload|infos|publish}`
 
-```
-$ php artisan swoole:http start
-```
-
-Stop
-
-```
-$ php artisan swoole:http stop
-```
-
-Restart
-
-```
-$ php artisan swoole:http restart
-```
-
-Reload
-
-```
-$ php artisan swoole:http reload
-```
+| Command | Description |
+| --------- | --------- |
+| `start` | Start LaravelS, list the processes by *ps -ef&#124;grep laravels* |
+| `stop` | Stop LaravelS |
+| `restart` | Restart LaravelS |
+| `reload` | Reload all worker process(Contain your business & Laravel/Lumen codes), exclude master/manger process |
+| `infos` | Show PHP and Swoole basic miscs infos(including PHP version, Swoole version, Laravel version, server status and PID) |
+| `publish` | Publish configuration file `swoole_http.php` to `config` folder of your project |
 
 Now, you can run the following command to start the **swoole_http_server**.
 
