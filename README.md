@@ -99,6 +99,14 @@ Now, you can run the following command to start the **swoole_http_server**.
 $ php artisan swoole:http start
 ```
 
+## Get Swoole\Http\Server in your project
+
+```php
+// app('swoole.server') is a singleton instance
+$swoole = app('swoole.server');
+var_dump($swoole->stats());
+```
+
 ## Nginx Configuration
 
 > The support of swoole_http_server for Http is not complete. So, you should configure the domains via nginx proxy in your production environment.
