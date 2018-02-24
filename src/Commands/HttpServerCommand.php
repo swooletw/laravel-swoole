@@ -12,7 +12,7 @@ class HttpServerCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'swoole:http {action : start|stop|restart|reload}';
+    protected $signature = 'swoole:http {action : start|stop|restart|reload|infos}';
 
     /**
      * The console command description.
@@ -152,12 +152,38 @@ class HttpServerCommand extends Command
 
         $isRunning = $this->killProcess($pid, SIGUSR1);
 
-        if (!$isRunning) {
+        if (! $isRunning) {
             $this->error('> failure');
             exit(1);
         }
 
         $this->info('> success');
+    }
+
+
+    /**
+     * Display PHP and Swoole misc info.
+     */
+    protected function infos()
+    {
+        $this->showInfos();
+    }
+
+    /**
+     * Display PHP and Swoole miscs infos.
+     */
+    protected function showInfos()
+    {
+        $pid = $this->getPid();
+        $isRunning = $this->isRunning($pid);
+
+        $this->table(['Name', 'Value'], [
+            ['PHP Version', 'Version' => phpversion()],
+            ['Swoole Version', 'Version' => swoole_version()],
+            ['Laravel Version', $this->getApplication()->getVersion()],
+            ['Server Status', $isRunning ? 'Online' : 'Offline'],
+            ['PID', $isRunning ? $pid : 'None'],
+        ]);
     }
 
     /**
@@ -167,8 +193,8 @@ class HttpServerCommand extends Command
     {
         $this->action = $this->argument('action');
 
-        if (! in_array($this->action, ['start', 'stop', 'restart', 'reload'])) {
-            $this->error("Invalid argument '{$this->action}'. Expected 'start', 'stop', 'restart' or 'reload'.");
+        if (! in_array($this->action, ['start', 'stop', 'restart', 'reload', 'infos'])) {
+            $this->error("Invalid argument '{$this->action}'. Expected 'start', 'stop', 'restart', 'reload' or 'infos'.");
             exit(1);
         }
     }
@@ -181,13 +207,13 @@ class HttpServerCommand extends Command
      */
     protected function isRunning($pid)
     {
-        if (!$pid) {
+        if (! $pid) {
             return false;
         }
 
         Process::kill($pid, 0);
 
-        return !swoole_errno();
+        return ! swoole_errno();
     }
 
     /**
@@ -206,7 +232,7 @@ class HttpServerCommand extends Command
             $start = time();
 
             do {
-                if (!$this->isRunning($pid)) {
+                if (! $this->isRunning($pid)) {
                     break;
                 }
 
@@ -234,7 +260,7 @@ class HttpServerCommand extends Command
         if (file_exists($path)) {
             $pid = (int) file_get_contents($path);
 
-            if (!$pid) {
+            if (! $pid) {
                 $this->removePidFile();
             } else {
                 $this->pid = $pid;
