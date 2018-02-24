@@ -86,7 +86,7 @@ For example, if you want to set the 'max_request':
 
 | Command | Description |
 | --------- | --------- |
-| `start` | Start Laravel Swoole, list the processes by *ps -ef&#124;grep laravels* |
+| `start` | Start Laravel Swoole, list the processes by *ps aux&#124;grep swoole* |
 | `stop` | Stop Laravel Swoole |
 | `restart` | Restart Laravel Swoole |
 | `reload` | Reload all worker process(Contain your business & Laravel/Lumen codes), exclude master/manger process |
