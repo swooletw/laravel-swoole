@@ -131,7 +131,7 @@ class Manager
                 $this->server->on($event, [$this, $listener]);
             } else {
                 $this->server->on($event, function () use ($event) {
-                    $event = sprintf('http.%s', $event);
+                    $event = sprintf('swoole.%s', $event);
 
                     $this->container['events']->fire($event, func_get_args());
                 });
@@ -147,7 +147,7 @@ class Manager
         $this->setProcessName('master process');
         $this->createPidFile();
 
-        $this->container['events']->fire('http.start', func_get_args());
+        $this->container['events']->fire('swoole.start', func_get_args());
     }
 
     /**
@@ -158,7 +158,7 @@ class Manager
         $this->clearCache();
         $this->setProcessName('worker process');
 
-        $this->container['events']->fire('http.workerStart', func_get_args());
+        $this->container['events']->fire('swoole.workerStart', func_get_args());
 
         $this->createApplication();
         $this->setLaravelApp();
@@ -173,7 +173,7 @@ class Manager
      */
     public function onRequest($swooleRequest, $swooleResponse)
     {
-        $this->container['events']->fire('http.onRequest');
+        $this->container['events']->fire('swoole.onRequest');
 
         // Reset user-customized providers
         $this->getApplication()->resetProviders();
@@ -203,7 +203,7 @@ class Manager
     {
         $this->removePidFile();
 
-        $this->container['events']->fire('http.showdown', func_get_args());
+        $this->container['events']->fire('swoole.shutdown', func_get_args());
     }
 
     /**
