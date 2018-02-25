@@ -202,13 +202,6 @@ class Manager
 
         $response = Response::make($illuminateResponse, $swooleResponse);
         $response->send();
-
-        // Unset request and response.
-        $response = null;
-        $swooleRequest = null;
-        $swooleResponse = null;
-        $illuminateRequest = null;
-        $illuminateResponse = null;
     }
 
     /**

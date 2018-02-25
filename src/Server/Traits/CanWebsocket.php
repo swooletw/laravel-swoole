@@ -26,10 +26,9 @@ trait CanWebsocket
      */
     public function onOpen($server, $swooleRequest)
     {
-        $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
-        $this->container['events']->fire('swoole.onOpen', $illuminateRequest);
+        $this->container['events']->fire('swoole.onOpen', $swooleRequest);
 
-        $illuminateRequest = null;
+        $swooleRequest = null;
     }
 
     /**
@@ -55,7 +54,5 @@ trait CanWebsocket
         if (array_key_exists('websocket_status', $info) && $info['websocket_status']) {
             $this->container['events']->fire('swoole.onClose', $fd);
         }
-
-        $info = null;
     }
 }
