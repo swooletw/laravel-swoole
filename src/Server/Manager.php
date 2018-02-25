@@ -3,14 +3,18 @@
 namespace SwooleTW\Http\Server;
 
 use Illuminate\Contracts\Container\Container;
-use Swoole\Http\Server;
+use Swoole\Http\Server as HttpServer;
+use Swoole\WebSocket\Server as WebSocketServer;
+use SwooleTW\Http\Server\Traits\CanWebsocket;
 
 class Manager
 {
+    use CanWebsocket;
+
     const MAC_OSX = 'Darwin';
 
     /**
-     * @var \Swoole\Http\Server
+     * @var \Swoole\Http\Server | \Swoole\Websocket\Server
      */
     protected $server;
 
@@ -71,7 +75,7 @@ class Manager
     }
 
     /**
-     * Run swoole_http_server.
+     * Run swoole server.
      */
     public function run()
     {
@@ -79,7 +83,7 @@ class Manager
     }
 
     /**
-     * Stop swoole_http_server.
+     * Stop swoole server.
      */
     public function stop()
     {
@@ -93,26 +97,41 @@ class Manager
     {
         $this->setProcessName('manager process');
 
-        $this->createSwooleHttpServer();
-        $this->configureSwooleHttpServer();
-        $this->setSwooleHttpServerListeners();
+        $this->prepareWebsocket();
+        $this->createSwooleServer();
+        $this->configureSwooleServer();
+        $this->setSwooleServerListeners();
     }
 
     /**
-     * Creates swoole_http_server.
+     * Prepare settings if websocket is enabled.
      */
-    protected function createSwooleHttpServer()
+    protected function prepareWebsocket()
     {
+        $isWebsocket = $this->container['config']->get('swoole_http.websocket.enabled');
+
+        if ($isWebsocket) {
+            array_push($this->events, ...$this->wsEvents);
+            $this->isWebsocket = true;
+        }
+    }
+
+    /**
+     * Create swoole erver.
+     */
+    protected function createSwooleServer()
+    {
+        $server = $this->isWebsocket ? WebsocketServer::class : HttpServer::class;
         $host = $this->container['config']->get('swoole_http.server.host');
         $port = $this->container['config']->get('swoole_http.server.port');
 
-        $this->server = new Server($host, $port);
+        $this->server = new $server($host, $port);
     }
 
     /**
-     * Sets swoole_http_server configurations.
+     * Set swoole server configurations.
      */
-    protected function configureSwooleHttpServer()
+    protected function configureSwooleServer()
     {
         $config = $this->container['config']->get('swoole_http.server.options');
 
@@ -120,9 +139,9 @@ class Manager
     }
 
     /**
-     * Sets swoole_http_server listeners.
+     * Set swoole server listeners.
      */
-    protected function setSwooleHttpServerListeners()
+    protected function setSwooleServerListeners()
     {
         foreach ($this->events as $event) {
             $listener = 'on' . ucfirst($event);
@@ -162,7 +181,7 @@ class Manager
 
         $this->createApplication();
         $this->setLaravelApp();
-        $this->bindSwooleHttpServer();
+        $this->bindSwooleServer();
     }
 
     /**
@@ -182,10 +201,6 @@ class Manager
         $illuminateResponse = $this->getApplication()->run($illuminateRequest);
 
         $response = Response::make($illuminateResponse, $swooleResponse);
-        // To prevent 'connection[...] is closed' error.
-        if (! $this->server->exist($swooleRequest->fd)) {
-            return;
-        }
         $response->send();
 
         // Unset request and response.
@@ -239,7 +254,7 @@ class Manager
     /**
      * Bind swoole server to Laravel app container.
      */
-    protected function bindSwooleHttpServer()
+    protected function bindSwooleServer()
     {
         $this->app->singleton('swoole.server', function () {
             return $this->server;
@@ -290,7 +305,7 @@ class Manager
     }
 
     /**
-     * Sets process name.
+     * Set process name.
      *
      * @param $process
      */

@@ -15,8 +15,11 @@ return [
         'options' => [
             'pid_file' => env('SWOOLE_HTTP_PID_FILE', base_path('storage/logs/swoole_http.pid')),
             'log_file' => env('SWOOLE_HTTP_LOG_FILE', base_path('storage/logs/swoole_http.log')),
-            'daemonize' => env('SWOOLE_HTTP_DAEMONIZE', 0),
+            'daemonize' => env('SWOOLE_HTTP_DAEMONIZE', false),
         ],
+    ],
+    'websocket' => [
+        'enabled' => env('SWOOLE_HTTP_WEBSOCKET', false),
     ],
     'providers' => [
         // App\Providers\AuthServiceProvider::class,
