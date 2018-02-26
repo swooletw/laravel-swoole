@@ -27,8 +27,6 @@ trait CanWebsocket
     public function onOpen($server, $swooleRequest)
     {
         $this->container['events']->fire('swoole.onOpen', $swooleRequest);
-
-        $swooleRequest = null;
     }
 
     /**
