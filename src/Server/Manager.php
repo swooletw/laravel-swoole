@@ -179,6 +179,9 @@ class Manager
 
         $this->container['events']->fire('swoole.workerStart', func_get_args());
 
+        // clear events instance in case of repeated listeners in worker process
+        Facade::clearResolvedInstance('events');
+
         $this->createApplication();
         $this->setLaravelApp();
         $this->bindSwooleServer();
