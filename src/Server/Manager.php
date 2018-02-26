@@ -2,10 +2,11 @@
 
 namespace SwooleTW\Http\Server;
 
-use Illuminate\Contracts\Container\Container;
 use Swoole\Http\Server as HttpServer;
-use Swoole\WebSocket\Server as WebSocketServer;
+use Illuminate\Support\Facades\Facade;
+use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Server\Traits\CanWebsocket;
+use Swoole\WebSocket\Server as WebSocketServer;
 
 class Manager
 {
