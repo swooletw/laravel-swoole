@@ -124,7 +124,7 @@ class TableRoom implements RoomContract
         return md5($keys);
     }
 
-    public function setValue($key, array $value, $table)
+    public function setValue($key, array $value, string $table)
     {
         $this->checkTable($table);
 
@@ -135,7 +135,7 @@ class TableRoom implements RoomContract
         return $this;
     }
 
-    public function getValue($key, $table)
+    public function getValue(string $key, string $table)
     {
         $this->checkTable($table);
 
@@ -144,7 +144,7 @@ class TableRoom implements RoomContract
         return $value ? json_decode($value['value'], true) : [];
     }
 
-    protected function checkTable($table)
+    protected function checkTable(string $table)
     {
         if (! property_exists($this, $table) || ! $this->$table instanceof Table) {
             throw new \InvalidArgumentException('invalid table name.');
