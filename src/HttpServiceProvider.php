@@ -21,7 +21,7 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfig();
+        $this->mergeConfigs();
         $this->registerManager();
         $this->registerCommands();
     }
@@ -41,16 +41,18 @@ abstract class HttpServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../config/swoole_http.php' => base_path('config/swoole_http.php')
+            __DIR__ . '/../config/swoole_http.php' => base_path('config/swoole_http.php'),
+            __DIR__ . '/../config/swoole_websocket.php' => base_path('config/swoole_websocket.php')
         ], 'config');
     }
 
     /**
      * Merge configurations.
      */
-    protected function mergeConfig()
+    protected function mergeConfigs()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/swoole_http.php', 'swoole_http');
+        $this->mergeConfigFrom(__DIR__ . '/../config/swoole_websocket.php', 'swoole_websocket');
     }
 
     /**

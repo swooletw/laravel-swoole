@@ -7,9 +7,16 @@ use SwooleTW\Http\Server\Room\RoomContract;
 
 class TableRoom implements RoomContract
 {
+    protected $config;
+
     protected $rooms;
 
     protected $sids;
+
+    public function __construct(array $config)
+    {
+        $this->config = $config;
+    }
 
     public function prepare()
     {
@@ -84,15 +91,15 @@ class TableRoom implements RoomContract
 
     protected function initRoomsTable()
     {
-        $this->rooms = new Table(2048);
-        $this->rooms->column('value', Table::TYPE_STRING, 2048);
+        $this->rooms = new Table($this->config['room_rows']);
+        $this->rooms->column('value', Table::TYPE_STRING, $this->config['room_size']);
         $this->rooms->create();
     }
 
     protected function initSidsTable()
     {
-        $this->sids = new Table(8192);
-        $this->sids->column('value', Table::TYPE_STRING, 2048);
+        $this->sids = new Table($this->config['client_rows']);
+        $this->sids->column('value', Table::TYPE_STRING, $this->config['client_size']);
         $this->sids->create();
     }
 

@@ -12,7 +12,13 @@ class TableRoomTest extends TestCase
 
     public function setUp()
     {
-        $this->tableRoom = new TableRoom();
+        $config = [
+            'room_rows' => 2048,
+            'room_size' => 2048,
+            'client_rows' => 8192,
+            'client_size' => 2048
+        ];
+        $this->tableRoom = new TableRoom($config);
         $this->tableRoom->prepare();
     }
 
