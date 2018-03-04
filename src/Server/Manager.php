@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Server;
 
+use Exception;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Contracts\Container\Container;
@@ -201,12 +202,18 @@ class Manager
 
         // Reset user-customized providers
         $this->getApplication()->resetProviders();
-
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
-        $illuminateResponse = $this->getApplication()->run($illuminateRequest);
 
-        $response = Response::make($illuminateResponse, $swooleResponse);
-        $response->send();
+        try {
+            $illuminateResponse = $this->getApplication()->run($illuminateRequest);
+            $response = Response::make($illuminateResponse, $swooleResponse);
+            $response->send();
+        } catch (Exception $e) {
+            $this->logServerError($e);
+
+            $swooleResponse->status(500);
+            $swooleResponse->end('Oops! An unexpected error occurred.');
+        }
     }
 
     /**
@@ -318,5 +325,25 @@ class Manager
         $name = sprintf('%s: %s for %s', $serverName, $process, $appName);
 
         swoole_set_process_name($name);
+    }
+
+    /**
+     * Log server error.
+     *
+     * @param Exception
+     */
+    protected function logServerError(Exception $e)
+    {
+        $logFile = $this->container['config']->get('swoole_http.server.options.log_file');
+
+        try {
+            $output = fopen($logFile ,'w');
+        } catch (Exception $e) {
+            $output = STDOUT;
+        }
+
+        $prefix = sprintf("[%s #%d *%d]\tERROR\t", date('Y-m-d H:i:s'), $this->server->master_pid, $this->server->worker_id);
+
+        fwrite($output, sprintf('%s%s(%d): %s', $prefix, $e->getFile(), $e->getLine(), $e->getMessage()) . PHP_EOL);
     }
 }
