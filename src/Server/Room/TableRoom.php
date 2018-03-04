@@ -44,10 +44,10 @@ class TableRoom implements RoomContract
             $sids[] = $fd;
             $rooms[] = $room;
 
-            $this->setValue($room, $sids, 'rooms');
+            $this->setClients($room, $sids);
         }
 
-        $this->setValue($fd, $rooms, 'sids');
+        $this->setRooms($fd, $rooms);
     }
 
     public function delete(int $fd, string $room)
@@ -68,11 +68,11 @@ class TableRoom implements RoomContract
                 continue;
             }
 
-            $this->setValue($room, array_values(array_diff($sids, [$fd])), 'rooms');
+            $this->setClients($room, array_values(array_diff($sids, [$fd])), 'rooms');
             $removeRooms[] = $room;
         }
 
-        $this->setValue($fd, array_values(array_diff($allRooms, $removeRooms)), 'sids');
+        $this->setRooms($fd, array_values(array_diff($allRooms, $removeRooms)), 'sids');
     }
 
     public function getClients(string $room, $hash = true)
@@ -87,6 +87,16 @@ class TableRoom implements RoomContract
     public function getRooms(int $fd)
     {
         return $this->getValue($fd, 'sids');
+    }
+
+    protected function setClients(string $room, array $sids)
+    {
+        return $this->setValue($room, $sids, 'rooms');
+    }
+
+    protected function setRooms(int $fd, array $rooms)
+    {
+        return $this->setValue($fd, $rooms, 'sids');
     }
 
     protected function initRoomsTable()
@@ -106,12 +116,9 @@ class TableRoom implements RoomContract
     protected function encode($keys)
     {
         if (is_array($keys)) {
-            $result = [];
-            foreach ($keys as $value) {
-                $result[] = md5($value);
-            }
-
-            return $result;
+            return array_map(function ($key) {
+                return md5($key);
+            }, $keys);
         }
 
         return md5($keys);
@@ -124,6 +131,8 @@ class TableRoom implements RoomContract
         $this->$table->set($key, [
             'value' => json_encode($value)
         ]);
+
+        return $this;
     }
 
     public function getValue($key, $table)
