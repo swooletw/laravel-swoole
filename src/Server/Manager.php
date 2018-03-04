@@ -211,8 +211,14 @@ class Manager
         } catch (Exception $e) {
             $this->logServerError($e);
 
-            $swooleResponse->status(500);
-            $swooleResponse->end('Oops! An unexpected error occurred.');
+            try {
+                $swooleResponse->status(500);
+                $swooleResponse->end('Oops! An unexpected error occurred.');
+            } catch (Exception $e) {
+                // Catch: zm_deactivate_swoole: Fatal error: Uncaught exception
+                // 'ErrorException' with message 'swoole_http_response::status():
+                // http client#2 is not exist.
+            }
         }
     }
 
