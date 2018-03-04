@@ -16,7 +16,7 @@ return [
     'drivers' => [
 
         'table' => [
-            'room_rows' => 2048,
+            'room_rows' => 4096,
             'room_size' => 2048,
             'client_rows' => 8192,
             'client_size' => 2048
