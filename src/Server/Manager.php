@@ -114,6 +114,7 @@ class Manager
         if ($isWebsocket) {
             array_push($this->events, ...$this->wsEvents);
             $this->isWebsocket = true;
+            $this->setWebsocket();
         }
     }
 
