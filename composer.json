@@ -17,7 +17,8 @@
         "illuminate/console": "~5.1",
         "illuminate/contracts": "~5.1",
         "illuminate/http": "~5.1",
-        "illuminate/support": "~5.1"
+        "illuminate/support": "~5.1",
+        "codedungeon/phpunit-result-printer": "^0.14.0"
     },
     "require-dev": {
         "laravel/lumen-framework": "~5.1",
