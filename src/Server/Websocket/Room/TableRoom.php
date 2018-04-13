@@ -1,9 +1,9 @@
 <?php
 
-namespace SwooleTW\Http\Server\Room;
+namespace SwooleTW\Http\Server\Websocket\Room;
 
 use Swoole\Table;
-use SwooleTW\Http\Server\Room\RoomContract;
+use SwooleTW\Http\Server\Websocket\Room\RoomContract;
 
 class TableRoom implements RoomContract
 {

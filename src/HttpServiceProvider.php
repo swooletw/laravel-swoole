@@ -2,10 +2,10 @@
 
 namespace SwooleTW\Http;
 
-use SwooleTW\Http\Server\Websocket;
 use Illuminate\Support\ServiceProvider;
-use SwooleTW\Http\Server\Room\RoomContract;
 use SwooleTW\Http\Commands\HttpServerCommand;
+use SwooleTW\Http\Server\Websocket\Websocket;
+use SwooleTW\Http\Server\Websocket\Room\RoomContract;
 
 abstract class HttpServiceProvider extends ServiceProvider
 {

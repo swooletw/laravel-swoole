@@ -1,6 +1,6 @@
 <?php
 
-namespace SwooleTW\Http\Server\Room;
+namespace SwooleTW\Http\Server\Websocket\Room;
 
 interface RoomContract
 {

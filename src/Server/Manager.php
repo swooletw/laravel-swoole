@@ -7,6 +7,7 @@ use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Server\Traits\CanWebsocket;
+use SwooleTW\Http\Server\Websocket\Websocket;
 use Swoole\WebSocket\Server as WebSocketServer;
 
 class Manager
@@ -111,10 +112,12 @@ class Manager
     protected function prepareWebsocket()
     {
         $isWebsocket = $this->container['config']->get('swoole_http.websocket.enabled');
+        $formatter = $this->container['config']->get('swoole_http.websocket.formatter');
 
         if ($isWebsocket) {
             array_push($this->events, ...$this->wsEvents);
             $this->isWebsocket = true;
+            $this->setFormatter(new $formatter);
         }
     }
 
@@ -229,19 +232,8 @@ class Manager
         $this->container['events']->fire('swoole.task', func_get_args());
 
         // push websocket message
-        if ($data['action'] === 'push') {
-            $opcode = $data['opcode'] ?? 1;
-            $sender = $data['sender'] ?? 0;
-            $fds = $data['fds'] ?? [];
-            $broadcast = $data['broadcast'] ?? false;
-            $message = is_array($data['message']) ? json_encode($data['message']) : $data['message'];
-
-            foreach($fds as $fd) {
-                if ($broadcast && $sender === (integer) $fd) {
-                    continue;
-                }
-                $server->push($fd, $message, $opcode);
-            }
+        if (array_key_exists('action', $data) && $data['action'] === Websocket::PUSH_ACTION) {
+            $this->pushMessage($server, $data['data'] ?? []);
         }
     }
 

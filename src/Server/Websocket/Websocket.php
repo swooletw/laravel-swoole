@@ -1,11 +1,13 @@
 <?php
 
-namespace SwooleTW\Http\Server;
+namespace SwooleTW\Http\Server\Websocket;
 
-use SwooleTW\Http\Server\Room\RoomContract;
+use SwooleTW\Http\Server\Websocket\Room\RoomContract;
 
 class Websocket
 {
+    const PUSH_ACTION = 'push';
+
     protected $isBroadcast = false;
 
     protected $sender;
@@ -90,7 +92,7 @@ class Websocket
     /**
      * @param array
      */
-    public function leaveAll(array $rooms)
+    public function leaveAll(array $rooms = [])
     {
         $this->room->deleteAll($this->sender, $rooms);
 
@@ -105,15 +107,14 @@ class Websocket
     public function emit(string $event, $data)
     {
         app('swoole.server')->task([
-            'action' => 'push',
+            'action' => static::PUSH_ACTION,
             'data' => [
                 'sender' => $this->sender,
                 'fds' => $this->getFds(),
                 'broadcast' => $this->isBroadcast,
-                'message' => [
-                    'event' => $event,
-                    'data' => $data
-                ]
+                'message' => app('swoole.http')
+                    ->getFormatter()
+                    ->input($event, $data)
             ]
         ]);
 

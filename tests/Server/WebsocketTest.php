@@ -4,8 +4,8 @@ namespace SwooleTW\Http\Tests\Server;
 
 use Mockery as m;
 use SwooleTW\Http\Tests\TestCase;
-use SwooleTW\Http\Server\Websocket;
-use SwooleTW\Http\Server\Room\RoomContract;
+use SwooleTW\Http\Server\Websocket\Websocket;
+use SwooleTW\Http\Server\Websocket\Room\RoomContract;
 
 class WebsocketTest extends TestCase
 {

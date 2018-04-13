@@ -10,11 +10,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Default Message Formatter for Websocket
+    |--------------------------------------------------------------------------
+    */
+    'formatter' => SwooleTW\Http\Server\Websocket\Formatter\DefaultFormatter::class,
+
+    /*
+    |--------------------------------------------------------------------------
     | Drivers Mapping
     |--------------------------------------------------------------------------
     */
     'drivers' => [
-        'table' => SwooleTW\Http\Server\Room\TableRoom::class,
+        'table' => SwooleTW\Http\Server\Websocket\Room\TableRoom::class,
     ],
 
     /*
