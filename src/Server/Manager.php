@@ -115,7 +115,6 @@ class Manager
         if ($isWebsocket) {
             array_push($this->events, ...$this->wsEvents);
             $this->isWebsocket = true;
-            $this->setWebsocket();
         }
     }
 
@@ -198,7 +197,7 @@ class Manager
      */
     public function onRequest($swooleRequest, $swooleResponse)
     {
-        $this->container['events']->fire('swoole.onRequest');
+        $this->container['events']->fire('swoole.request');
 
         // Reset user-customized providers
         $this->getApplication()->resetProviders();
@@ -220,6 +219,38 @@ class Manager
                 // http client#2 is not exist.
             }
         }
+    }
+
+    /**
+     * Set onTask listener.
+     */
+    public function onTask(HttpServer $server, $taskId, $fromId, $data)
+    {
+        $this->container['events']->fire('swoole.task', func_get_args());
+
+        // push websocket message
+        if ($data['action'] === 'push') {
+            $opcode = $data['opcode'] ?? 1;
+            $sender = $data['sender'] ?? 0;
+            $fds = $data['fds'] ?? [];
+            $broadcast = $data['broadcast'] ?? false;
+            $message = is_array($data['message']) ? json_encode($data['message']) : $data['message'];
+
+            foreach($fds as $fd) {
+                if ($broadcast && $sender === (integer) $fd) {
+                    continue;
+                }
+                $server->push($fd, $message, $opcode);
+            }
+        }
+    }
+
+    /**
+     * Set onFinish listener.
+     */
+    public function onFinish(HttpServer $server, $taskId, $data)
+    {
+        // task worker callback
     }
 
     /**
