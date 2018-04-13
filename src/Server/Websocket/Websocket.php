@@ -112,9 +112,8 @@ class Websocket
                 'sender' => $this->sender,
                 'fds' => $this->getFds(),
                 'broadcast' => $this->isBroadcast,
-                'message' => app('swoole.http')
-                    ->getFormatter()
-                    ->input($event, $data)
+                'event' => $event,
+                'message' => $data
             ]
         ]);
 

@@ -55,8 +55,7 @@ trait CanWebsocket
      */
     public function onClose($server, $fd)
     {
-        $info = $server->connection_info($fd);
-        if (array_key_exists('websocket_status', $info) && $info['websocket_status']) {
+        if ($this->isWebsocket($fd)) {
             $this->container['events']->fire('swoole.onClose', $fd);
             $this->container['swoole.websocket']->setSender($fd)->leaveAll();
         }
@@ -74,7 +73,22 @@ trait CanWebsocket
         $sender = $data['sender'] ?? 0;
         $fds = $data['fds'] ?? [];
         $broadcast = $data['broadcast'] ?? false;
-        $message = $this->formatter->output($data['message']);
+        $event = $data['event'] ?? null;
+        $message = $this->formatter->output($event, $data['message']);
+
+        // attach sender if not broadcast
+        if (! $broadcast && ! in_array($sender, $fds)) {
+            $fds[] = $sender;
+        }
+
+        // check if to broadcast all clients
+        if ($broadcast && empty($fds)) {
+            foreach ($server->connections as $fd) {
+                if ($this->isWebsocket($fd)) {
+                    $fds[] = $fd;
+                }
+            }
+        }
 
         foreach ($fds as $fd) {
             if ($broadcast && $sender === (integer) $fd) {
@@ -102,5 +116,15 @@ trait CanWebsocket
     public function getFormatter()
     {
         return $this->formatter;
+    }
+
+    /**
+     * Check if is a websocket fd.
+     */
+    protected function isWebsocket(int $fd)
+    {
+        $info = $this->server->connection_info($fd);
+
+        return array_key_exists('websocket_status', $info) && $info['websocket_status'];
     }
 }
