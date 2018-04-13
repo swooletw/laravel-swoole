@@ -122,7 +122,9 @@ class Websocket
 
     public function in(string $room)
     {
-        //
+        $this->join($room);
+
+        return $this;
     }
 
     public function setSender(int $fd)
