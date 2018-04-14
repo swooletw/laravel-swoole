@@ -1,9 +1,13 @@
 <?php
 
-namespace SwooleTW\Http\Server;
+namespace SwooleTW\Http\Server\Websocket;
 
+use Exception;
+use Swoole\Websocket\Frame;
+use Swoole\Websocket\Server;
 use SwooleTW\Http\Server\Request;
-use SwooleTW\Http\Server\Websocket\Formatter\FormatterContract;
+use SwooleTW\Http\Server\Websocket\HandlerContract;
+use SwooleTW\Http\Server\Websocket\Formatters\FormatterContract;
 
 trait CanWebsocket
 {
@@ -13,7 +17,12 @@ trait CanWebsocket
     protected $isWebsocket = false;
 
     /**
-     * @var SwooleTW\Http\Server\Websocket\Formatter\FormatterContract
+     * @var SwooleTW\Http\Server\Websocket\HandlerContract
+     */
+    protected $websocketHandler;
+
+    /**
+     * @var SwooleTW\Http\Server\Websocket\Formatters\FormatterContract
      */
     protected $formatter;
 
@@ -30,9 +39,15 @@ trait CanWebsocket
      * @param \Swoole\Websocket\Server $server
      * @param \Swoole\Http\Request $swooleRequest
      */
-    public function onOpen($server, $swooleRequest)
+    public function onOpen(Server $server, $swooleRequest)
     {
-        $this->container['events']->fire('swoole.onOpen', $swooleRequest);
+        $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
+
+        try {
+            $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest);
+        } catch (Exception $e) {
+            $this->logServerError($e);
+        }
     }
 
     /**
@@ -41,10 +56,22 @@ trait CanWebsocket
      * @param \Swoole\Websocket\Server $server
      * @param \Swoole\Websocket\Frame $frame
      */
-    public function onMessage($server, $frame)
+    public function onMessage(Server $server, Frame $frame)
     {
         $this->container['swoole.websocket']->setSender($frame->fd);
-        $this->container['events']->fire('swoole.onMessage', $frame);
+
+        $payload = $this->formatter->input($frame);
+        $handler = $this->container['config']->get("swoole_websocket.handlers.{$payload['event']}");
+
+        try {
+            if ($handler) {
+                $this->container->call($handler, [$frame->fd, $payload['data']]);
+            } else {
+                $this->websocketHandler->onMessage($frame);
+            }
+        } catch (Exception $e) {
+            $this->logServerError($e);
+        }
     }
 
     /**
@@ -52,13 +79,22 @@ trait CanWebsocket
      *
      * @param \Swoole\Websocket\Server $server
      * @param int $fd
+     * @param int $reactorId
      */
-    public function onClose($server, $fd)
+    public function onClose(Server $server, $fd, $reactorId)
     {
-        if ($this->isWebsocket($fd)) {
-            $this->container['events']->fire('swoole.onClose', $fd);
-            $this->container['swoole.websocket']->setSender($fd)->leaveAll();
+        if (! $this->isWebsocket($fd)) {
+            return;
         }
+
+        try {
+            $this->websocketHandler->onClose($fd, $reactorId);
+        } catch (Exception $e) {
+            $this->logServerError($e);
+        }
+
+        $this->container['swoole.websocket']->setSender($fd)->leaveAll();
+
     }
 
     /**
@@ -67,7 +103,7 @@ trait CanWebsocket
      * @param \Swoole\Websocket\Server $server
      * @param mixed $data
      */
-    public function pushMessage($server, array $data)
+    public function pushMessage(Server $server, array $data)
     {
         $opcode = $data['opcode'] ?? 1;
         $sender = $data['sender'] ?? 0;
@@ -126,5 +162,27 @@ trait CanWebsocket
         $info = $this->server->connection_info($fd);
 
         return array_key_exists('websocket_status', $info) && $info['websocket_status'];
+    }
+
+    /**
+     * Set websocket handler for onOpen and onClose callback.
+     *
+     * @return SwooleTW\Http\Server\Websocket\HandlerContract
+     */
+    protected function setWebsocketHandler()
+    {
+        $handlerClass = $this->container['config']->get('swoole_http.websocket.handler');
+
+        if (! $handlerClass) {
+            throw new Exception('websocket handler not set in swoole_http.websocket config');
+        }
+
+        $handler = $this->container->make($handlerClass);
+
+        if (! $handler instanceof HandlerContract) {
+            throw new Exception(sprintf('%s must implement %s', get_class($handler), HandlerContract::class));
+        }
+
+        $this->websocketHandler = $handler;
     }
 }
