@@ -335,7 +335,7 @@ Transfer/sec:      1.55MB
 2. Never use `dd()`, `exit()` or `die()` function to print your debug message. It will terminate your swoole worker unexpectedly.
 3. `global` and `static` variables needs to be destroyed(reset) manually.
 4. Infinitely appending element into static/global variable will lead to memory leak.
-```
+```php
 // Some class
 class Test
 {
