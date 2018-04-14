@@ -6,7 +6,9 @@ use Exception;
 use Swoole\Websocket\Frame;
 use Swoole\Websocket\Server;
 use SwooleTW\Http\Server\Request;
+use SwooleTW\Http\Server\Websocket\Websocket;
 use SwooleTW\Http\Server\Websocket\HandlerContract;
+use SwooleTW\Http\Server\Websocket\Rooms\RoomContract;
 use SwooleTW\Http\Server\Websocket\Formatters\FormatterContract;
 
 trait CanWebsocket
@@ -20,6 +22,11 @@ trait CanWebsocket
      * @var SwooleTW\Http\Server\Websocket\HandlerContract
      */
     protected $websocketHandler;
+
+    /**
+     * @var SwooleTW\Http\Server\Websocket\Rooms\RoomContract
+     */
+    protected $websocketRoom;
 
     /**
      * @var SwooleTW\Http\Server\Websocket\Formatters\FormatterContract
@@ -58,14 +65,14 @@ trait CanWebsocket
      */
     public function onMessage(Server $server, Frame $frame)
     {
-        $this->container['swoole.websocket']->setSender($frame->fd);
+        $this->app['swoole.websocket']->setSender($frame->fd);
 
         $payload = $this->formatter->input($frame);
         $handler = $this->container['config']->get("swoole_websocket.handlers.{$payload['event']}");
 
         try {
             if ($handler) {
-                $this->container->call($handler, [$frame->fd, $payload['data']]);
+                $this->app->call($handler, [$frame->fd, $payload['data']]);
             } else {
                 $this->websocketHandler->onMessage($frame);
             }
@@ -93,8 +100,7 @@ trait CanWebsocket
             $this->logServerError($e);
         }
 
-        $this->container['swoole.websocket']->setSender($fd)->leaveAll();
-
+        $this->app['swoole.websocket']->setSender($fd)->leaveAll();
     }
 
     /**
@@ -169,6 +175,21 @@ trait CanWebsocket
      *
      * @return SwooleTW\Http\Server\Websocket\HandlerContract
      */
+    protected function setWebsocketRoom()
+    {
+        $driver = $this->container['config']->get('swoole_websocket.default');
+        $configs = $this->container['config']->get("swoole_websocket.settings.{$driver}");
+        $className = $this->container['config']->get("swoole_websocket.drivers.{$driver}");
+
+        $this->websocketRoom = new $className($configs);
+        $this->websocketRoom->prepare();
+    }
+
+    /**
+     * Set websocket handler for onOpen and onClose callback.
+     *
+     * @return SwooleTW\Http\Server\Websocket\HandlerContract
+     */
     protected function setWebsocketHandler()
     {
         $handlerClass = $this->container['config']->get('swoole_websocket.handler');
@@ -184,5 +205,27 @@ trait CanWebsocket
         }
 
         $this->websocketHandler = $handler;
+    }
+
+    /**
+     * Bind room instance to Laravel app container.
+     */
+    protected function bindRoom()
+    {
+        $this->app->singleton(RoomContract::class, function ($app) {
+            return $this->websocketRoom;
+        });
+        $this->app->alias(RoomContract::class, 'swoole.room');
+    }
+
+    /**
+     * Bind websocket instance to Laravel app container.
+     */
+    protected function bindWebsocket()
+    {
+        $this->app->singleton(Websocket::class, function ($app) {
+            return new Websocket($this->websocketRoom);
+        });
+        $this->app->alias(Websocket::class, 'swoole.websocket');
     }
 }

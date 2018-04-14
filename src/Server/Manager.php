@@ -6,8 +6,10 @@ use Exception;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Contracts\Container\Container;
+use SwooleTW\Http\Server\Websocket\Websocket;
 use Swoole\WebSocket\Server as WebSocketServer;
 use SwooleTW\Http\Server\Websocket\CanWebsocket;
+use SwooleTW\Http\Server\Websocket\Rooms\RoomContract;
 
 class Manager
 {
@@ -118,6 +120,7 @@ class Manager
             $this->isWebsocket = true;
             $this->setFormatter(new $formatter);
             $this->setWebsocketHandler();
+            $this->setWebsocketRoom();
         }
     }
 
@@ -190,6 +193,11 @@ class Manager
         $this->createApplication();
         $this->setLaravelApp();
         $this->bindSwooleServer();
+
+        if ($this->isWebsocket) {
+            $this->bindRoom();
+            $this->bindWebsocket();
+        }
     }
 
     /**

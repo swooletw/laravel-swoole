@@ -4,8 +4,6 @@ namespace SwooleTW\Http;
 
 use Illuminate\Support\ServiceProvider;
 use SwooleTW\Http\Commands\HttpServerCommand;
-use SwooleTW\Http\Server\Websocket\Websocket;
-use SwooleTW\Http\Server\Websocket\Room\RoomContract;
 
 abstract class HttpServiceProvider extends ServiceProvider
 {
@@ -26,7 +24,6 @@ abstract class HttpServiceProvider extends ServiceProvider
         $this->mergeConfigs();
         $this->registerManager();
         $this->registerCommands();
-        $this->registerWebsocket();
     }
 
     /**
@@ -66,34 +63,5 @@ abstract class HttpServiceProvider extends ServiceProvider
         $this->commands([
             HttpServerCommand::class,
         ]);
-    }
-
-    /**
-     * Register websocket.
-     */
-    protected function registerWebsocket()
-    {
-        if (! $this->app['config']->get('swoole_http.websocket.enabled')) {
-            return;
-        }
-
-        // bind room instance
-        $this->app->singleton(RoomContract::class, function ($app) {
-            $driver = $app['config']->get('swoole_websocket.default');
-            $configs = $app['config']->get("swoole_websocket.settings.{$driver}");
-            $className = $app['config']->get("swoole_websocket.drivers.{$driver}");
-
-            $room = new $className($configs);
-            $room->prepare();
-
-            return $room;
-        });
-        $this->app->alias(RoomContract::class, 'swoole.room');
-
-        // bind websocket instance
-        $this->app->singleton(Websocket::class, function ($app) {
-            return new Websocket($app['swoole.room']);
-        });
-        $this->app->alias(Websocket::class, 'swoole.websocket');
     }
 }
