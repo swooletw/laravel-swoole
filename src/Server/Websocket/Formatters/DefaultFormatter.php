@@ -15,7 +15,7 @@ class DefaultFormatter implements FormatterContract
      */
     public function input($frame)
     {
-        $data = json_decode($frame->data);
+        $data = json_decode($frame->data, true);
 
         return [
             'event' => $data['event'] ?? null,
