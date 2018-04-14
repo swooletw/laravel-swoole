@@ -113,7 +113,7 @@ For example, if you want to set the 'max_request':
 ]
 ```
 
-`handlers`: Websocket handlers mapping for onMessage callback. Message frames from clients will be parsed by formatter first (`SwooleTW\Http\Websocket\Formatters\DefaultFormatter`). It will dispatch the logic to matched event name.
+`handlers`: Websocket handlers mapping for onMessage callback. Message frames from clients will be parsed by formatter first (`SwooleTW\Http\Websocket\Formatters\DefaultFormatter`). It will dispatch to matched handler by event name.
 
 > By default raw frame data will be expected as: `{"event":"event_name","data":"data_content"}`. If no events name matched, it will call your `onMessage` function of `WebsocketHandler`
 
