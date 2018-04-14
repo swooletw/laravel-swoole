@@ -2,7 +2,7 @@
 
 namespace SwooleTW\Http\Server\Websocket\Formatters;
 
-use SwooleTW\Http\Server\Websocket\Formatter\FormatterContract;
+use SwooleTW\Http\Server\Websocket\Formatters\FormatterContract;
 
 class DefaultFormatter implements FormatterContract
 {
