@@ -176,13 +176,21 @@ class HttpServerCommand extends Command
     {
         $pid = $this->getPid();
         $isRunning = $this->isRunning($pid);
+        $host = $this->configs['server']['host'];
+        $port = $this->configs['server']['port'];
+        $isWebsocket = $this->configs['websocket']['enabled'];
+        $logFile = $this->configs['server']['options']['log_file'];
 
         $this->table(['Name', 'Value'], [
             ['PHP Version', 'Version' => phpversion()],
             ['Swoole Version', 'Version' => swoole_version()],
             ['Laravel Version', $this->getApplication()->getVersion()],
             ['Server Status', $isRunning ? 'Online' : 'Offline'],
+            ['Listen IP', $host],
+            ['Listen Port', $port],
+            ['Websocket Mode', $isWebsocket ? 'On' : 'Off'],
             ['PID', $isRunning ? $pid : 'None'],
+            ['Log Path', $logFile],
         ]);
     }
 
