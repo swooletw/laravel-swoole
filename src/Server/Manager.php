@@ -240,7 +240,9 @@ class Manager
         $this->container['events']->fire('swoole.task', func_get_args());
 
         // push websocket message
-        if (array_key_exists('action', $data) && $data['action'] === Websocket::PUSH_ACTION) {
+        if ($this->isWebsocket
+            && array_key_exists('action', $data)
+            && $data['action'] === Websocket::PUSH_ACTION) {
             $this->pushMessage($server, $data['data'] ?? []);
         }
     }

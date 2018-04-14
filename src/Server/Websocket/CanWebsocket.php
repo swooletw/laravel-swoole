@@ -172,8 +172,6 @@ trait CanWebsocket
 
     /**
      * Set websocket handler for onOpen and onClose callback.
-     *
-     * @return SwooleTW\Http\Server\Websocket\HandlerContract
      */
     protected function setWebsocketRoom()
     {
@@ -187,8 +185,6 @@ trait CanWebsocket
 
     /**
      * Set websocket handler for onOpen and onClose callback.
-     *
-     * @return SwooleTW\Http\Server\Websocket\HandlerContract
      */
     protected function setWebsocketHandler()
     {
