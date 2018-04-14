@@ -5,8 +5,8 @@ namespace SwooleTW\Http\Server;
 use Exception;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
+use SwooleTW\Http\Server\CanWebsocket;
 use Illuminate\Contracts\Container\Container;
-use SwooleTW\Http\Server\Traits\CanWebsocket;
 use SwooleTW\Http\Server\Websocket\Websocket;
 use Swoole\WebSocket\Server as WebSocketServer;
 
