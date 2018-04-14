@@ -11,6 +11,8 @@ class Table
     public function add(string $name, SwooleTable $table)
     {
         $this->tables[$name] = $table;
+
+        return $this;
     }
 
     public function get(string $name)
