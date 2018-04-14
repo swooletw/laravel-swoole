@@ -6,10 +6,10 @@ use Exception;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Contracts\Container\Container;
-use SwooleTW\Http\Server\Websocket\Websocket;
 use Swoole\WebSocket\Server as WebSocketServer;
-use SwooleTW\Http\Server\Websocket\CanWebsocket;
-use SwooleTW\Http\Server\Websocket\Rooms\RoomContract;
+use SwooleTW\Http\Websocket\Websocket;
+use SwooleTW\Http\Websocket\CanWebsocket;
+use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
 class Manager
 {
