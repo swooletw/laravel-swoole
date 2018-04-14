@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Server;
 
 use Exception;
+use Swoole\Table as SwooleTable;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Contracts\Container\Container;
@@ -40,6 +41,11 @@ class Manager
      * @var \Illuminate\Container\Container
      */
     protected $app;
+
+    /**
+     * @var \SwooleTW\Http\Server\Table
+     */
+    protected $table;
 
     /**
      * @var string
@@ -101,10 +107,20 @@ class Manager
     {
         $this->setProcessName('manager process');
 
+        $this->createTables();
         $this->prepareWebsocket();
         $this->createSwooleServer();
         $this->configureSwooleServer();
         $this->setSwooleServerListeners();
+    }
+
+    /**
+     * Prepare settings if websocket is enabled.
+     */
+    protected function createTables()
+    {
+        $this->table = new Table;
+        $this->registerTables();
     }
 
     /**
@@ -125,7 +141,7 @@ class Manager
     }
 
     /**
-     * Create swoole erver.
+     * Create swoole server.
      */
     protected function createSwooleServer()
     {
@@ -193,6 +209,7 @@ class Manager
         $this->createApplication();
         $this->setLaravelApp();
         $this->bindSwooleServer();
+        $this->bindSwooleTable();
 
         if ($this->isWebsocket) {
             $this->bindRoom();
@@ -306,6 +323,16 @@ class Manager
     }
 
     /**
+     * Bind swoole table to Laravel app container.
+     */
+    protected function bindSwooleTable()
+    {
+        $this->app->singleton('swoole.table', function () {
+            return $this->table;
+        });
+    }
+
+    /**
      * Gets pid file path.
      *
      * @return string
@@ -384,5 +411,28 @@ class Manager
         $prefix = sprintf("[%s #%d *%d]\tERROR\t", date('Y-m-d H:i:s'), $this->server->master_pid, $this->server->worker_id);
 
         fwrite($output, sprintf('%s%s(%d): %s', $prefix, $e->getFile(), $e->getLine(), $e->getMessage()) . PHP_EOL);
+    }
+
+    /**
+     * Register user-defined swoole tables.
+     */
+    protected function registerTables()
+    {
+        $tables = $this->container['config']->get('swoole_http.tables') ?? [];
+
+        foreach ($tables as $key => $value) {
+            $table = new SwooleTable($value['size']);
+            $columns = $value['columns'] ?? [];
+            foreach ($columns as $column) {
+                if (isset($column['size'])) {
+                    $table->column($column['name'], $column['type'], $column['size']);
+                } else {
+                    $table->column($column['name'], $column['type']);
+                }
+            }
+            $table->create();
+
+            $this->table->add($key, $table);
+        }
     }
 }
