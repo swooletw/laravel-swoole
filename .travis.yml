@@ -4,26 +4,6 @@ sudo: false
 
 matrix:
   include:
-    - php: 7.0
-      env: FRAMEWORK_VERSION=laravel/framework:5.1.*
-    - php: 7.0
-      env: FRAMEWORK_VERSION=laravel/framework:5.2.*
-    - php: 7.0
-      env: FRAMEWORK_VERSION=laravel/framework:5.3.*
-    - php: 7.0
-      env: FRAMEWORK_VERSION=laravel/framework:5.4.*
-    - php: 7.0
-      env: FRAMEWORK_VERSION=laravel/framework:5.5.*
-    - php: 7.0
-      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.1.*
-    - php: 7.0
-      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.2.*
-    - php: 7.0
-      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.3.*
-    - php: 7.0
-      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.4.*
-    - php: 7.0
-      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.5.*
     - php: 7.1
       env: FRAMEWORK_VERSION=laravel/framework:5.1.*
     - php: 7.1
