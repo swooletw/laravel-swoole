@@ -111,13 +111,13 @@ class Manager
     protected function prepareWebsocket()
     {
         $isWebsocket = $this->container['config']->get('swoole_http.websocket.enabled');
-        $formatter = $this->container['config']->get('swoole_http.websocket.formatter');
+        $formatter = $this->container['config']->get('swoole_websocket.formatter');
 
         if ($isWebsocket) {
             array_push($this->events, ...$this->wsEvents);
             $this->isWebsocket = true;
             $this->setFormatter(new $formatter);
-            $this->setsetWebsocketHandler();
+            $this->setWebsocketHandler();
         }
     }
 

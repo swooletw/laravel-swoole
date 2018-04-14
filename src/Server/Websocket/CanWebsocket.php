@@ -171,10 +171,10 @@ trait CanWebsocket
      */
     protected function setWebsocketHandler()
     {
-        $handlerClass = $this->container['config']->get('swoole_http.websocket.handler');
+        $handlerClass = $this->container['config']->get('swoole_websocket.handler');
 
         if (! $handlerClass) {
-            throw new Exception('websocket handler not set in swoole_http.websocket config');
+            throw new Exception('websocket handler not set in swoole_websocket config');
         }
 
         $handler = $this->container->make($handlerClass);
