@@ -1,6 +1,6 @@
 <?php
 
-namespace SwooleTW\Http\Server\Websocket\Formatters;
+namespace SwooleTW\Http\Websocket\Formatters;
 
 interface FormatterContract
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace SwooleTW\Http\Server\Websocket\Facades;
+namespace SwooleTW\Http\Websocket\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

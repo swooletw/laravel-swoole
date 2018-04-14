@@ -7,7 +7,7 @@ return [
     | Replace this handler before you start it
     |--------------------------------------------------------------------------
     */
-    'handler' => SwooleTW\Http\Server\Websocket\WebsocketHandler::class,
+    'handler' => SwooleTW\Http\Websocket\WebsocketHandler::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -31,7 +31,7 @@ return [
     | Replace it if you want to customize your websocket payload
     |--------------------------------------------------------------------------
     */
-    'formatter' => SwooleTW\Http\Server\Websocket\Formatters\DefaultFormatter::class,
+    'formatter' => SwooleTW\Http\Websocket\Formatters\DefaultFormatter::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -39,7 +39,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'drivers' => [
-        'table' => SwooleTW\Http\Server\Websocket\Rooms\TableRoom::class,
+        'table' => SwooleTW\Http\Websocket\Rooms\TableRoom::class,
     ],
 
     /*

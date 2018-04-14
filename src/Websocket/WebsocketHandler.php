@@ -1,10 +1,10 @@
 <?php
 
-namespace SwooleTW\Http\Server\Websocket;
+namespace SwooleTW\Http\Websocket;
 
 use Swoole\Websocket\Frame;
 use Illuminate\Http\Request;
-use SwooleTW\Http\Server\Websocket\HandlerContract;
+use SwooleTW\Http\Websocket\HandlerContract;
 
 class WebsocketHandler implements HandlerContract
 {

@@ -1,15 +1,15 @@
 <?php
 
-namespace SwooleTW\Http\Server\Websocket;
+namespace SwooleTW\Http\Websocket;
 
 use Exception;
 use Swoole\Websocket\Frame;
 use Swoole\Websocket\Server;
 use SwooleTW\Http\Server\Request;
-use SwooleTW\Http\Server\Websocket\Websocket;
-use SwooleTW\Http\Server\Websocket\HandlerContract;
-use SwooleTW\Http\Server\Websocket\Rooms\RoomContract;
-use SwooleTW\Http\Server\Websocket\Formatters\FormatterContract;
+use SwooleTW\Http\Websocket\Websocket;
+use SwooleTW\Http\Websocket\HandlerContract;
+use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use SwooleTW\Http\Websocket\Formatters\FormatterContract;
 
 trait CanWebsocket
 {
@@ -19,17 +19,17 @@ trait CanWebsocket
     protected $isWebsocket = false;
 
     /**
-     * @var SwooleTW\Http\Server\Websocket\HandlerContract
+     * @var SwooleTW\Http\Websocket\HandlerContract
      */
     protected $websocketHandler;
 
     /**
-     * @var SwooleTW\Http\Server\Websocket\Rooms\RoomContract
+     * @var SwooleTW\Http\Websocket\Rooms\RoomContract
      */
     protected $websocketRoom;
 
     /**
-     * @var SwooleTW\Http\Server\Websocket\Formatters\FormatterContract
+     * @var SwooleTW\Http\Websocket\Formatters\FormatterContract
      */
     protected $formatter;
 
@@ -143,7 +143,7 @@ trait CanWebsocket
     /**
      * Set message formatter for websocket.
      *
-     * @param \SwooleTW\Http\Server\Websocket\Formatter\FormatterContract $formatter
+     * @param \SwooleTW\Http\Websocket\Formatter\FormatterContract $formatter
      */
     public function setFormatter(FormatterContract $formatter)
     {

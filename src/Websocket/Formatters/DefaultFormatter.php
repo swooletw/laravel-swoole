@@ -1,8 +1,8 @@
 <?php
 
-namespace SwooleTW\Http\Server\Websocket\Formatters;
+namespace SwooleTW\Http\Websocket\Formatters;
 
-use SwooleTW\Http\Server\Websocket\Formatters\FormatterContract;
+use SwooleTW\Http\Websocket\Formatters\FormatterContract;
 
 class DefaultFormatter implements FormatterContract
 {

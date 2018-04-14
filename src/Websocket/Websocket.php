@@ -1,8 +1,8 @@
 <?php
 
-namespace SwooleTW\Http\Server\Websocket;
+namespace SwooleTW\Http\Websocket;
 
-use SwooleTW\Http\Server\Websocket\Rooms\RoomContract;
+use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
 class Websocket
 {
@@ -17,7 +17,7 @@ class Websocket
     /**
      * Room.
      *
-     * @var SwooleTW\Http\Server\Room\RoomContract
+     * @var SwooleTW\Http\Websocket\Rooms\RoomContract
      */
     protected $room;
 
