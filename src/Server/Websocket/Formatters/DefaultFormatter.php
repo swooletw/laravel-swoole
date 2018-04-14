@@ -1,6 +1,6 @@
 <?php
 
-namespace SwooleTW\Http\Server\Websocket\Formatter;
+namespace SwooleTW\Http\Server\Websocket\Formatters;
 
 use SwooleTW\Http\Server\Websocket\Formatter\FormatterContract;
 

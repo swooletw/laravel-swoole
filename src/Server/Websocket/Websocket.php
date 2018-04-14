@@ -2,7 +2,7 @@
 
 namespace SwooleTW\Http\Server\Websocket;
 
-use SwooleTW\Http\Server\Websocket\Room\RoomContract;
+use SwooleTW\Http\Server\Websocket\Rooms\RoomContract;
 
 class Websocket
 {

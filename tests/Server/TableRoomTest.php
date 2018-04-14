@@ -4,7 +4,7 @@ namespace SwooleTW\Http\Tests\Server;
 
 use Swoole\Table;
 use SwooleTW\Http\Tests\TestCase;
-use SwooleTW\Http\Server\Websocket\Room\TableRoom;
+use SwooleTW\Http\Server\Websocket\Rooms\TableRoom;
 
 class TableRoomTest extends TestCase
 {
