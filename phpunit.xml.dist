@@ -14,7 +14,7 @@
          stopOnError="false"
          stopOnFailure="false"
          verbose="true"
->
+         printerClass="Codedungeon\PHPUnitPrettyResultPrinter\Printer">
     <testsuites>
         <testsuite name="Laravel Swoole Http Test Suite">
             <directory suffix="Test.php">./tests</directory>

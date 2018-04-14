@@ -2,15 +2,24 @@
 
 namespace SwooleTW\Http\Server;
 
+use Exception;
+use Swoole\Table as SwooleTable;
+use Swoole\Http\Server as HttpServer;
+use Illuminate\Support\Facades\Facade;
 use Illuminate\Contracts\Container\Container;
-use Swoole\Http\Server;
+use Swoole\WebSocket\Server as WebSocketServer;
+use SwooleTW\Http\Websocket\Websocket;
+use SwooleTW\Http\Websocket\CanWebsocket;
+use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
 class Manager
 {
+    use CanWebsocket;
+
     const MAC_OSX = 'Darwin';
 
     /**
-     * @var \Swoole\Http\Server
+     * @var \Swoole\Http\Server | \Swoole\Websocket\Server
      */
     protected $server;
 
@@ -34,6 +43,11 @@ class Manager
     protected $app;
 
     /**
+     * @var \SwooleTW\Http\Server\Table
+     */
+    protected $table;
+
+    /**
      * @var string
      */
     protected $framework;
@@ -49,7 +63,7 @@ class Manager
      * @var array
      */
     protected $events = [
-        'start', 'shutDown', 'workerStart', 'workerStop', 'packet', 'close',
+        'start', 'shutDown', 'workerStart', 'workerStop', 'packet',
         'bufferFull', 'bufferEmpty', 'task', 'finish', 'pipeMessage',
         'workerError', 'managerStart', 'managerStop', 'request',
     ];
@@ -71,7 +85,7 @@ class Manager
     }
 
     /**
-     * Run swoole_http_server.
+     * Run swoole server.
      */
     public function run()
     {
@@ -79,7 +93,7 @@ class Manager
     }
 
     /**
-     * Stop swoole_http_server.
+     * Stop swoole server.
      */
     public function stop()
     {
@@ -93,26 +107,55 @@ class Manager
     {
         $this->setProcessName('manager process');
 
-        $this->createSwooleHttpServer();
-        $this->configureSwooleHttpServer();
-        $this->setSwooleHttpServerListeners();
+        $this->createTables();
+        $this->prepareWebsocket();
+        $this->createSwooleServer();
+        $this->configureSwooleServer();
+        $this->setSwooleServerListeners();
     }
 
     /**
-     * Creates swoole_http_server.
+     * Prepare settings if websocket is enabled.
      */
-    protected function createSwooleHttpServer()
+    protected function createTables()
     {
+        $this->table = new Table;
+        $this->registerTables();
+    }
+
+    /**
+     * Prepare settings if websocket is enabled.
+     */
+    protected function prepareWebsocket()
+    {
+        $isWebsocket = $this->container['config']->get('swoole_http.websocket.enabled');
+        $formatter = $this->container['config']->get('swoole_websocket.formatter');
+
+        if ($isWebsocket) {
+            array_push($this->events, ...$this->wsEvents);
+            $this->isWebsocket = true;
+            $this->setFormatter(new $formatter);
+            $this->setWebsocketHandler();
+            $this->setWebsocketRoom();
+        }
+    }
+
+    /**
+     * Create swoole server.
+     */
+    protected function createSwooleServer()
+    {
+        $server = $this->isWebsocket ? WebsocketServer::class : HttpServer::class;
         $host = $this->container['config']->get('swoole_http.server.host');
         $port = $this->container['config']->get('swoole_http.server.port');
 
-        $this->server = new Server($host, $port);
+        $this->server = new $server($host, $port);
     }
 
     /**
-     * Sets swoole_http_server configurations.
+     * Set swoole server configurations.
      */
-    protected function configureSwooleHttpServer()
+    protected function configureSwooleServer()
     {
         $config = $this->container['config']->get('swoole_http.server.options');
 
@@ -120,9 +163,9 @@ class Manager
     }
 
     /**
-     * Sets swoole_http_server listeners.
+     * Set swoole server listeners.
      */
-    protected function setSwooleHttpServerListeners()
+    protected function setSwooleServerListeners()
     {
         foreach ($this->events as $event) {
             $listener = 'on' . ucfirst($event);
@@ -131,7 +174,7 @@ class Manager
                 $this->server->on($event, [$this, $listener]);
             } else {
                 $this->server->on($event, function () use ($event) {
-                    $event = sprintf('http.%s', $event);
+                    $event = sprintf('swoole.%s', $event);
 
                     $this->container['events']->fire($event, func_get_args());
                 });
@@ -147,7 +190,7 @@ class Manager
         $this->setProcessName('master process');
         $this->createPidFile();
 
-        $this->container['events']->fire('http.start', func_get_args());
+        $this->container['events']->fire('swoole.start', func_get_args());
     }
 
     /**
@@ -158,11 +201,20 @@ class Manager
         $this->clearCache();
         $this->setProcessName('worker process');
 
-        $this->container['events']->fire('http.workerStart', func_get_args());
+        $this->container['events']->fire('swoole.workerStart', func_get_args());
+
+        // clear events instance in case of repeated listeners in worker process
+        Facade::clearResolvedInstance('events');
 
         $this->createApplication();
         $this->setLaravelApp();
-        $this->bindSwooleHttpServer();
+        $this->bindSwooleServer();
+        $this->bindSwooleTable();
+
+        if ($this->isWebsocket) {
+            $this->bindRoom();
+            $this->bindWebsocket();
+        }
     }
 
     /**
@@ -173,27 +225,51 @@ class Manager
      */
     public function onRequest($swooleRequest, $swooleResponse)
     {
-        $this->container['events']->fire('http.onRequest');
+        $this->container['events']->fire('swoole.request');
 
         // Reset user-customized providers
         $this->getApplication()->resetProviders();
-
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
-        $illuminateResponse = $this->getApplication()->run($illuminateRequest);
 
-        $response = Response::make($illuminateResponse, $swooleResponse);
-        // To prevent 'connection[...] is closed' error.
-        if (! $this->server->exist($swooleRequest->fd)) {
-            return;
+        try {
+            $illuminateResponse = $this->getApplication()->run($illuminateRequest);
+            $response = Response::make($illuminateResponse, $swooleResponse);
+            $response->send();
+        } catch (Exception $e) {
+            $this->logServerError($e);
+
+            try {
+                $swooleResponse->status(500);
+                $swooleResponse->end('Oops! An unexpected error occurred.');
+            } catch (Exception $e) {
+                // Catch: zm_deactivate_swoole: Fatal error: Uncaught exception
+                // 'ErrorException' with message 'swoole_http_response::status():
+                // http client#2 is not exist.
+            }
         }
-        $response->send();
+    }
 
-        // Unset request and response.
-        $response = null;
-        $swooleRequest = null;
-        $swooleResponse = null;
-        $illuminateRequest = null;
-        $illuminateResponse = null;
+    /**
+     * Set onTask listener.
+     */
+    public function onTask(HttpServer $server, $taskId, $fromId, $data)
+    {
+        $this->container['events']->fire('swoole.task', func_get_args());
+
+        // push websocket message
+        if ($this->isWebsocket
+            && array_key_exists('action', $data)
+            && $data['action'] === Websocket::PUSH_ACTION) {
+            $this->pushMessage($server, $data['data'] ?? []);
+        }
+    }
+
+    /**
+     * Set onFinish listener.
+     */
+    public function onFinish(HttpServer $server, $taskId, $data)
+    {
+        // task worker callback
     }
 
     /**
@@ -203,7 +279,7 @@ class Manager
     {
         $this->removePidFile();
 
-        $this->container['events']->fire('http.showdown', func_get_args());
+        $this->container['events']->fire('swoole.shutdown', func_get_args());
     }
 
     /**
@@ -239,10 +315,20 @@ class Manager
     /**
      * Bind swoole server to Laravel app container.
      */
-    protected function bindSwooleHttpServer()
+    protected function bindSwooleServer()
     {
         $this->app->singleton('swoole.server', function () {
             return $this->server;
+        });
+    }
+
+    /**
+     * Bind swoole table to Laravel app container.
+     */
+    protected function bindSwooleTable()
+    {
+        $this->app->singleton('swoole.table', function () {
+            return $this->table;
         });
     }
 
@@ -290,7 +376,7 @@ class Manager
     }
 
     /**
-     * Sets process name.
+     * Set process name.
      *
      * @param $process
      */
@@ -305,5 +391,48 @@ class Manager
         $name = sprintf('%s: %s for %s', $serverName, $process, $appName);
 
         swoole_set_process_name($name);
+    }
+
+    /**
+     * Log server error.
+     *
+     * @param Exception
+     */
+    protected function logServerError(Exception $e)
+    {
+        $logFile = $this->container['config']->get('swoole_http.server.options.log_file');
+
+        try {
+            $output = fopen($logFile ,'w');
+        } catch (Exception $e) {
+            $output = STDOUT;
+        }
+
+        $prefix = sprintf("[%s #%d *%d]\tERROR\t", date('Y-m-d H:i:s'), $this->server->master_pid, $this->server->worker_id);
+
+        fwrite($output, sprintf('%s%s(%d): %s', $prefix, $e->getFile(), $e->getLine(), $e->getMessage()) . PHP_EOL);
+    }
+
+    /**
+     * Register user-defined swoole tables.
+     */
+    protected function registerTables()
+    {
+        $tables = $this->container['config']->get('swoole_http.tables') ?? [];
+
+        foreach ($tables as $key => $value) {
+            $table = new SwooleTable($value['size']);
+            $columns = $value['columns'] ?? [];
+            foreach ($columns as $column) {
+                if (isset($column['size'])) {
+                    $table->column($column['name'], $column['type'], $column['size']);
+                } else {
+                    $table->column($column['name'], $column['type']);
+                }
+            }
+            $table->create();
+
+            $this->table->add($key, $table);
+        }
     }
 }
