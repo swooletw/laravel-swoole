@@ -164,7 +164,7 @@ Now, you can run the following command to start the **swoole_http_server**.
 $ php artisan swoole:http start
 ```
 
-## Get related instances in your project
+## Get Related Instances in Laravel
 
 * Swoole\Http\Server: By `SwooleTW\Http\Server\Facades\Server` or `app('swoole.server')`
 
@@ -203,6 +203,28 @@ Websocket::join('some room');
 
 // leave to unsubscribe the socket to a given channel (server-side)
 Websocket::leave('some room');
+```
+
+* SwooleTW\Http\Websocket\Rooms\RoomContract: By `SwooleTW\Http\Websocket\Facades\Room` or `app('swoole.room')`
+
+```php
+// get all fds in a 'game' room
+Room::getClients('game');
+
+// get all rooms of fd 1
+Room::getRooms(1);
+
+// add fd 1 to a 'game' room
+Room::add(1, 'room');
+
+// add fd 1 to 'game' and 'test' rooms
+Room::addAll(1, ['game', 'test']);
+
+// delete fd 1 from a 'game' room
+Room::delete(1, 'room');
+
+// delete fd 1 from 'game' and 'test' rooms
+Room::deleteAll(1, ['game', 'test']);
 ```
 
 ## Nginx Configuration
