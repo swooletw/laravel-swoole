@@ -256,11 +256,15 @@ class Manager
     {
         $this->container['events']->fire('swoole.task', func_get_args());
 
-        // push websocket message
-        if ($this->isWebsocket
-            && array_key_exists('action', $data)
-            && $data['action'] === Websocket::PUSH_ACTION) {
-            $this->pushMessage($server, $data['data'] ?? []);
+        try {
+            // push websocket message
+            if ($this->isWebsocket
+                && array_key_exists('action', $data)
+                && $data['action'] === Websocket::PUSH_ACTION) {
+                $this->pushMessage($server, $data['data'] ?? []);
+            }
+        } catch (Exception $e) {
+            $this->logServerError($e);
         }
     }
 
