@@ -99,11 +99,6 @@ class Websocket
         return $this;
     }
 
-    public function on(string $event, callable $callback)
-    {
-        //
-    }
-
     public function emit(string $event, $data)
     {
         app('swoole.server')->task([
@@ -117,7 +112,7 @@ class Websocket
             ]
         ]);
 
-        $this->cleanData();
+        $this->reset();
     }
 
     public function in(string $room)
@@ -163,7 +158,7 @@ class Websocket
         return array_values($fds);
     }
 
-    protected function cleanData()
+    protected function reset()
     {
         $this->isBroadcast = false;
         $this->sender = null;

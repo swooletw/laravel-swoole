@@ -56,17 +56,17 @@ class TableRoomTest extends TestCase
     {
         $this->tableRoom->addAll($key = 1, $values = ['foo', 'bar']);
 
-        $this->assertSame($this->encode($values), $this->tableRoom->getValue($key, $table = 'sids'));
-        $this->assertSame([$key], $this->tableRoom->getValue($this->encode('foo'), 'rooms'));
-        $this->assertSame([$key], $this->tableRoom->getValue($this->encode('bar'), 'rooms'));
+        $this->assertSame($values, $this->tableRoom->getValue($key, $table = 'sids'));
+        $this->assertSame([$key], $this->tableRoom->getValue('foo', 'rooms'));
+        $this->assertSame([$key], $this->tableRoom->getValue('bar', 'rooms'));
     }
 
     public function testAdd()
     {
         $this->tableRoom->add($key = 1, $value = 'foo');
 
-        $this->assertSame([$this->encode($value)], $this->tableRoom->getValue($key, $table = 'sids'));
-        $this->assertSame([$key], $this->tableRoom->getValue($this->encode($value), 'rooms'));
+        $this->assertSame([$value], $this->tableRoom->getValue($key, $table = 'sids'));
+        $this->assertSame([$key], $this->tableRoom->getValue($value, 'rooms'));
     }
 
     public function testDeleteAll()
@@ -75,8 +75,8 @@ class TableRoomTest extends TestCase
         $this->tableRoom->deleteAll($key);
 
         $this->assertSame([], $this->tableRoom->getValue($key, $table = 'sids'));
-        $this->assertSame([], $this->tableRoom->getValue($this->encode('foo'), 'rooms'));
-        $this->assertSame([], $this->tableRoom->getValue($this->encode('bar'), 'rooms'));
+        $this->assertSame([], $this->tableRoom->getValue('foo', 'rooms'));
+        $this->assertSame([], $this->tableRoom->getValue('bar', 'rooms'));
     }
 
     public function testDelete()
@@ -84,9 +84,9 @@ class TableRoomTest extends TestCase
         $this->tableRoom->addAll($key = 1, $values = ['foo', 'bar']);
         $this->tableRoom->delete($key, 'foo');
 
-        $this->assertSame([$this->encode('bar')], $this->tableRoom->getValue($key, $table = 'sids'));
-        $this->assertSame([], $this->tableRoom->getValue($this->encode('foo'), 'rooms'));
-        $this->assertSame([$key], $this->tableRoom->getValue($this->encode('bar'), 'rooms'));
+        $this->assertSame(['bar'], $this->tableRoom->getValue($key, $table = 'sids'));
+        $this->assertSame([], $this->tableRoom->getValue('foo', 'rooms'));
+        $this->assertSame([$key], $this->tableRoom->getValue('bar', 'rooms'));
     }
 
     public function testGetRooms()
@@ -106,17 +106,8 @@ class TableRoomTest extends TestCase
         $this->tableRoom->add($keys[1], $room);
 
         $this->assertSame(
-            $this->tableRoom->getValue($this->encode($room), $table = 'rooms'),
+            $this->tableRoom->getValue($room, $table = 'rooms'),
             $this->tableRoom->getClients($room)
         );
-    }
-
-    protected function encode($keys)
-    {
-        $reflection = new \ReflectionClass($this->tableRoom);
-        $method = $reflection->getMethod('encode');
-        $method->setAccessible(true);
-
-        return $method->invokeArgs($this->tableRoom, [$keys]);
     }
 }
