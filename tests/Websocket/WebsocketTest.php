@@ -9,11 +9,6 @@ use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
 class WebsocketTest extends TestCase
 {
-    public function setUp()
-    {
-        //
-    }
-
     public function testSetBroadcast()
     {
         $websocket = $this->getWebsocket();

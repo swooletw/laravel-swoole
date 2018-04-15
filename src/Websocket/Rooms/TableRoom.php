@@ -34,8 +34,7 @@ class TableRoom implements RoomContract
         $rooms = $this->getRooms($fd);
 
         foreach ($roomNames as $room) {
-            $room = $this->encode($room);
-            $sids = $this->getClients($room, false);
+            $sids = $this->getClients($room);
 
             if (in_array($fd, $sids)) {
                 continue;
@@ -58,11 +57,11 @@ class TableRoom implements RoomContract
     public function deleteAll(int $fd, array $roomNames = [])
     {
         $allRooms = $this->getRooms($fd);
-        $rooms = count($roomNames) ? $this->encode($roomNames) : $allRooms;
+        $rooms = count($roomNames) ? $roomNames : $allRooms;
 
         $removeRooms = [];
         foreach ($rooms as $room) {
-            $sids = $this->getClients($room, false);
+            $sids = $this->getClients($room);
 
             if (! in_array($fd, $sids)) {
                 continue;
@@ -75,12 +74,8 @@ class TableRoom implements RoomContract
         $this->setRooms($fd, array_values(array_diff($allRooms, $removeRooms)), 'sids');
     }
 
-    public function getClients(string $room, $hash = true)
+    public function getClients(string $room)
     {
-        if ($hash) {
-            $room = $this->encode($room);
-        }
-
         return $this->getValue($room, 'rooms');
     }
 
@@ -111,17 +106,6 @@ class TableRoom implements RoomContract
         $this->sids = new Table($this->config['client_rows']);
         $this->sids->column('value', Table::TYPE_STRING, $this->config['client_size']);
         $this->sids->create();
-    }
-
-    protected function encode($keys)
-    {
-        if (is_array($keys)) {
-            return array_map(function ($key) {
-                return md5($key);
-            }, $keys);
-        }
-
-        return md5($keys);
     }
 
     public function setValue($key, array $value, string $table)

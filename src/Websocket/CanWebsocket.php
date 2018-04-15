@@ -119,7 +119,7 @@ trait CanWebsocket
         $message = $this->formatter->output($event, $data['message']);
 
         // attach sender if not broadcast
-        if (! $broadcast && ! in_array($sender, $fds)) {
+        if (! $broadcast && $sender && ! in_array($sender, $fds)) {
             $fds[] = $sender;
         }
 
@@ -132,8 +132,9 @@ trait CanWebsocket
             }
         }
 
+        // push message to designated fds
         foreach ($fds as $fd) {
-            if ($broadcast && $sender === (integer) $fd) {
+            if (($broadcast && $sender === (integer) $fd) || ! $server->exist($fd)) {
                 continue;
             }
             $server->push($fd, $message, $opcode);
