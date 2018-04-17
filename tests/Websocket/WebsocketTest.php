@@ -1,6 +1,6 @@
 <?php
 
-namespace SwooleTW\Http\Tests\Server;
+namespace SwooleTW\Http\Tests\Websocket;
 
 use Mockery as m;
 use SwooleTW\Http\Tests\TestCase;
