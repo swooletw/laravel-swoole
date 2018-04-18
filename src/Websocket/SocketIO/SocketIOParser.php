@@ -38,10 +38,11 @@ class SocketIOParser extends Parser
     public function decode(Frame $frame)
     {
         $payload = Packet::getPayload($frame->data);
+        $data = json_decode($payload['data'], true);
 
         return [
             'event' => $payload['event'] ?? null,
-            'data' => json_decode($payload['data'], true) ?? null
+            'data' => $data ?: $payload['data']
         ];
     }
 }

@@ -133,7 +133,7 @@ class Packet
      */
     public static function getPayload(string $packet)
     {
-        $pattern = '/\["(.*?)"\s*,\s*(\{(?:[^{}]|(?R))*\})\]/';
+        $pattern = '/\["(.*?)"\s*,\s*"?(.*?)"?\]/';
 
         preg_match($pattern, $packet, $matches);
 
