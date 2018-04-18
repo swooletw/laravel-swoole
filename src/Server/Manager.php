@@ -324,8 +324,6 @@ class Manager
         $this->app->singleton('swoole.server', function () {
             return $this->server;
         });
-        $this->app->alias(HttpServer::class, 'swoole.server');
-        $this->app->alias(WebSocketServer::class, 'swoole.server');
     }
 
     /**
