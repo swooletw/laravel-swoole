@@ -6,6 +6,7 @@ use Exception;
 use Swoole\Websocket\Frame;
 use Swoole\Websocket\Server;
 use SwooleTW\Http\Server\Request;
+use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\HandlerContract;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
@@ -29,9 +30,9 @@ trait CanWebsocket
     protected $websocketRoom;
 
     /**
-     * @var SwooleTW\Http\Websocket\Formatters\FormatterContract
+     * @var SwooleTW\Http\Websocket\Parser
      */
-    protected $formatter;
+    protected $parser;
 
     /**
      * Websocket server events.
@@ -67,10 +68,18 @@ trait CanWebsocket
     {
         $this->app['swoole.websocket']->setSender($frame->fd);
 
-        $payload = $this->formatter->input($frame);
-        $handler = $this->container['config']->get("swoole_websocket.handlers.{$payload['event']}");
+        $data = $frame->data;
 
         try {
+            $skip = $this->parser->execute($server, $frame);
+
+            if ($skip) {
+                return;
+            }
+
+            $payload = $this->parser->decode($frame);
+            $handler = $this->container['config']->get("swoole_websocket.handlers.{$payload['event']}");
+
             if ($handler) {
                 $this->app->call($handler, [$frame->fd, $payload['data']]);
             } else {
@@ -116,7 +125,7 @@ trait CanWebsocket
         $fds = $data['fds'] ?? [];
         $broadcast = $data['broadcast'] ?? false;
         $event = $data['event'] ?? null;
-        $message = $this->formatter->output($event, $data['message']);
+        $message = $this->parser->encode($event, $data['message']);
 
         // attach sender if not broadcast
         if (! $broadcast && $sender && ! in_array($sender, $fds)) {
@@ -142,23 +151,23 @@ trait CanWebsocket
     }
 
     /**
-     * Set message formatter for websocket.
+     * Set frame parser for websocket.
      *
-     * @param \SwooleTW\Http\Websocket\Formatter\FormatterContract $formatter
+     * @param \SwooleTW\Http\Websocket\Parser $parser
      */
-    public function setFormatter(FormatterContract $formatter)
+    public function setParser(Parser $parser)
     {
-        $this->formatter = $formatter;
+        $this->parser = $parser;
 
         return $this;
     }
 
     /**
-     * Get message formatter for websocket.
+     * Get frame parser for websocket.
      */
-    public function getFormatter()
+    public function getParser()
     {
-        return $this->formatter;
+        return $this->parser;
     }
 
     /**

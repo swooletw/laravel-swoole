@@ -27,11 +27,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default message formatter
+    | Default frame parser
     | Replace it if you want to customize your websocket payload
     |--------------------------------------------------------------------------
     */
-    'formatter' => SwooleTW\Http\Websocket\Formatters\DefaultFormatter::class,
+    'parser' => SwooleTW\Http\Websocket\SocketIO\SocketIOParser::class,
 
     /*
     |--------------------------------------------------------------------------
