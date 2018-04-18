@@ -105,27 +105,13 @@ class Packet
      */
     public static function getSocketType(string $packet)
     {
-        $type = $packet[0];
+        $type = $packet[0] ?? null;
 
         if (! array_key_exists($type, static::$socketTypes)) {
             return null;
         }
 
-        return $type;
-    }
-
-    /**
-     * Get engine packet type of a raw payload.
-     */
-    public static function getEngineType(string $packet)
-    {
-        $type = $packet[1] ?? null;
-
-        if (is_null($type) || ! array_key_exists($type, static::$engineTypes)) {
-            return null;
-        }
-
-        return $type;
+        return (int) $type;
     }
 
     /**
@@ -158,20 +144,6 @@ class Packet
             return false;
         }
 
-        return static::getSocketType($packet) === (string) $type;
-    }
-
-    /**
-     * Return if an engine packet belongs to specific type.
-     */
-    public static function isEngineType($packet, string $typeName)
-    {
-        $type = array_search(strtoupper($typeName), static::$engineTypes);
-
-        if ($type === false) {
-            return false;
-        }
-
-        return static::getEngineType($packet) === (string) $type;
+        return static::getSocketType($packet) === $type;
     }
 }

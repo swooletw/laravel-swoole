@@ -24,8 +24,11 @@ class SocketIOParser extends Parser
     public function encode($event, $data)
     {
         $packet = Packet::MESSAGE . Packet::EVENT;
+        $shouldEncode = is_array($data) || is_object($data);
+        $data = $shouldEncode ? json_encode($data) : $data;
+        $format = $shouldEncode ? '["%s",%s]' : '["%s","%s"]';
 
-        return $packet . sprintf('["%s",%s]', $event, json_encode($data));
+        return $packet . sprintf($format, $event, $data);
     }
 
     /**
