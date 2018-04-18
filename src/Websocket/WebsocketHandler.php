@@ -24,10 +24,11 @@ class WebsocketHandler implements HandlerContract
                 'pingInterval' => Config::get('swoole_websocket.ping_interval'),
                 'pingTimeout' => Config::get('swoole_websocket.ping_timeout')
             ]);
-            $payload = Packet::OPEN . $payload;
+            $initPayload = Packet::OPEN . $payload;
+            $connectPayload = Packet::MESSAGE . Packet::CONNECT;
 
-            app('swoole.server')->push($fd, $payload);
-            app('swoole.server')->push($fd, Packet::MESSAGE . Packet::CONNECT);
+            app('swoole.server')->push($fd, $initPayload);
+            app('swoole.server')->push($fd, $connectPayload);
         }
     }
 
