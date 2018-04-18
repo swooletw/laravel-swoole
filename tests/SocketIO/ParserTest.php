@@ -6,8 +6,6 @@ use Mockery as m;
 use Swoole\Websocket\Frame;
 use Swoole\Websocket\Server;
 use SwooleTW\Http\Tests\TestCase;
-use Illuminate\Container\Container;
-use Illuminate\Support\Facades\App;
 use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
 use SwooleTW\Http\Websocket\SocketIO\Strategies\HeartbeatStrategy;
