@@ -4,6 +4,7 @@ namespace SwooleTW\Http\Websocket;
 
 use Swoole\Websocket\Frame;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use SwooleTW\Http\Websocket\HandlerContract;
 
 class WebsocketHandler implements HandlerContract
@@ -16,7 +17,18 @@ class WebsocketHandler implements HandlerContract
      */
     public function onOpen($fd, Request $request)
     {
-        app('events')->fire('swoole.onOpen', compact('fd', 'request'));
+        if (! $request->input('sid')) {
+            $payload = json_encode([
+                'sid' => uniqid(),
+                'upgrades' => [],
+                'pingInterval' => Config::get('swoole_websocket.ping_interval'),
+                'pingTimeout' => Config::get('swoole_websocket.ping_timeout')
+            ]);
+            $payload = Packet::OPEN . $payload;
+
+            app('swoole.server')->push($fd, $payload);
+            app('swoole.server')->push($fd, Packet::MESSAGE . Packet::CONNECT);
+        }
     }
 
     /**
@@ -27,7 +39,7 @@ class WebsocketHandler implements HandlerContract
      */
     public function onMessage(Frame $frame)
     {
-        app('events')->fire('swoole.onMessage', compact('frame'));
+        //
     }
 
     /**
@@ -38,6 +50,6 @@ class WebsocketHandler implements HandlerContract
      */
     public function onClose($fd, $reactorId)
     {
-        app('events')->fire('swoole.onClose', compact('fd', 'reactorId'));
+        //
     }
 }
