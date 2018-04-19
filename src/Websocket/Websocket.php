@@ -152,10 +152,10 @@ class Websocket
         $rooms = array_diff($this->to, $fds);
 
         foreach ($rooms as $room) {
-            $fds = array_unique(array_merge($fds, $this->room->getClients($room)));
+            $fds = array_merge($fds, $this->room->getClients($room));
         }
 
-        return array_values($fds);
+        return array_values(array_unique($fds));
     }
 
     protected function reset()
