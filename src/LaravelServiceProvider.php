@@ -25,6 +25,6 @@ class LaravelServiceProvider extends HttpServiceProvider
      */
     protected function bootRoutes()
     {
-        $this->loadRoutesFrom(__DIR__.'/../routes/laravel_routes.php');
+        require __DIR__.'/../routes/laravel_routes.php';
     }
 }
