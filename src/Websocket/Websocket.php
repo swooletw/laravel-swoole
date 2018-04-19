@@ -14,6 +14,8 @@ class Websocket
 
     protected $to = [];
 
+    protected $callbacks = [];
+
     /**
      * Room.
      *
@@ -120,6 +122,22 @@ class Websocket
         $this->join($room);
 
         return $this;
+    }
+
+    public function on(string $event, callable $callback)
+    {
+        $this->callbacks[$event] = $callback;
+
+        return $this;
+    }
+
+    public function call(string $event)
+    {
+        if (! array_key_exists($event, $this->callbacks)) {
+            return null;
+        }
+
+        return call_user_func_array($this->callbacks[$event], [$this]);
     }
 
     public function setSender(int $fd)

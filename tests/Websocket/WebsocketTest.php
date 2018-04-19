@@ -81,6 +81,22 @@ class WebsocketTest extends TestCase
             ->leaveAll($names);
     }
 
+    public function testCallbacks()
+    {
+        $websocket = $this->getWebsocket();
+
+        $websocket->on('foo', function () {
+            return 'bar';
+        });
+        $websocket->on('haha', function ($websocket) {
+            return $websocket;
+        });
+
+        $this->assertSame('bar', $websocket->call('foo'));
+        $this->assertTrue($websocket->call('haha') instanceof Websocket);
+        $this->assertNull($websocket->call('test'));
+    }
+
     protected function getWebsocket(RoomContract $room = null)
     {
         return new Websocket($room ?? m::mock(RoomContract::class));
