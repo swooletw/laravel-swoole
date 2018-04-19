@@ -25,6 +25,11 @@ trait CanWebsocket
     protected $websocketHandler;
 
     /**
+     * @var SwooleTW\Http\Websocket\Rooms\RoomContract
+     */
+    protected $websocketRoom;
+
+    /**
      * @var SwooleTW\Http\Websocket\Parser
      */
     protected $parser;
@@ -193,5 +198,40 @@ trait CanWebsocket
         }
 
         $this->websocketHandler = $handler;
+    }
+
+    /**
+     * Set websocket handler for onOpen and onClose callback.
+     */
+    protected function setWebsocketRoom()
+    {
+        $driver = $this->container['config']->get('swoole_websocket.default');
+        $configs = $this->container['config']->get("swoole_websocket.settings.{$driver}");
+        $className = $this->container['config']->get("swoole_websocket.drivers.{$driver}");
+
+        $this->websocketRoom = new $className($configs);
+        $this->websocketRoom->prepare();
+    }
+
+    /**
+     * Bind room instance to Laravel app container.
+     */
+    protected function bindRoom()
+    {
+        $this->app->singleton(RoomContract::class, function ($app) {
+            return $this->websocketRoom;
+        });
+        $this->app->alias(RoomContract::class, 'swoole.room');
+    }
+
+    /**
+     * Bind websocket instance to Laravel app container.
+     */
+    protected function bindWebsocket()
+    {
+        $this->app->singleton(Websocket::class, function ($app) {
+            return new Websocket($app['swoole.room']);
+        });
+        $this->app->alias(Websocket::class, 'swoole.websocket');
     }
 }
