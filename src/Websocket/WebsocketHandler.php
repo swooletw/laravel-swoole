@@ -19,7 +19,7 @@ class WebsocketHandler implements HandlerContract
     {
         if (! $request->input('sid')) {
             $payload = json_encode([
-                'sid' => uniqid(),
+                'sid' => base64_encode(uniqid()),
                 'upgrades' => [],
                 'pingInterval' => Config::get('swoole_websocket.ping_interval'),
                 'pingTimeout' => Config::get('swoole_websocket.ping_timeout')
