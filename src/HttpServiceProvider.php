@@ -26,6 +26,8 @@ abstract class HttpServiceProvider extends ServiceProvider
         $this->mergeConfigs();
         $this->registerManager();
         $this->registerCommands();
+        $this->registerRoom();
+        $this->registerWebsocket();
     }
 
     /**
