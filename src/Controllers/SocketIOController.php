@@ -6,18 +6,17 @@ use Illuminate\Http\Request;
 
 class SocketIOController
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
+    protected $transports = ['polling', 'websocket'];
 
     public function upgrade(Request $request)
     {
+        if (! in_array($request->input('transport'), $this->transports)) {
+            return response()->json([
+                'code' => 0,
+                'message' => 'Transport unknown'
+            ], 400);
+        }
+
         if ($request->has('sid')) {
             return '1:6';
         }
@@ -35,7 +34,7 @@ class SocketIOController
     public function reject(Request $request)
     {
         return response()->json([
-            'code' => 3,
+            'code' => 2,
             'message' => 'Bad handshake method'
         ], 400);
     }
