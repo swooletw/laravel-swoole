@@ -119,17 +119,23 @@ class Packet
      */
     public static function getPayload(string $packet)
     {
-        $pattern = '/\["(.*?)"\s*,\s*"?(.*?)"?\]/';
+        $packet = trim($packet);
+        $start = strpos($packet, '[');
 
-        preg_match($pattern, $packet, $matches);
+        if ($start === false || substr($packet, -1) !== ']') {
+            return null;
+        }
 
-        if (count($matches) !== 3) {
+        $data = substr($packet, $start, strlen($packet) - $start);
+        $data = json_decode($data, true);
+
+        if (is_null($data) || count($data) !== 2) {
             return null;
         }
 
         return [
-            'event' => $matches[1],
-            'data' => $matches[2]
+            'event' => $data[0],
+            'data' => $data[1]
         ];
     }
 

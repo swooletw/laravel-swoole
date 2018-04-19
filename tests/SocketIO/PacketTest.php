@@ -45,13 +45,17 @@ class PacketTest extends TestCase
         $packet = '42["foo",{"message":"test"}]';
         $this->assertSame([
             'event' => 'foo',
-            'data' => '{"message":"test"}'
+            'data' => [
+                'message' => 'test'
+            ]
         ], Packet::getPayload($packet));
 
         $packet = '42["foo", {"message":"test"}]';
         $this->assertSame([
             'event' => 'foo',
-            'data' => '{"message":"test"}'
+            'data' => [
+                'message' => 'test'
+            ]
         ], Packet::getPayload($packet));
     }
 
