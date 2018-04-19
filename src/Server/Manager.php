@@ -225,7 +225,7 @@ class Manager
      */
     public function onRequest($swooleRequest, $swooleResponse)
     {
-        $this->container['events']->fire('swoole.request');
+        $this->app['events']->fire('swoole.request');
 
         // Reset user-customized providers
         $this->getApplication()->resetProviders();
@@ -254,7 +254,7 @@ class Manager
      */
     public function onTask(HttpServer $server, $taskId, $fromId, $data)
     {
-        $this->container['events']->fire('swoole.task', func_get_args());
+        $this->app['events']->fire('swoole.task', func_get_args());
 
         try {
             // push websocket message
