@@ -4,7 +4,7 @@ namespace SwooleTW\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class SocketIOController extends Controller
+class SocketIOController
 {
     /**
      * Create a new controller instance.

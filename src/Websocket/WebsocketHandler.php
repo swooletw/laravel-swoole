@@ -6,6 +6,7 @@ use Swoole\Websocket\Frame;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use SwooleTW\Http\Websocket\HandlerContract;
+use SwooleTW\Http\Websocket\SocketIO\Packet;
 
 class WebsocketHandler implements HandlerContract
 {
