@@ -131,13 +131,13 @@ class Websocket
         return $this;
     }
 
-    public function call(string $event)
+    public function call(string $event, $data = null)
     {
         if (! array_key_exists($event, $this->callbacks)) {
             return null;
         }
 
-        return call_user_func_array($this->callbacks[$event], [$this]);
+        return call_user_func_array($this->callbacks[$event], [$this, $data]);
     }
 
     public function setSender(int $fd)

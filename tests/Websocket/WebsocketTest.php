@@ -91,10 +91,14 @@ class WebsocketTest extends TestCase
         $websocket->on('haha', function ($websocket) {
             return $websocket;
         });
+        $websocket->on('hooray', function ($websocket, $data) {
+            return $data;
+        });
 
         $this->assertSame('bar', $websocket->call('foo'));
         $this->assertTrue($websocket->call('haha') instanceof Websocket);
         $this->assertNull($websocket->call('test'));
+        $this->assertSame('hooray', $websocket->call('hooray', 'hooray'));
     }
 
     protected function getWebsocket(RoomContract $room = null)
