@@ -7,7 +7,7 @@ return [
     | Replace this handler before you start it
     |--------------------------------------------------------------------------
     */
-    'handler' => SwooleTW\Http\Websocket\WebsocketHandler::class,
+    'handler' => SwooleTW\Http\Websocket\SocketIO\WebsocketHandler::class,
 
     /*
     |--------------------------------------------------------------------------
