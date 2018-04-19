@@ -25,8 +25,8 @@ class SocketIOController
         $payload = json_encode([
             'sid' => base64_encode(uniqid()),
             'upgrades' => ['websocket'],
-            'pingInterval' => 25000,
-            'pingTimeout' => 60000
+            'pingInterval' => config('swoole_websocket.ping_interval'),
+            'pingTimeout' => config('swoole_websocket.ping_timeout')
         ]);
 
         return '97:0' . $payload . '2:40';
