@@ -135,8 +135,6 @@ class Manager
             array_push($this->events, ...$this->wsEvents);
             $this->isWebsocket = true;
             $this->setParser(new $parser);
-            $this->setWebsocketHandler();
-            $this->setWebsocketRoom();
         }
     }
 
@@ -212,8 +210,7 @@ class Manager
         $this->bindSwooleTable();
 
         if ($this->isWebsocket) {
-            $this->bindRoom();
-            $this->bindWebsocket();
+            $this->setWebsocketHandler();
         }
     }
 

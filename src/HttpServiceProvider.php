@@ -2,8 +2,10 @@
 
 namespace SwooleTW\Http;
 
+use SwooleTW\Http\Websocket\Websocket;
 use Illuminate\Support\ServiceProvider;
 use SwooleTW\Http\Commands\HttpServerCommand;
+use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
 abstract class HttpServiceProvider extends ServiceProvider
 {
@@ -24,6 +26,35 @@ abstract class HttpServiceProvider extends ServiceProvider
         $this->mergeConfigs();
         $this->registerManager();
         $this->registerCommands();
+    }
+
+    /**
+     * Bind room instance to Laravel app container.
+     */
+    protected function registerRoom()
+    {
+        $this->app->singleton(RoomContract::class, function ($app) {
+            $driver = $app['config']->get('swoole_websocket.default');
+            $configs = $app['config']->get("swoole_websocket.settings.{$driver}");
+            $className = $app['config']->get("swoole_websocket.drivers.{$driver}");
+
+            $websocketRoom = new $className($configs);
+            $websocketRoom->prepare();
+
+            return $websocketRoom;
+        });
+        $this->app->alias(RoomContract::class, 'swoole.room');
+    }
+
+    /**
+     * Bind websocket instance to Laravel app container.
+     */
+    protected function registerWebsocket()
+    {
+        $this->app->singleton(Websocket::class, function ($app) {
+            return new Websocket($app['swoole.room']);
+        });
+        $this->app->alias(Websocket::class, 'swoole.websocket');
     }
 
     /**
