@@ -129,13 +129,13 @@ class Packet
         $data = substr($packet, $start, strlen($packet) - $start);
         $data = json_decode($data, true);
 
-        if (is_null($data) || count($data) !== 2) {
+        if (is_null($data)) {
             return null;
         }
 
         return [
             'event' => $data[0],
-            'data' => $data[1]
+            'data' => $data[1] ?? null
         ];
     }
 

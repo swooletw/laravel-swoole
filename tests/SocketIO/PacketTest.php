@@ -57,6 +57,12 @@ class PacketTest extends TestCase
                 'message' => 'test'
             ]
         ], Packet::getPayload($packet));
+
+        $packet = '42["foo"]';
+        $this->assertSame([
+            'event' => 'foo',
+            'data' => null
+        ], Packet::getPayload($packet));
     }
 
     public function testGetNullPayload()
