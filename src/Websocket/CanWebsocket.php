@@ -124,12 +124,8 @@ trait CanWebsocket
      */
     public function pushMessage(Server $server, array $data)
     {
-        $opcode = $data['opcode'] ?? 1;
-        $sender = $data['sender'] ?? 0;
-        $fds = $data['fds'] ?? [];
-        $broadcast = $data['broadcast'] ?? false;
-        $event = $data['event'] ?? null;
-        $message = $this->parser->encode($event, $data['message']);
+        [$opcode, $sender, $fds, $broadcast, $event, $message] = $this->normalizePushData($data);
+        $message = $this->parser->encode($event, $message);
 
         // attach sender if not broadcast
         if (! $broadcast && $sender && ! in_array($sender, $fds)) {
@@ -251,5 +247,20 @@ trait CanWebsocket
         }
 
         return require $routePath;
+    }
+
+    /**
+     * Normalize data for message push.
+     */
+    protected function normalizePushData(array $data)
+    {
+        $opcode = $data['opcode'] ?? 1;
+        $sender = $data['sender'] ?? 0;
+        $fds = $data['fds'] ?? [];
+        $broadcast = $data['broadcast'] ?? false;
+        $event = $data['event'] ?? null;
+        $message = $data['message'] ?? null;
+
+        return [$opcode, $sender, $fds, $broadcast, $event, $message];
     }
 }
