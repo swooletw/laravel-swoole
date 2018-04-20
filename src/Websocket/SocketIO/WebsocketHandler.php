@@ -30,7 +30,11 @@ class WebsocketHandler implements HandlerContract
 
             app('swoole.server')->push($fd, $initPayload);
             app('swoole.server')->push($fd, $connectPayload);
+
+            return true;
         }
+
+        return false;
     }
 
     /**

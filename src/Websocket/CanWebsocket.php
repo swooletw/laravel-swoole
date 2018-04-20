@@ -56,7 +56,14 @@ trait CanWebsocket
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
 
         try {
-            $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest);
+            // check if socket.io connection established
+            if ($this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
+                $this->websocket->reset(true)->setSender($swooleRequest->fd);
+                // trigger 'connect' websocket event
+                if ($this->websocket->eventExists('connect')) {
+                    $this->websocket->call('connect', $illuminateRequest);
+                }
+            }
         } catch (Exception $e) {
             $this->logServerError($e);
         }
@@ -107,7 +114,13 @@ trait CanWebsocket
         }
 
         try {
-            $this->websocketHandler->onClose($fd, $reactorId);
+            $this->websocket->reset(true)->setSender($swooleRequest->fd);
+            // trigger 'disconnect' websocket event
+            if ($this->websocket->eventExists('disconnect')) {
+                $this->websocket->call('disconnect');
+            } else {
+                $this->websocketHandler->onClose($fd, $reactorId);
+            }
         } catch (Exception $e) {
             $this->logServerError($e);
         }
