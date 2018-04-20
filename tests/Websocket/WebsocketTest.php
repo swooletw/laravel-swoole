@@ -97,6 +97,20 @@ class WebsocketTest extends TestCase
         $websocket->on('invalid', 123);
     }
 
+    public function testReset()
+    {
+        $websocket = $this->getWebsocket();
+        $websocket->setSender(1)
+            ->broadcast()
+            ->to('foo');
+
+        $websocket->reset(true);
+
+        $this->assertNull($websocket->getSender());
+        $this->assertFalse($websocket->getIsBroadcast());
+        $this->assertSame([], $websocket->getTo());
+    }
+
     protected function getWebsocket(RoomContract $room = null)
     {
         return new Websocket($room ?? m::mock(RoomContract::class));

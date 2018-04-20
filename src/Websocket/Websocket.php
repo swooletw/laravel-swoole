@@ -192,9 +192,13 @@ class Websocket
         return array_values(array_unique($fds));
     }
 
-    protected function reset()
+    public function reset($force = false)
     {
         $this->isBroadcast = false;
         $this->to = [];
+
+        if ($force) {
+            $this->sender = null;
+        }
     }
 }

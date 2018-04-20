@@ -81,7 +81,7 @@ trait CanWebsocket
 
             $payload = $this->parser->decode($frame);
 
-            $this->websocket->setSender($frame->fd);
+            $this->websocket->reset(true)->setSender($frame->fd);
 
             if ($this->websocket->eventExists($payload['event'])) {
                 $this->websocket->call($payload['event'], $payload['data']);

@@ -230,6 +230,11 @@ class Manager
 
         // Reset user-customized providers
         $this->getApplication()->resetProviders();
+        // Reset websocket data
+        if ($this->isWebsocket) {
+            $this->websocket->reset(true);
+        }
+
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
 
         try {
