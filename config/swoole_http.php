@@ -41,7 +41,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'instances' => [
-        // 'auth', 'auth.driver', 'auth.password'
+        'auth', 'auth.driver', 'auth.password', 'request'
     ],
 
     /*
