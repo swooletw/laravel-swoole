@@ -114,7 +114,8 @@ trait CanWebsocket
         }
 
         try {
-            $this->websocket->reset(true)->setSender($swooleRequest->fd);
+            // leave all rooms
+            $this->websocket->reset(true)->setSender($fd)->leaveAll();
             // trigger 'disconnect' websocket event
             if ($this->websocket->eventExists('disconnect')) {
                 $this->websocket->call('disconnect');
@@ -124,8 +125,6 @@ trait CanWebsocket
         } catch (Exception $e) {
             $this->logServerError($e);
         }
-
-        $this->websocket->setSender($fd)->leaveAll();
     }
 
     /**
