@@ -11,8 +11,8 @@ use SwooleTW\Http\Websocket\Facades\Websocket;
 |
 */
 
-Websocket::on('example', function ($websocket) {
-    $websocket->emit('message', 'hello world!');
+Websocket::on('example', function ($websocket, $data) {
+    $websocket->emit('message', $data);
 });
 
 // Websocket::on('test', 'ExampleController@method');
