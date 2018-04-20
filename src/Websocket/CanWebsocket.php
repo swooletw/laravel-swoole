@@ -10,7 +10,6 @@ use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\HandlerContract;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
-use SwooleTW\Http\Websocket\Formatters\FormatterContract;
 
 trait CanWebsocket
 {
