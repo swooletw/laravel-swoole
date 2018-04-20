@@ -5,7 +5,6 @@ namespace SwooleTW\Http\Tests\Websocket;
 use Mockery as m;
 use InvalidArgumentException;
 use SwooleTW\Http\Tests\TestCase;
-use Illuminate\Support\Facades\App;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
@@ -96,8 +95,6 @@ class WebsocketTest extends TestCase
         $websocket->on('hooray', function ($websocket, $data) {
             return $data;
         });
-
-        App::shouldReceive('call')->times(3);
 
         $this->expectException(InvalidArgumentException::class);
         $websocket->on('invalid', 123);
