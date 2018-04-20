@@ -34,8 +34,8 @@ class SocketIOController
     public function reject(Request $request)
     {
         return response()->json([
-            'code' => 2,
-            'message' => 'Bad handshake method'
+            'code' => 3,
+            'message' => 'Bad request'
         ], 400);
     }
 }
