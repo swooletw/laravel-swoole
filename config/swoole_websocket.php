@@ -11,12 +11,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Websocket handlers mapping for onMessage callback
+    | Websocket route file path
     |--------------------------------------------------------------------------
     */
-    'handlers' => [
-        // 'event_name' => 'App\Handlers\ExampleHandler@function',
-    ],
+    'route_file' => base_path('routes/websocket.php'),
 
     /*
     |--------------------------------------------------------------------------

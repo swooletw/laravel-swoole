@@ -49,8 +49,9 @@ abstract class HttpServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../config/swoole_http.php' => base_path('config/swoole_http.php'),
-            __DIR__ . '/../config/swoole_websocket.php' => base_path('config/swoole_websocket.php')
-        ], 'config');
+            __DIR__ . '/../config/swoole_websocket.php' => base_path('config/swoole_websocket.php'),
+            __DIR__ . '/../routes/websocket.php' => base_path('routes/websocket.php')
+        ], 'swoole');
         $this->bootRoutes();
     }
 

@@ -211,6 +211,7 @@ class Manager
         $this->bindSwooleTable();
 
         if ($this->isWebsocket) {
+            $this->loadWebsocketRoutes();
             $this->setWebsocketHandler();
             $this->bindRoom();
             $this->bindWebsocket();

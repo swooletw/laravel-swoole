@@ -2,6 +2,8 @@
 
 namespace SwooleTW\Http\Websocket;
 
+use InvalidArgumentException;
+use Illuminate\Support\Facades\App;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
 class Websocket
@@ -124,20 +126,34 @@ class Websocket
         return $this;
     }
 
-    public function on(string $event, callable $callback)
+    public function on(string $event, $callback)
     {
+        if (! is_string($callback) && ! is_callable($callback)) {
+            throw new InvalidArgumentException(
+                'Invalid websocket callback. Must be a string or callable.'
+            );
+        }
+
         $this->callbacks[$event] = $callback;
 
         return $this;
     }
 
+    public function eventExists(string $event)
+    {
+        return array_key_exists($event, $this->callbacks);
+    }
+
     public function call(string $event, $data = null)
     {
-        if (! array_key_exists($event, $this->callbacks)) {
+        if (! $this->eventExists($event)) {
             return null;
         }
 
-        return call_user_func_array($this->callbacks[$event], [$this, $data]);
+        return App::call($this->callbacks[$event], [
+            'websocket' => $this,
+            'data' => $data
+        ]);
     }
 
     public function setSender(int $fd)

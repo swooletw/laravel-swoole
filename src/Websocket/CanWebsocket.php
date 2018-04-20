@@ -25,6 +25,11 @@ trait CanWebsocket
     protected $websocketHandler;
 
     /**
+     * @var SwooleTW\Http\Websocket\Websocket
+     */
+    protected $websocket;
+
+    /**
      * @var SwooleTW\Http\Websocket\Rooms\RoomContract
      */
     protected $websocketRoom;
@@ -66,8 +71,6 @@ trait CanWebsocket
      */
     public function onMessage(Server $server, Frame $frame)
     {
-        $this->app['swoole.websocket']->setSender($frame->fd);
-
         $data = $frame->data;
 
         try {
@@ -78,10 +81,11 @@ trait CanWebsocket
             }
 
             $payload = $this->parser->decode($frame);
-            $handler = $this->container['config']->get("swoole_websocket.handlers.{$payload['event']}");
 
-            if ($handler) {
-                $this->app->call($handler, [$frame->fd, $payload['data']]);
+            $this->websocket->setSender($frame->fd);
+
+            if ($this->websocket->eventExists($payload['event'])) {
+                $this->websocket->call($payload['event'], $payload['data']);
             } else {
                 $this->websocketHandler->onMessage($frame);
             }
@@ -109,7 +113,7 @@ trait CanWebsocket
             $this->logServerError($e);
         }
 
-        $this->app['swoole.websocket']->setSender($fd)->leaveAll();
+        $this->websocket->setSender($fd)->leaveAll();
     }
 
     /**
@@ -230,8 +234,22 @@ trait CanWebsocket
     protected function bindWebsocket()
     {
         $this->app->singleton(Websocket::class, function ($app) {
-            return new Websocket($app['swoole.room']);
+            return $this->websocket = new Websocket($app['swoole.room']);
         });
         $this->app->alias(Websocket::class, 'swoole.websocket');
+    }
+
+    /**
+     * Load websocket routes file.
+     */
+    protected function loadWebsocketRoutes()
+    {
+        $routePath = $this->container['config']->get('swoole_websocket.route_file');
+
+        if (! file_exists($routePath)) {
+            $routePath = __DIR__ . '/../../routes/websocket.php'
+        }
+
+        return require $routePath;
     }
 }

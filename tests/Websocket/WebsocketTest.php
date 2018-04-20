@@ -3,7 +3,11 @@
 namespace SwooleTW\Http\Tests\Websocket;
 
 use Mockery as m;
+use InvalidArgumentException;
 use SwooleTW\Http\Tests\TestCase;
+use Illuminate\Container\Container;
+use Illuminate\Support\Facades\App;
+use Illuminate\Container\BoundMethod;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
@@ -95,10 +99,19 @@ class WebsocketTest extends TestCase
             return $data;
         });
 
+        $app = m::mock(Container::class);
+        App::shouldReceive('call')
+            ->andReturnUsing(function ($callback, $params) use ($app) {
+                return BoundMethod::call($app, $callback, $params);
+            });
+
         $this->assertSame('bar', $websocket->call('foo'));
         $this->assertTrue($websocket->call('haha') instanceof Websocket);
         $this->assertNull($websocket->call('test'));
         $this->assertSame('hooray', $websocket->call('hooray', 'hooray'));
+
+        $this->expectException(InvalidArgumentException::class);
+        $websocket->on('invalid', 123);
     }
 
     protected function getWebsocket(RoomContract $room = null)
