@@ -284,7 +284,7 @@ class Manager
     {
         $this->removePidFile();
 
-        $this->container['events']->fire('swoole.shutdown', func_get_args());
+        $this->app['events']->fire('swoole.shutdown', func_get_args());
     }
 
     /**
