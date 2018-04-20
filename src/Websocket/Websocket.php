@@ -195,7 +195,6 @@ class Websocket
     protected function reset()
     {
         $this->isBroadcast = false;
-        $this->sender = null;
         $this->to = [];
     }
 }
