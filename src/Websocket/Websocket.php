@@ -200,5 +200,7 @@ class Websocket
         if ($force) {
             $this->sender = null;
         }
+
+        return $this;
     }
 }
