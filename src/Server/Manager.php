@@ -228,12 +228,7 @@ class Manager
     {
         $this->app['events']->fire('swoole.request');
 
-        // Reset user-customized providers
-        $this->getApplication()->resetProviders();
-        // Reset websocket data
-        if ($this->isWebsocket) {
-            $this->websocket->reset(true);
-        }
+        $this->resetOnRequest();
 
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
 
@@ -252,6 +247,21 @@ class Manager
                 // 'ErrorException' with message 'swoole_http_response::status():
                 // http client#2 is not exist.
             }
+        }
+    }
+
+    /**
+     * Reset on every request.
+     */
+    protected function resetOnRequest()
+    {
+        // Reset user-customized providers
+        $this->getApplication()->resetProviders();
+        // Clear user-customized instances
+        $this->getApplication()->clearInstances();
+        // Reset websocket data
+        if ($this->isWebsocket) {
+            $this->websocket->reset(true);
         }
     }
 

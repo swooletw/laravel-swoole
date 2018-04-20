@@ -2,10 +2,11 @@
 
 namespace SwooleTW\Http\Server;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Http\Request;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\ServiceProvider;
 
 class Application
 {
@@ -36,11 +37,18 @@ class Application
     protected $kernel;
 
     /**
-     * Preserved service providers to be reset.
+     * Service providers to be reset.
      *
      * @var array
      */
     protected $providers = [];
+
+    /**
+     * Resolved instance names to be reset.
+     *
+     * @var array
+     */
+    protected $instances = [];
 
     /**
      * Make an application.
@@ -67,6 +75,7 @@ class Application
 
         $this->bootstrap();
         $this->initProviders();
+        $this->initInstances();
     }
 
     /**
@@ -86,7 +95,7 @@ class Application
     protected function initProviders()
     {
         $app = $this->getApplication();
-        $providers = $app['config']->get('swoole_http.providers');
+        $providers = $app['config']->get('swoole_http.providers') ?? [];
 
         foreach ($providers as $provider) {
             if (! $provider instanceof ServiceProvider) {
@@ -97,11 +106,24 @@ class Application
     }
 
     /**
+     * Initialize customized instances.
+     */
+    protected function initInstances()
+    {
+        $app = $this->getApplication();
+        $instances = $app['config']->get('swoole_http.instances') ?? [];
+
+        $this->instances = array_filter($instances, function ($value) {
+            return is_string($value);
+        });
+    }
+
+    /**
      * Re-register and reboot service providers.
      */
     public function resetProviders()
     {
-        foreach ($this->providers as $key => $provider) {
+        foreach ($this->providers as $provider) {
             if (method_exists($provider, 'register')) {
                 $provider->register();
             }
@@ -109,6 +131,16 @@ class Application
             if (method_exists($provider, 'boot')) {
                 $this->getApplication()->call([$provider, 'boot']);
             }
+        }
+    }
+
+    /**
+     * Clear resolved instances.
+     */
+    public function clearInstances()
+    {
+        foreach ($this->instances as $instance) {
+            Facade::clearResolvedInstance($instance);
         }
     }
 

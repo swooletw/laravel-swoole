@@ -37,6 +37,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Instances here will be cleared on every request.
+    |--------------------------------------------------------------------------
+    */
+    'instances' => [
+        // 'auth', 'auth.driver', 'auth.password'
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Define your swoole tables here.
     |
     | @see https://wiki.swoole.com/wiki/page/p-table.html
