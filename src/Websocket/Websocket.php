@@ -146,6 +146,10 @@ class Websocket
 
     public function call(string $event, $data = null)
     {
+        if (! $this->eventExists($event)) {
+            return null;
+        }
+
         return App::call($this->callbacks[$event], [
             'websocket' => $this,
             'data' => $data
