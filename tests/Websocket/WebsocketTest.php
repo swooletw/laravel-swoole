@@ -7,7 +7,6 @@ use InvalidArgumentException;
 use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\App;
-use Illuminate\Container\BoundMethod;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
@@ -102,7 +101,7 @@ class WebsocketTest extends TestCase
         $app = m::mock(Container::class);
         App::shouldReceive('call')
             ->andReturnUsing(function ($callback, $params) use ($app) {
-                return BoundMethod::call($app, $callback, $params);
+                return call_user_func_array($callback, $params);
             });
 
         $this->assertSame('bar', $websocket->call('foo'));
