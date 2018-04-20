@@ -5,7 +5,6 @@ namespace SwooleTW\Http\Tests\Websocket;
 use Mockery as m;
 use InvalidArgumentException;
 use SwooleTW\Http\Tests\TestCase;
-use Illuminate\Container\Container;
 use Illuminate\Support\Facades\App;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
@@ -98,9 +97,8 @@ class WebsocketTest extends TestCase
             return $data;
         });
 
-        $app = m::mock(Container::class);
         App::shouldReceive('call')
-            ->andReturnUsing(function ($callback, $params) use ($app) {
+            ->andReturnUsing(function ($callback, $params) {
                 return call_user_func_array($callback, $params);
             });
 
