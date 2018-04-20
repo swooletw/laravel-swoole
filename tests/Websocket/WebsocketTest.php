@@ -97,15 +97,7 @@ class WebsocketTest extends TestCase
             return $data;
         });
 
-        App::shouldReceive('call')
-            ->andReturnUsing(function ($callback, $params) {
-                return call_user_func_array($callback, $params);
-            });
-
-        $this->assertSame('bar', $websocket->call('foo'));
-        $this->assertTrue($websocket->call('haha') instanceof Websocket);
-        $this->assertNull($websocket->call('test'));
-        $this->assertSame('hooray', $websocket->call('hooray', 'hooray'));
+        App::shouldReceive('call')->times(3);
 
         $this->expectException(InvalidArgumentException::class);
         $websocket->on('invalid', 123);
