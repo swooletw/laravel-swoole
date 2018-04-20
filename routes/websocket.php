@@ -1,5 +1,7 @@
 <?php
 
+use SwooleTW\Http\Websocket\Facades\Websocket;
+
 /*
 |--------------------------------------------------------------------------
 | Websocket Routes

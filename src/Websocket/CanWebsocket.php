@@ -247,7 +247,7 @@ trait CanWebsocket
         $routePath = $this->container['config']->get('swoole_websocket.route_file');
 
         if (! file_exists($routePath)) {
-            $routePath = __DIR__ . '/../../routes/websocket.php'
+            $routePath = __DIR__ . '/../../routes/websocket.php';
         }
 
         return require $routePath;
