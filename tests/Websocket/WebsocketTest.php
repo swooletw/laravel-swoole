@@ -89,12 +89,9 @@ class WebsocketTest extends TestCase
         $websocket->on('foo', function () {
             return 'bar';
         });
-        $websocket->on('haha', function ($websocket) {
-            return $websocket;
-        });
-        $websocket->on('hooray', function ($websocket, $data) {
-            return $data;
-        });
+
+        $this->assertTrue($websocket->eventExists('foo'));
+        $this->assertFalse($websocket->eventExists('bar'));
 
         $this->expectException(InvalidArgumentException::class);
         $websocket->on('invalid', 123);
