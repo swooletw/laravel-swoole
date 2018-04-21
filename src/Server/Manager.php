@@ -240,12 +240,10 @@ class Manager
         } catch (Exception $e) {
             try {
                 $exceptionResponse = $this->app[ExceptionHandler::class]->render($illuminateRequest, $e);
-                $swooleResponse->status(500);
-                $swooleResponse->end($exceptionResponse);
+                $response = Response::make($exceptionResponse, $swooleResponse);
+                $response->send();
             } catch (Exception $e) {
-                // Catch: zm_deactivate_swoole: Fatal error: Uncaught exception
-                // 'ErrorException' with message 'swoole_http_response::status():
-                // http client#2 is not exist.
+                $this->logServerError($e);
             }
         }
     }
