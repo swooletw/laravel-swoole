@@ -206,15 +206,16 @@ class Manager
         // clear events instance in case of repeated listeners in worker process
         Facade::clearResolvedInstance('events');
 
+        // initialize laravel app
         $this->createApplication();
         $this->setLaravelApp();
-        $this->bindSwooleServer();
-        $this->bindSwooleTable();
 
+        // bind after setting laravel app
+        $this->bindToLaravelApp();
+
+        // load websocket handlers after binding websocket to laravel app
         if ($this->isWebsocket) {
             $this->setWebsocketHandler();
-            $this->bindRoom();
-            $this->bindWebsocket();
             $this->loadWebsocketRoutes();
         }
     }
@@ -320,6 +321,20 @@ class Manager
         }
 
         return $this->application;
+    }
+
+    /**
+     * Set bindings to Laravel app.
+     */
+    protected function bindToLaravelApp()
+    {
+        $this->bindSwooleServer();
+        $this->bindSwooleTable();
+
+        if ($this->isWebsocket) {
+            $this->bindRoom();
+            $this->bindWebsocket();
+        }
     }
 
     /**
