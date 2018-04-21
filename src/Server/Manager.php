@@ -6,11 +6,12 @@ use Exception;
 use Swoole\Table as SwooleTable;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
-use Illuminate\Contracts\Container\Container;
-use Swoole\WebSocket\Server as WebSocketServer;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\CanWebsocket;
+use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use Swoole\WebSocket\Server as WebSocketServer;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 
 class Manager
 {
@@ -237,11 +238,10 @@ class Manager
             $response = Response::make($illuminateResponse, $swooleResponse);
             $response->send();
         } catch (Exception $e) {
-            $this->logServerError($e);
-
             try {
+                $exceptionResponse = $this->app[ExceptionHandler::class]->render($illuminateRequest, $e);
                 $swooleResponse->status(500);
-                $swooleResponse->end('Oops! An unexpected error occurred.');
+                $swooleResponse->end($exceptionResponse);
             } catch (Exception $e) {
                 // Catch: zm_deactivate_swoole: Fatal error: Uncaught exception
                 // 'ErrorException' with message 'swoole_http_response::status():
