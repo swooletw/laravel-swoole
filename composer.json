@@ -36,5 +36,18 @@
             "SwooleTW\\Http\\Tests\\": "tests",
             "SwooleTW\\Http\\Tests\\Fixtures\\Laravel\\App\\": "tests/fixtures/laravel/app"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "SwooleTW\\Http\\LaravelServiceProvider"
+            ],
+            "aliases": {
+                "Server": "SwooleTW\\Http\\Server\\Facades\\Server",
+                "Table": "SwooleTW\\Http\\Server\\Facades\\Table",
+                "Room": "SwooleTW\\Http\\Websocket\\Facades\\Room",
+                "Websocket": "SwooleTW\\Http\\Websocket\\Facades\\Websocket"
+            }
+        }
     }
 }
