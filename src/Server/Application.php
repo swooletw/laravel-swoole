@@ -44,11 +44,18 @@ class Application
     protected $providers = [];
 
     /**
-     * Resolved instance names to be reset.
+     * Instance names to be reset.
      *
      * @var array
      */
     protected $instances = [];
+
+    /**
+     * Resolved facades to be reset.
+     *
+     * @var array
+     */
+    protected $facades = [];
 
     /**
      * Make an application.
@@ -75,6 +82,7 @@ class Application
 
         $this->bootstrap();
         $this->initProviders();
+        $this->initFacades();
         $this->initInstances();
     }
 
@@ -119,6 +127,19 @@ class Application
     }
 
     /**
+     * Initialize customized facades.
+     */
+    protected function initFacades()
+    {
+        $app = $this->getApplication();
+        $facades = $app['config']->get('swoole_http.facades') ?? [];
+
+        $this->facades = array_filter($facades, function ($value) {
+            return is_string($value);
+        });
+    }
+
+    /**
      * Re-register and reboot service providers.
      */
     public function resetProviders()
@@ -135,12 +156,22 @@ class Application
     }
 
     /**
+     * Clear resolved facades.
+     */
+    public function clearFacades()
+    {
+        foreach ($this->facades as $facade) {
+            Facade::clearResolvedInstance($facade);
+        }
+    }
+
+    /**
      * Clear resolved instances.
      */
     public function clearInstances()
     {
         foreach ($this->instances as $instance) {
-            Facade::clearResolvedInstance($instance);
+            $this->getApplication()->forgetInstance($instance);
         }
     }
 

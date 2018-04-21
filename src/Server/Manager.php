@@ -256,6 +256,8 @@ class Manager
     {
         // Reset user-customized providers
         $this->getApplication()->resetProviders();
+        // Clear user-customized facades
+        $this->getApplication()->clearFacades();
         // Clear user-customized instances
         $this->getApplication()->clearInstances();
         // Reset websocket data

@@ -37,11 +37,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Resolved facades here will be cleared on every request.
+    |--------------------------------------------------------------------------
+    */
+    'facades' => [
+        'auth', 'auth.driver', 'auth.password', 'request'
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Instances here will be cleared on every request.
     |--------------------------------------------------------------------------
     */
     'instances' => [
-        'auth', 'auth.driver', 'auth.password', 'request'
+        //
     ],
 
     /*
