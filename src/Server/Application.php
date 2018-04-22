@@ -103,7 +103,7 @@ class Application
     protected function initProviders()
     {
         $app = $this->getApplication();
-        $providers = $app['config']->get('swoole_http.providers') ?? [];
+        $providers = $app['config']->get('swoole_http.providers', []);
 
         foreach ($providers as $provider) {
             if (! $provider instanceof ServiceProvider) {
@@ -119,7 +119,7 @@ class Application
     protected function initInstances()
     {
         $app = $this->getApplication();
-        $instances = $app['config']->get('swoole_http.instances') ?? [];
+        $instances = $app['config']->get('swoole_http.instances', []);
 
         $this->instances = array_filter($instances, function ($value) {
             return is_string($value);
@@ -132,7 +132,7 @@ class Application
     protected function initFacades()
     {
         $app = $this->getApplication();
-        $facades = $app['config']->get('swoole_http.facades') ?? [];
+        $facades = $app['config']->get('swoole_http.facades', []);
 
         $this->facades = array_filter($facades, function ($value) {
             return is_string($value);
