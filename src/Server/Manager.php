@@ -4,6 +4,7 @@ namespace SwooleTW\Http\Server;
 
 use Exception;
 use Swoole\Table as SwooleTable;
+use SwooleTW\Http\Server\Sandbox;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
@@ -59,6 +60,16 @@ class Manager
     protected $basePath;
 
     /**
+     * @var boolean
+     */
+    protected $isSandbox;
+
+    /**
+     * @var \SwooleTW\Http\Server\Sandbox
+     */
+    protected $sandbox;
+
+    /**
      * Server events.
      *
      * @var array
@@ -108,6 +119,7 @@ class Manager
     {
         $this->setProcessName('manager process');
 
+        $this->setIsSandbox();
         $this->createTables();
         $this->prepareWebsocket();
         $this->createSwooleServer();
@@ -213,6 +225,11 @@ class Manager
         // bind after setting laravel app
         $this->bindToLaravelApp();
 
+        // create sandbox instance if sandbox mode is on
+        if ($this->isSandbox) {
+            $this->setSandbox($this->getApplication());
+        }
+
         // load websocket handlers after binding websocket to laravel app
         if ($this->isWebsocket) {
             $this->setWebsocketHandler();
@@ -230,14 +247,27 @@ class Manager
     {
         $this->app['events']->fire('swoole.request');
 
+        $application = $this->getApplication();
+
+        // enable if sandbox mode is on
+        if ($this->isSandbox) {
+            $application = $this->sandbox->getApplication();
+            $this->sandbox->enable();
+        }
+
         $this->resetOnRequest();
 
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
 
         try {
-            $illuminateResponse = $this->getApplication()->run($illuminateRequest);
+            $illuminateResponse = $application->run($illuminateRequest);
             $response = Response::make($illuminateResponse, $swooleResponse);
             $response->send();
+
+            // disable and recycle sandbox resource
+            if ($this->isSandbox) {
+                $this->sandbox->disable();
+            }
         } catch (Exception $e) {
             try {
                 $exceptionResponse = $this->app[ExceptionHandler::class]->render($illuminateRequest, $e);
@@ -254,16 +284,21 @@ class Manager
      */
     protected function resetOnRequest()
     {
+        // Reset websocket data
+        if ($this->isWebsocket) {
+            $this->websocket->reset(true);
+        }
+
+        if ($this->isSandbox) {
+            return;
+        }
+
         // Reset user-customized providers
         $this->getApplication()->resetProviders();
         // Clear user-customized facades
         $this->getApplication()->clearFacades();
         // Clear user-customized instances
         $this->getApplication()->clearInstances();
-        // Reset websocket data
-        if ($this->isWebsocket) {
-            $this->websocket->reset(true);
-        }
     }
 
     /**
@@ -337,6 +372,22 @@ class Manager
             $this->bindRoom();
             $this->bindWebsocket();
         }
+    }
+
+    /**
+     * Set isSandbox config.
+     */
+    protected function setIsSandbox()
+    {
+        $this->isSandbox = $this->container['config']->get('swoole_http.sandbox_mode', false);
+    }
+
+    /**
+     * Set sandbox instance.
+     */
+    protected function setSandbox($application)
+    {
+        $this->sandbox = Sandbox::make($application);
     }
 
     /**
