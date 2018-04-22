@@ -4,7 +4,6 @@ namespace SwooleTW\Http\Server;
 
 use Exception;
 use Swoole\Table as SwooleTable;
-use SwooleTW\Http\Server\Sandbox;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
@@ -63,11 +62,6 @@ class Manager
      * @var boolean
      */
     protected $isSandbox;
-
-    /**
-     * @var \SwooleTW\Http\Server\Sandbox
-     */
-    protected $sandbox;
 
     /**
      * Server events.
@@ -225,11 +219,6 @@ class Manager
         // bind after setting laravel app
         $this->bindToLaravelApp();
 
-        // create sandbox instance if sandbox mode is on
-        if ($this->isSandbox) {
-            $this->setSandbox($this->getApplication());
-        }
-
         // load websocket handlers after binding websocket to laravel app
         if ($this->isWebsocket) {
             $this->setWebsocketHandler();
@@ -249,10 +238,9 @@ class Manager
 
         $application = $this->getApplication();
 
-        // enable if sandbox mode is on
+        // use cloned application if sandbox mode is on
         if ($this->isSandbox) {
-            $application = $this->sandbox->getApplication();
-            $this->sandbox->enable();
+            $application = clone $this->getApplication();
         }
 
         $this->resetOnRequest();
@@ -263,11 +251,6 @@ class Manager
             $illuminateResponse = $application->run($illuminateRequest);
             $response = Response::make($illuminateResponse, $swooleResponse);
             $response->send();
-
-            // disable and recycle sandbox resource
-            if ($this->isSandbox) {
-                $this->sandbox->disable();
-            }
         } catch (Exception $e) {
             try {
                 $exceptionResponse = $this->app[ExceptionHandler::class]->render($illuminateRequest, $e);
@@ -380,14 +363,6 @@ class Manager
     protected function setIsSandbox()
     {
         $this->isSandbox = $this->container['config']->get('swoole_http.sandbox_mode', false);
-    }
-
-    /**
-     * Set sandbox instance.
-     */
-    protected function setSandbox($application)
-    {
-        $this->sandbox = Sandbox::make($application);
     }
 
     /**

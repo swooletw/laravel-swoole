@@ -341,4 +341,18 @@ class Application
             $callTerminableMiddleware->invoke($application, $response);
         }
     }
+
+    /**
+     * Clone laravel app and kernel while being cloned.
+     */
+    public function __clone()
+    {
+         $application = clone $this->application;
+
+         $this->application = $application;
+         $this->kernel = $application->make(Kernel::class);
+
+         Container::setInstance($application);
+         Facade::setFacadeApplication($application);
+    }
 }

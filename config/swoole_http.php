@@ -28,7 +28,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Laravel app will be deep-cloned on every requset (lower performance).
+    | Laravel app will be cloned on every requset.
     |--------------------------------------------------------------------------
     */
     'sandbox_mode' => false,
