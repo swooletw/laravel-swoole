@@ -7,6 +7,7 @@ use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Lumen\Application as LumenApplication;
 
 class Application
 {
@@ -89,11 +90,12 @@ class Application
     /**
      * Bootstrap framework.
      */
-    protected function bootstrap()
+    protected function bootstrap($app = null)
     {
         if ($this->framework == 'laravel') {
+            $app = $app ?: $this->getApplication();
             $bootstrappers = $this->getBootstrappers();
-            $this->getApplication()->bootstrapWith($bootstrappers);
+            $app->bootstrapWith($bootstrappers);
         }
     }
 
@@ -343,17 +345,32 @@ class Application
     }
 
     /**
+     * Reset Laravel/Lumen Application.
+     */
+    protected function resetApplication($application)
+    {
+        if ($this->framework == 'laravel') {
+            $this->bootstrap($application);
+        } else {
+            $reflector = new \ReflectionMethod(LumenApplication::class, 'registerConfigBindings');
+            $reflector->setAccessible(true);
+            $reflector->invoke($application);
+
+            Facade::clearResolvedInstances();
+            Facade::setFacadeApplication($application);
+        }
+    }
+
+    /**
      * Clone laravel app and kernel while being cloned.
      */
     public function __clone()
     {
-         $application = clone $this->application;
+        $application = clone $this->application;
 
-         $this->application = $application;
-         $this->kernel = $application->make(Kernel::class);
+        $this->application = $application;
+        $this->resetApplication($application);
 
-         Container::setInstance($application);
-         Facade::clearResolvedInstances();
-         Facade::setFacadeApplication($application);
+        Container::setInstance($application);
     }
 }
