@@ -353,6 +353,7 @@ class Application
          $this->kernel = $application->make(Kernel::class);
 
          Container::setInstance($application);
+         Facade::clearResolvedInstances();
          Facade::setFacadeApplication($application);
     }
 }
