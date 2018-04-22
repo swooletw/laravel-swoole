@@ -65,6 +65,8 @@ class Sandbox
         \Illuminate\Session\SessionManager::class,
         \Illuminate\Session\Middleware\StartSession::class,
         \Illuminate\Cookie\CookieJar::class,
+        \Laravel\Lumen\Routing\Router::class,
+        \Illuminate\View\Compilers\BladeCompiler::class,
     ];
 
     /**
