@@ -83,7 +83,7 @@ class Sandbox
     {
         $this->resetInstances($application);
 
-        if ($this->snapshot->getFramework() == 'laravel') {
+        if ($this->application->getFramework() == 'laravel') {
             $application->bootstrapWith([
                 'Illuminate\Foundation\Bootstrap\LoadConfiguration'
             ]);
