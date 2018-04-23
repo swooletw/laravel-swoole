@@ -90,12 +90,11 @@ class Application
     /**
      * Bootstrap framework.
      */
-    protected function bootstrap($app = null)
+    protected function bootstrap()
     {
         if ($this->framework == 'laravel') {
-            $app = $app ?: $this->getApplication();
             $bootstrappers = $this->getBootstrappers();
-            $app->bootstrapWith($bootstrappers);
+            $this->getApplication()->bootstrapWith($bootstrappers);
         }
     }
 
@@ -209,6 +208,14 @@ class Application
         }
 
         return $this->kernel;
+    }
+
+    /**
+     * Get application framework.
+     */
+    public function getFramework()
+    {
+        return $this->framework;
     }
 
     /**
@@ -345,23 +352,6 @@ class Application
     }
 
     /**
-     * Reset Laravel/Lumen Application.
-     */
-    protected function resetApplication($application)
-    {
-        if ($this->framework == 'laravel') {
-            $this->bootstrap($application);
-        } else {
-            $reflector = new \ReflectionMethod(LumenApplication::class, 'registerConfigBindings');
-            $reflector->setAccessible(true);
-            $reflector->invoke($application);
-
-            Facade::clearResolvedInstances();
-            Facade::setFacadeApplication($application);
-        }
-    }
-
-    /**
      * Clone laravel app and kernel while being cloned.
      */
     public function __clone()
@@ -369,8 +359,8 @@ class Application
         $application = clone $this->application;
 
         $this->application = $application;
-        $this->resetApplication($application);
-
-        Container::setInstance($application);
+        if ($this->framework == 'laravel') {
+            $this->kernel = $application->make(Kernel::class);
+        }
     }
 }

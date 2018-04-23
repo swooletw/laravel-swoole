@@ -2,12 +2,10 @@
 
 namespace SwooleTW\Http\Server;
 
-use DeepCopy\DeepCopy;
 use Illuminate\Container\Container;
-use DeepCopy\TypeMatcher\TypeMatcher;
 use SwooleTW\Http\Server\Application;
 use Illuminate\Support\Facades\Facade;
-use DeepCopy\TypeFilter\ShallowCopyFilter;
+use Laravel\Lumen\Application as LumenApplication;
 
 class Sandbox
 {
@@ -22,52 +20,9 @@ class Sandbox
     protected $snapshot;
 
     /**
-     * @var \DeepCopy\TypeFilter\ShallowCopyFilter
-     */
-    protected $shollowFilter;
-
-    /**
      * @var array
      */
-    protected $matchers = [];
-
-    /**
-     * @var array
-     */
-    protected $whitelist = [
-        \Closure::class,
-        \Illuminate\Foundation\PackageManifest::class,
-        \Illuminate\Filesystem\Filesystem::class,
-        \Illuminate\Events\Dispatcher::class,
-        \Illuminate\Routing\Router::class,
-        \Illuminate\Routing\RouteCollection::class,
-        \Illuminate\Routing\Route::class,
-        \App\Http\Kernel::class,
-        \Illuminate\Config\Repository::class,
-        \Symfony\Component\HttpFoundation\ParameterBag::class,
-        \Symfony\Component\HttpFoundation\ServerBag::class,
-        \Symfony\Component\HttpFoundation\FileBag::class,
-        \Symfony\Component\HttpFoundation\HeaderBag::class,
-        \Illuminate\Database\Connectors\ConnectionFactory::class,
-        \Illuminate\Database\DatabaseManager::class,
-        \Illuminate\View\Engines\EngineResolver::class,
-        \Illuminate\View\Factory::class,
-        \Illuminate\View\FileViewFinder::class,
-        \Illuminate\Auth\Access\Gate::class,
-        \Illuminate\Routing\UrlGenerator::class,
-        \Swoole\Table::class,
-        \SwooleTW\Http\Websocket\Rooms\RoomContract::class,
-        \Illuminate\Support\ServiceProvider::class,
-        \Illuminate\Session\Store::class,
-        \Illuminate\Session\SessionHandlerInterface::class,
-        \Illuminate\Routing\ControllerDispatcher::class,
-        \Illuminate\Contracts\Encryption\Encrypter::class,
-        \Illuminate\Session\SessionManager::class,
-        \Illuminate\Session\Middleware\StartSession::class,
-        \Illuminate\Cookie\CookieJar::class,
-        \Laravel\Lumen\Routing\Router::class,
-        \Illuminate\View\Compilers\BladeCompiler::class,
-    ];
+    protected $instances = [];
 
     /**
      * Make a sandbox.
@@ -88,19 +43,20 @@ class Sandbox
     public function __construct($application)
     {
         $this->application = $application;
-        $this->setMatchers();
+        $this->setInstances();
     }
 
     /**
-     * Set filter and matchers.
+     * Set Laravel/Lumen app's initial instances.
      */
-    protected function setMatchers()
+    protected function setInstances()
     {
-        $this->shollowFilter = new ShallowCopyFilter;
+        $application = $this->application->getApplication();
 
-        foreach ($this->whitelist as $value) {
-            $this->matchers[] = new TypeMatcher($value);
-        }
+        $reflector = new \ReflectionProperty(Container::class, 'instances');
+        $reflector->setAccessible(true);
+
+        $this->instances = $reflector->getValue($application);
     }
 
     /**
@@ -114,25 +70,40 @@ class Sandbox
             return $this->snapshot;
         }
 
-        $deepCopy = $this->getDeepCopy();
+        $snapshot = clone $this->application;
+        $this->resetLaravelApp($snapshot->getApplication());
 
-        return $this->snapshot = $deepCopy->copy($this->application);
+        return $this->snapshot = $snapshot;
     }
 
     /**
-     * Get a deepCopy instance
-     *
-     * @return \DeepCopy\TypeFilter\ShallowCopyFilter
+     * Reset Laravel/Lumen Application.
      */
-    public function getDeepCopy()
+    protected function resetLaravelApp($application)
     {
-        $deepCopy = new DeepCopy;
+        $this->resetInstances($application);
 
-        foreach ($this->matchers as $matcher) {
-            $deepCopy->addTypeFilter($this->shollowFilter, $matcher);
+        if ($this->snapshot->getFramework() == 'laravel') {
+            $application->bootstrapWith([
+                'Illuminate\Foundation\Bootstrap\LoadConfiguration'
+            ]);
+        } else {
+            $reflector = new \ReflectionMethod(LumenApplication::class, 'registerConfigBindings');
+            $reflector->setAccessible(true);
+            $reflector->invoke($application);
         }
+    }
 
-        return $deepCopy;
+    protected function resetInstances($application)
+    {
+        $instances = $this->instances;
+
+        $closure = function () use ($instances) {
+            $this->instances = $instances;
+        };
+
+        $reset = $closure->bindTo($application, $application);
+        $reset();
     }
 
     /**
@@ -161,6 +132,7 @@ class Sandbox
         $application = $this->getLaravelApp();
 
         Container::setInstance($application);
+        Facade::clearResolvedInstances();
         Facade::setFacadeApplication($application);
     }
 
@@ -176,6 +148,7 @@ class Sandbox
         $application = $this->application->getApplication();
 
         Container::setInstance($application);
+        Facade::clearResolvedInstances();
         Facade::setFacadeApplication($application);
     }
 }
