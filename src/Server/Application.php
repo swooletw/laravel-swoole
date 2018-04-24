@@ -380,7 +380,9 @@ class Application
         $resolves = ['view', 'files', 'session', 'routes', 'db', 'db.factory'];
 
         foreach ($resolves as $abstract) {
-            $application->make($abstract);
+            if ($application->has($abstract)) {
+                $application->make($abstract);
+            }
         }
     }
 
