@@ -129,11 +129,7 @@ class Sandbox
             $this->getApplication($this->application);
         }
 
-        $application = $this->getLaravelApp();
-
-        Container::setInstance($application);
-        Facade::clearResolvedInstances();
-        Facade::setFacadeApplication($application);
+        $this->setInstance($this->getLaravelApp());
     }
 
     /**
@@ -145,10 +141,18 @@ class Sandbox
             $this->snapshot = null;
         }
 
-        $application = $this->application->getApplication();
+        $this->setInstance($this->application->getApplication());
+    }
+
+    /**
+     * Replace app's self bindings.
+     */
+    protected function setInstance($application)
+    {
+        $application->instance('app', $application);
+        $application->instance(Container::class, $application);
 
         Container::setInstance($application);
-        Facade::clearResolvedInstances();
         Facade::setFacadeApplication($application);
     }
 }

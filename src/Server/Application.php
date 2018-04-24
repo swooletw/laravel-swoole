@@ -193,6 +193,7 @@ class Application
     {
         if (! $this->application instanceof Container) {
             $this->application = $this->loadApplication();
+            $this->preResolveInstances($this->application);
         }
 
         return $this->application;
@@ -366,6 +367,18 @@ class Application
 
         if (count($middleware->getValue($application)) > 0) {
             $callTerminableMiddleware->invoke($application, $response);
+        }
+    }
+
+    /**
+     * Reslove some instances before request.
+     */
+    protected function preResolveInstances($application)
+    {
+        $resolves = ['blade.compiler', 'cache', 'cache.store', 'events', 'session'];
+
+        foreach ($resolves as $abstract) {
+            $application->resolve($abstract);
         }
     }
 
