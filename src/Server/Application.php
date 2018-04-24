@@ -92,9 +92,12 @@ class Application
      */
     protected function bootstrap()
     {
+        $application = $this->getApplication();
+
         if ($this->framework == 'laravel') {
             $bootstrappers = $this->getBootstrappers();
-            $this->getApplication()->bootstrapWith($bootstrappers);
+            $application->bootstrapWith($bootstrappers);
+            $this->preResolveInstances($application);
         }
     }
 
@@ -193,7 +196,6 @@ class Application
     {
         if (! $this->application instanceof Container) {
             $this->application = $this->loadApplication();
-            $this->preResolveInstances($this->application);
         }
 
         return $this->application;
@@ -375,10 +377,10 @@ class Application
      */
     protected function preResolveInstances($application)
     {
-        $resolves = ['blade.compiler', 'cache', 'cache.store', 'events', 'session'];
+        $resolves = ['view', 'files', 'session', 'routes', 'db', 'db.factory'];
 
         foreach ($resolves as $abstract) {
-            $application->resolve($abstract);
+            $application->make($abstract);
         }
     }
 
