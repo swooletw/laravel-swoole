@@ -39,7 +39,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'providers' => [
-        // App\Providers\AuthServiceProvider::class,
+        // Illuminate\Auth\AuthServiceProvider::class,
     ],
 
     /*
