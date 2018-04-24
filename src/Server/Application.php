@@ -59,6 +59,30 @@ class Application
     protected $facades = [];
 
     /**
+     * Aliases for pre-resolving.
+     *
+     * @var array
+     */
+    protected $resolves = [
+        'view',
+        'files',
+        'session',
+        'session.store',
+        'routes',
+        'db',
+        'db.factory',
+        'cache',
+        'cache.store',
+        'config',
+        'encrypter',
+        'hash',
+        'router',
+        'translator',
+        'url',
+        'log'
+    ];
+
+    /**
      * Make an application.
      *
      * @param string $framework
@@ -97,8 +121,9 @@ class Application
         if ($this->framework == 'laravel') {
             $bootstrappers = $this->getBootstrappers();
             $application->bootstrapWith($bootstrappers);
-            $this->preResolveInstances($application);
         }
+
+        $this->preResolveInstances($application);
     }
 
     /**
@@ -377,9 +402,7 @@ class Application
      */
     protected function preResolveInstances($application)
     {
-        $resolves = ['view', 'files', 'session', 'routes', 'db', 'db.factory'];
-
-        foreach ($resolves as $abstract) {
+        foreach ($this->resolves as $abstract) {
             if ($application->offsetExists($abstract)) {
                 $application->make($abstract);
             }
@@ -395,6 +418,7 @@ class Application
 
         $this->application = $application;
         if ($this->framework == 'laravel') {
+            $application->forgetInstance(Kernel::class);
             $this->kernel = $application->make(Kernel::class);
         }
     }
