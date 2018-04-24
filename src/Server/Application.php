@@ -380,7 +380,7 @@ class Application
         $resolves = ['view', 'files', 'session', 'routes', 'db', 'db.factory'];
 
         foreach ($resolves as $abstract) {
-            if ($application->has($abstract)) {
+            if ($application->offsetExists($abstract)) {
                 $application->make($abstract);
             }
         }
