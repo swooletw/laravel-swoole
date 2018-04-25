@@ -268,7 +268,7 @@ class Application
 
         // prepare content for ob
         $content = '';
-        $shouldUseOb = true;
+        $shouldUseOb = $this->application['config']->get('swoole_http.ob_output', true);
         if ($response instanceof StreamedResponse ||
             $response instanceof BinaryFileResponse) {
             $shouldUseOb = false;
