@@ -202,12 +202,17 @@ class Manager
     /**
      * "onWorkerStart" listener.
      */
-    public function onWorkerStart()
+    public function onWorkerStart(HttpServer $server)
     {
         $this->clearCache();
         $this->setProcessName('worker process');
 
         $this->container['events']->fire('swoole.workerStart', func_get_args());
+
+        // don't init laravel app in task workers
+        if ($server->taskworker) {
+            return;
+        }
 
         // clear events instance in case of repeated listeners in worker process
         Facade::clearResolvedInstance('events');
@@ -245,18 +250,18 @@ class Manager
 
         $application = $this->getApplication();
 
-        // use cloned application if sandbox mode is on
-        if ($this->isSandbox) {
-            $application = Sandbox::getApplication();
-            Sandbox::enable();
-        }
-
-        // bind illuminate request to laravel/lumen
-        $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
-        $application->getApplication()->instance('request', $illuminateRequest);
-        Facade::clearResolvedInstance('request');
-
         try {
+            // use cloned application if sandbox mode is on
+            if ($this->isSandbox) {
+                $application = Sandbox::getApplication();
+                Sandbox::enable();
+            }
+
+            // bind illuminate request to laravel/lumen
+            $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
+            $application->getApplication()->instance('request', $illuminateRequest);
+            Facade::clearResolvedInstance('request');
+
             $illuminateResponse = $application->run($illuminateRequest);
             $response = Response::make($illuminateResponse, $swooleResponse);
             $response->send();
@@ -303,7 +308,7 @@ class Manager
      */
     public function onTask(HttpServer $server, $taskId, $fromId, $data)
     {
-        $this->app['events']->fire('swoole.task', func_get_args());
+        $this->container['events']->fire('swoole.task', func_get_args());
 
         try {
             // push websocket message
