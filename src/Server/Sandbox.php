@@ -122,7 +122,7 @@ class Sandbox
         $application->instance('app', $application);
         $application->instance(Container::class, $application);
 
-        if ($application->getFramework() === 'lumen') {
+        if (static::$application->getFramework() === 'lumen') {
             $application->instance(LumenApplication::class, $application);
         }
 
