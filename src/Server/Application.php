@@ -121,7 +121,6 @@ class Application
         if ($this->framework == 'laravel') {
             $bootstrappers = $this->getBootstrappers();
             $application->bootstrapWith($bootstrappers);
-            // $application->offsetUnset('router');
         }
 
         $this->preResolveInstances($application);
