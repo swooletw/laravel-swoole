@@ -41,7 +41,7 @@ class Sandbox
      */
     public static function getApplication()
     {
-        if (! static::$application instanceOf Application) {
+        if (is_null(static::$application)) {
             throw new \RuntimeException('Base application not set yet.');
         }
 
@@ -90,7 +90,7 @@ class Sandbox
      */
     public static function enable()
     {
-        if (! static::$snapshot instanceOf Application) {
+        if (is_null(static::$snapshot)) {
             static::getApplication(static::$application);
         }
 
