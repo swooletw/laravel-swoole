@@ -12,37 +12,26 @@ class Sandbox
     /**
      * @var \SwooleTW\Http\Server\Application
      */
-    protected $application;
+    protected static $application;
 
     /**
      * @var \SwooleTW\Http\Server\Application
      */
-    protected $snapshot;
+    protected static $snapshot;
 
     /**
      * @var boolean
      */
-    public $enabled = false;
+    public static $enabled = false;
 
     /**
-     * Make a sandbox.
+     * Set a base application
      *
-     * @param \SwooleTW\Http\Server\Application $application
-     * @return \SwooleTW\Http\Server\Sandbox
+     * @param \SwooleTW\Http\Server\Application
      */
-    public static function make(Application $application)
+    public static function setApplication(Application $application)
     {
-        return new static($application);
-    }
-
-    /**
-     * Sandbox constructor.
-     *
-     * @param \SwooleTW\Http\Server\Application $application
-     */
-    public function __construct($application)
-    {
-        $this->application = $application;
+        static::$application = $application;
     }
 
     /**
@@ -50,24 +39,28 @@ class Sandbox
      *
      * @return \SwooleTW\Http\Server\Application
      */
-    public function getApplication()
+    public static function getApplication()
     {
-        if ($this->snapshot instanceOf Application) {
-            return $this->snapshot;
+        if (! static::$application instanceOf Application) {
+            throw new \RuntimeException('Base application not set yet.');
         }
 
-        $snapshot = clone $this->application;
-        $this->resetLaravelApp($snapshot->getApplication());
+        if (static::$snapshot instanceOf Application) {
+            return static::$snapshot;
+        }
 
-        return $this->snapshot = $snapshot;
+        $snapshot = clone static::$application;
+        static::resetLaravelApp($snapshot->getApplication());
+
+        return static::$snapshot = $snapshot;
     }
 
     /**
      * Reset Laravel/Lumen Application.
      */
-    protected function resetLaravelApp($application)
+    protected static function resetLaravelApp($application)
     {
-        if ($this->application->getFramework() == 'laravel') {
+        if (static::$application->getFramework() == 'laravel') {
             $application->bootstrapWith([
                 'Illuminate\Foundation\Bootstrap\LoadConfiguration'
             ]);
@@ -83,51 +76,55 @@ class Sandbox
      *
      * @return \Illuminate\Container\Container
      */
-    public function getLaravelApp()
+    public static function getLaravelApp()
     {
-        if ($this->snapshot instanceOf Application) {
-            return $this->snapshot->getApplication();
+        if (static::$snapshot instanceOf Application) {
+            return static::$snapshot->getApplication();
         }
 
-        return $this->getApplication()->getApplication();
+        return static::getApplication()->getApplication();
     }
 
     /**
      * Set laravel snapshot to container and facade.
      */
-    public function enable()
+    public static function enable()
     {
-        if (! $this->snapshot instanceOf Application) {
-            $this->getApplication($this->application);
+        if (! static::$snapshot instanceOf Application) {
+            static::getApplication(static::$application);
         }
 
-        $this->setInstance($this->getLaravelApp());
-        $this->enabled = true;
+        static::setInstance(static::getLaravelApp());
+        static::$enabled = true;
     }
 
     /**
      * Set original laravel app to container and facade.
      */
-    public function disable()
+    public static function disable()
     {
-        if (! $this->enabled) {
+        if (! static::$enabled) {
             return;
         }
 
-        if ($this->snapshot instanceOf Application) {
-            $this->snapshot = null;
+        if (static::$snapshot instanceOf Application) {
+            static::$snapshot = null;
         }
 
-        $this->setInstance($this->application->getApplication());
+        static::setInstance(static::$application->getApplication());
     }
 
     /**
      * Replace app's self bindings.
      */
-    protected function setInstance($application)
+    protected static function setInstance($application)
     {
         $application->instance('app', $application);
         $application->instance(Container::class, $application);
+
+        if ($application->getFramework() === 'lumen') {
+            $application->instance(LumenApplication::class, $application);
+        }
 
         Container::setInstance($application);
         // TODO: only clean necessary facade names

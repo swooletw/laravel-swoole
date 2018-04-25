@@ -64,11 +64,6 @@ class Manager
     protected $isSandbox;
 
     /**
-     * @var \SwooleTW\Http\Server\Sandbox
-     */
-    protected $sandbox;
-
-    /**
      * Server events.
      *
      * @var array
@@ -224,9 +219,9 @@ class Manager
         // bind after setting laravel app
         $this->bindToLaravelApp();
 
-        // set sandbox instance
+        // set application to sandbox environment
         if ($this->isSandbox) {
-            $this->sandbox = Sandbox::make($this->getApplication());
+            Sandbox::setApplication($this->getApplication());
         }
 
         // load websocket handlers after binding websocket to laravel app
@@ -252,8 +247,8 @@ class Manager
 
         // use cloned application if sandbox mode is on
         if ($this->isSandbox) {
-            $application = $this->sandbox->getApplication();
-            $this->sandbox->enable();
+            $application = Sandbox::getApplication();
+            Sandbox::enable();
         }
 
         // bind illuminate request to laravel/lumen
@@ -268,7 +263,7 @@ class Manager
 
             // disable and recycle sandbox resource
             if ($this->isSandbox) {
-                $this->sandbox->disable();
+                Sandbox::disable();
             }
         } catch (Exception $e) {
             try {
