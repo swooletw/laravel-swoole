@@ -121,6 +121,7 @@ class Application
         if ($this->framework == 'laravel') {
             $bootstrappers = $this->getBootstrappers();
             $application->bootstrapWith($bootstrappers);
+            // $application->offsetUnset('router');
         }
 
         $this->preResolveInstances($application);
@@ -410,6 +411,20 @@ class Application
     }
 
     /**
+     * Rebind laravel's container in router.
+     */
+    protected function rebindRouterContainer($application)
+    {
+        $router = $application->make('router');
+        $closure = function () use ($application) {
+            $this->container = $application;
+        };
+
+        $reset = $closure->bindTo($router, $router);
+        $reset();
+    }
+
+    /**
      * Clone laravel app and kernel while being cloned.
      */
     public function __clone()
@@ -418,6 +433,7 @@ class Application
 
         $this->application = $application;
         if ($this->framework == 'laravel') {
+            $this->rebindRouterContainer($application);
             $this->kernel->setApplication($application);
         }
     }

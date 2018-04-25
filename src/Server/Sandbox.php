@@ -20,11 +20,6 @@ class Sandbox
     protected $snapshot;
 
     /**
-     * @var array
-     */
-    protected $instances = [];
-
-    /**
      * Make a sandbox.
      *
      * @param \SwooleTW\Http\Server\Application $application
@@ -43,20 +38,6 @@ class Sandbox
     public function __construct($application)
     {
         $this->application = $application;
-        $this->setInstances();
-    }
-
-    /**
-     * Set Laravel/Lumen app's initial instances.
-     */
-    protected function setInstances()
-    {
-        $application = $this->application->getApplication();
-
-        $reflector = new \ReflectionProperty(Container::class, 'instances');
-        $reflector->setAccessible(true);
-
-        $this->instances = $reflector->getValue($application);
     }
 
     /**
@@ -81,8 +62,6 @@ class Sandbox
      */
     protected function resetLaravelApp($application)
     {
-        $this->resetInstances($application);
-
         if ($this->application->getFramework() == 'laravel') {
             $application->bootstrapWith([
                 'Illuminate\Foundation\Bootstrap\LoadConfiguration'
@@ -92,18 +71,6 @@ class Sandbox
             $reflector->setAccessible(true);
             $reflector->invoke($application);
         }
-    }
-
-    protected function resetInstances($application)
-    {
-        $instances = $this->instances;
-
-        $closure = function () use ($instances) {
-            $this->instances = $instances;
-        };
-
-        $reset = $closure->bindTo($application, $application);
-        $reset();
     }
 
     /**
