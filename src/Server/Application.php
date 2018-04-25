@@ -418,8 +418,7 @@ class Application
 
         $this->application = $application;
         if ($this->framework == 'laravel') {
-            $application->forgetInstance(Kernel::class);
-            $this->kernel = $application->make(Kernel::class);
+            $this->kernel->setApplication($application);
         }
     }
 }
