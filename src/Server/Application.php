@@ -7,7 +7,10 @@ use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+
 use Laravel\Lumen\Application as LumenApplication;
 
 class Application
@@ -264,13 +267,22 @@ class Application
         $response = $this->$method($request);
 
         // prepare content for ob
-        $content = ($response instanceof Response) ? $response->getContent() : (string) $response;
+        $content = '';
+        $shouldUseOb = true;
+        if ($response instanceof StreamedResponse ||
+            $response instanceof BinaryFileResponse) {
+            $shouldUseOb = false;
+        } elseif ($response instanceof SymfonyResponse) {
+            $content = $response->getContent();
+        } else {
+            $content = (string) $response;
+        }
 
         // process terminating logics
         $this->terminate($request, $response);
 
         // set ob content to response
-        if (strlen($content) === 0 && ob_get_length() > 0) {
+        if ($shouldUseOb && strlen($content) === 0 && ob_get_length() > 0) {
             $response->setContent(ob_get_contents());
         }
 
