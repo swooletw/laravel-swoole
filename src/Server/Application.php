@@ -449,12 +449,31 @@ class Application
                 $this->container = $application;
             };
 
-            $reset = $closure->bindTo($router, $router);
-            $reset();
+            $resetRouter = $closure->bindTo($router, $router);
+            $resetRouter();
         } else {
             // lumen router only exists after lumen 5.5
             if (property_exists($application, 'router')) {
                 $application->router->app = $application;
+            }
+        }
+    }
+
+    /**
+     * Rebind laravel's container in routes.
+     */
+    protected function rebindRoutesContainer($application)
+    {
+        if ($this->framework === 'laravel') {
+            $routes = $application->make('routes');
+
+            $closure = function () use ($application) {
+                $this->container = $application;
+            };
+
+            foreach ($routes as $route) {
+                $resetRoutes = $closure->bindTo($route, $route);
+                $resetRoutes();
             }
         }
     }
@@ -473,5 +492,6 @@ class Application
         }
 
         $this->rebindRouterContainer($application);
+        $this->rebindRoutesContainer($application);
     }
 }
