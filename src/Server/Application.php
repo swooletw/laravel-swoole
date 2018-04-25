@@ -7,6 +7,7 @@ use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
+use Symfony\Component\HttpFoundation\Response;
 use Laravel\Lumen\Application as LumenApplication;
 
 class Application
@@ -122,6 +123,8 @@ class Application
             $bootstrappers = $this->getBootstrappers();
             $application->bootstrapWith($bootstrappers);
         }
+
+        // TODO: turn on lumen facades
 
         $this->preResolveInstances($application);
     }
@@ -254,10 +257,24 @@ class Application
      */
     public function run(Request $request)
     {
+        ob_start();
+
+        // handle request with laravel or lumen
         $method = sprintf('run%s', ucfirst($this->framework));
         $response = $this->$method($request);
 
+        // prepare content for ob
+        $content = ($response instanceof Response) ? $response->getContent() : (string) $response;
+
+        // process terminating logics
         $this->terminate($request, $response);
+
+        // set ob content to response
+        if (strlen($content) === 0 && ob_get_length() > 0) {
+            $response->setContent(ob_get_contents());
+        }
+
+        ob_end_clean();
 
         return $response;
     }
@@ -433,6 +450,7 @@ class Application
         $this->application = $application;
         if ($this->framework == 'laravel') {
             $this->rebindRouterContainer($application);
+            // TODO: also for lumen
             $this->kernel->setApplication($application);
         }
     }
