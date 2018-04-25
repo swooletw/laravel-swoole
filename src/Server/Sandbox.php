@@ -20,6 +20,11 @@ class Sandbox
     protected $snapshot;
 
     /**
+     * @var boolean
+     */
+    public $enabled = false;
+
+    /**
      * Make a sandbox.
      *
      * @param \SwooleTW\Http\Server\Application $application
@@ -97,6 +102,7 @@ class Sandbox
         }
 
         $this->setInstance($this->getLaravelApp());
+        $this->enabled = true;
     }
 
     /**
@@ -104,6 +110,10 @@ class Sandbox
      */
     public function disable()
     {
+        if (! $this->enabled) {
+            return;
+        }
+
         if ($this->snapshot instanceOf Application) {
             $this->snapshot = null;
         }
@@ -120,6 +130,8 @@ class Sandbox
         $application->instance(Container::class, $application);
 
         Container::setInstance($application);
+        // TODO: only clean necessary facade names
+        Facade::clearResolvedInstances();
         Facade::setFacadeApplication($application);
     }
 }
