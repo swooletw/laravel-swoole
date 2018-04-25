@@ -122,7 +122,7 @@ class Application
     {
         $application = $this->getApplication();
 
-        if ($this->framework == 'laravel') {
+        if ($this->framework === 'laravel') {
             $bootstrappers = $this->getBootstrappers();
             $application->bootstrapWith($bootstrappers);
         }
@@ -443,13 +443,20 @@ class Application
      */
     protected function rebindRouterContainer($application)
     {
-        $router = $application->make('router');
-        $closure = function () use ($application) {
-            $this->container = $application;
-        };
+        if ($this->framework === 'laravel') {
+            $router = $application->make('router');
+            $closure = function () use ($application) {
+                $this->container = $application;
+            };
 
-        $reset = $closure->bindTo($router, $router);
-        $reset();
+            $reset = $closure->bindTo($router, $router);
+            $reset();
+        } else {
+            // lumen router only exists after lumen 5.5
+            if (property_exists($application, 'router')) {
+                $application->router->app = $application;
+            }
+        }
     }
 
     /**
@@ -460,10 +467,11 @@ class Application
         $application = clone $this->application;
 
         $this->application = $application;
-        if ($this->framework == 'laravel') {
-            $this->rebindRouterContainer($application);
-            // TODO: also for lumen
+
+        if ($this->framework === 'laravel') {
             $this->kernel->setApplication($application);
         }
+
+        $this->rebindRouterContainer($application);
     }
 }
