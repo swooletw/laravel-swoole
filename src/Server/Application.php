@@ -125,9 +125,9 @@ class Application
         if ($this->framework === 'laravel') {
             $bootstrappers = $this->getBootstrappers();
             $application->bootstrapWith($bootstrappers);
+        } elseif (is_null(Facade::getFacadeApplication())) {
+            $application->withFacades();
         }
-
-        // TODO: turn on lumen facades
 
         $this->preResolveInstances($application);
     }
@@ -412,7 +412,6 @@ class Application
     {
         $application = $this->getApplication();
 
-        // Reflections
         $reflection = new \ReflectionObject($application);
 
         $middleware = $reflection->getProperty('middleware');
