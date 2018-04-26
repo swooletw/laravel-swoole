@@ -24,6 +24,11 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Enable to turn on websocket server.
+    |--------------------------------------------------------------------------
+    */
     'websocket' => [
         'enabled' => env('SWOOLE_HTTP_WEBSOCKET', false),
     ],
@@ -33,14 +38,14 @@ return [
     | Laravel app will be cloned on every requset.
     |--------------------------------------------------------------------------
     */
-    'sandbox_mode' => false,
+    'sandbox_mode' => env('SWOOLE_SANDBOX_MODE', false),
 
     /*
     |--------------------------------------------------------------------------
     | Console output will be transfered to response content if enabled.
     |--------------------------------------------------------------------------
     */
-    'ob_output' => true,
+    'ob_output' => env('SWOOLE_OB_OUTPUT', true),
 
     /*
     |--------------------------------------------------------------------------
