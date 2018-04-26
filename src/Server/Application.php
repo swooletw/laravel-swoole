@@ -322,7 +322,6 @@ class Application
     {
         $kernel = $this->getKernel();
 
-        // Reflect Kernel
         $reflection = new \ReflectionObject($kernel);
 
         $bootstrappersMethod = $reflection->getMethod('bootstrappers');
