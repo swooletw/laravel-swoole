@@ -8,7 +8,7 @@ return [
     | HTTP server configurations.
     |--------------------------------------------------------------------------
     |
-    | @see https://wiki.swoole.com/wiki/page/274.html
+    | @see https://www.swoole.co.uk/docs/modules/swoole-server/configuration
     |
     */
     'server' => [
@@ -18,7 +18,9 @@ return [
             'pid_file' => env('SWOOLE_HTTP_PID_FILE', base_path('storage/logs/swoole_http.pid')),
             'log_file' => env('SWOOLE_HTTP_LOG_FILE', base_path('storage/logs/swoole_http.log')),
             'daemonize' => env('SWOOLE_HTTP_DAEMONIZE', false),
-            'task_worker_num' => env('SWOOLE_HTTP_TASK_WORKER_NUM', 4)
+            'task_worker_num' => env('SWOOLE_HTTP_TASK_WORKER_NUM', 4),
+            // The data to send can't be larger than buffer_output_size.
+            'buffer_output_size' => 10 * 1024 * 1024
         ],
     ],
 
