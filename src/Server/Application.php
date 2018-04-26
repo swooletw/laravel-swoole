@@ -460,25 +460,6 @@ class Application
     }
 
     /**
-     * Rebind laravel's container in routes.
-     */
-    protected function rebindRoutesContainer($application)
-    {
-        if ($this->framework === 'laravel') {
-            $routes = $application->make('routes');
-
-            $closure = function () use ($application) {
-                $this->container = $application;
-            };
-
-            foreach ($routes as $route) {
-                $resetRoutes = $closure->bindTo($route, $route);
-                $resetRoutes();
-            }
-        }
-    }
-
-    /**
      * Clone laravel app and kernel while being cloned.
      */
     public function __clone()
@@ -492,6 +473,5 @@ class Application
         }
 
         $this->rebindRouterContainer($application);
-        $this->rebindRoutesContainer($application);
     }
 }

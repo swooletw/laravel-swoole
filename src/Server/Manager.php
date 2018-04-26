@@ -251,17 +251,21 @@ class Manager
         $application = $this->getApplication();
 
         try {
+            // transform swoole request to illuminate request
+            $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
+
             // use cloned application if sandbox mode is on
             if ($this->isSandbox) {
+                $application->getApplication()->instance('request', $illuminateRequest);
                 $application = Sandbox::getApplication();
                 Sandbox::enable();
             }
 
             // bind illuminate request to laravel/lumen
-            $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
             $application->getApplication()->instance('request', $illuminateRequest);
             Facade::clearResolvedInstance('request');
 
+            // handle request via laravel/lumen's dispatcher
             $illuminateResponse = $application->run($illuminateRequest);
             $response = Response::make($illuminateResponse, $swooleResponse);
             $response->send();
