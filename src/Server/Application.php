@@ -439,27 +439,6 @@ class Application
     }
 
     /**
-     * Rebind laravel's container in router.
-     */
-    protected function rebindRouterContainer($application)
-    {
-        if ($this->framework === 'laravel') {
-            $router = $application->make('router');
-            $closure = function () use ($application) {
-                $this->container = $application;
-            };
-
-            $resetRouter = $closure->bindTo($router, $router);
-            $resetRouter();
-        } else {
-            // lumen router only exists after lumen 5.5
-            if (property_exists($application, 'router')) {
-                $application->router->app = $application;
-            }
-        }
-    }
-
-    /**
      * Clone laravel app and kernel while being cloned.
      */
     public function __clone()
@@ -471,7 +450,5 @@ class Application
         if ($this->framework === 'laravel') {
             $this->kernel->setApplication($application);
         }
-
-        $this->rebindRouterContainer($application);
     }
 }

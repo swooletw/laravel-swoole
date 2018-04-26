@@ -4,6 +4,7 @@ namespace SwooleTW\Http\Server;
 
 use Exception;
 use Swoole\Table as SwooleTable;
+use SwooleTW\Http\Server\Sandbox;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
@@ -62,6 +63,11 @@ class Manager
      * @var boolean
      */
     protected $isSandbox;
+
+    /**
+     * @var \SwooleTW\Http\Server\Sandbox
+     */
+    protected $sandbox;
 
     /**
      * Server events.
@@ -226,7 +232,7 @@ class Manager
 
         // set application to sandbox environment
         if ($this->isSandbox) {
-            Sandbox::setApplication($this->getApplication());
+            $this->sandbox = Sandbox::make($this->getApplication());
         }
 
         // load websocket handlers after binding websocket to laravel app
@@ -257,8 +263,8 @@ class Manager
             // use cloned application if sandbox mode is on
             if ($this->isSandbox) {
                 $application->getApplication()->instance('request', $illuminateRequest);
-                $application = Sandbox::getApplication();
-                Sandbox::enable();
+                $application = $this->sandbox->getApplication();
+                $this->sandbox->enable();
             }
 
             // bind illuminate request to laravel/lumen
@@ -272,7 +278,7 @@ class Manager
 
             // disable and recycle sandbox resource
             if ($this->isSandbox) {
-                Sandbox::disable();
+                $this->sandbox->disable();
             }
         } catch (Exception $e) {
             try {
