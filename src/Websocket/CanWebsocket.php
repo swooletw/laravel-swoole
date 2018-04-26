@@ -135,7 +135,7 @@ trait CanWebsocket
      */
     public function pushMessage(Server $server, array $data)
     {
-        [$opcode, $sender, $fds, $broadcast, $event, $message] = $this->normalizePushData($data);
+        [$opcode, $sender, $fds, $broadcast, $assigned, $event, $message] = $this->normalizePushData($data);
         $message = $this->parser->encode($event, $message);
 
         // attach sender if not broadcast
@@ -144,7 +144,7 @@ trait CanWebsocket
         }
 
         // check if to broadcast all clients
-        if ($broadcast && empty($fds)) {
+        if ($broadcast && empty($fds) && ! $assigned) {
             foreach ($server->connections as $fd) {
                 if ($this->isWebsocket($fd)) {
                     $fds[] = $fd;
@@ -269,9 +269,10 @@ trait CanWebsocket
         $sender = $data['sender'] ?? 0;
         $fds = $data['fds'] ?? [];
         $broadcast = $data['broadcast'] ?? false;
+        $assigned = $data['assigned'] ?? false;
         $event = $data['event'] ?? null;
         $message = $data['message'] ?? null;
 
-        return [$opcode, $sender, $fds, $broadcast, $event, $message];
+        return [$opcode, $sender, $fds, $broadcast, $assigned, $event, $message];
     }
 }

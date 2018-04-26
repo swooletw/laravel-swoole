@@ -111,6 +111,7 @@ class Websocket
                 'sender' => $this->sender,
                 'fds' => $this->getFds(),
                 'broadcast' => $this->isBroadcast,
+                'assigned' => ! empty($this->to),
                 'event' => $event,
                 'message' => $data
             ]
