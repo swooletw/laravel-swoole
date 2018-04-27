@@ -68,22 +68,9 @@ class Application
      * @var array
      */
     protected $resolves = [
-        'view',
-        'files',
-        'session',
-        'session.store',
-        'routes',
-        'db',
-        'db.factory',
-        'cache',
-        'cache.store',
-        'config',
-        'encrypter',
-        'hash',
-        'router',
-        'translator',
-        'url',
-        'log'
+        'view', 'files', 'session', 'session.store', 'routes',
+        'db', 'db.factory', 'cache', 'cache.store', 'config',
+        'encrypter', 'hash', 'router', 'translator', 'url', 'log'
     ];
 
     /**

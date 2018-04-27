@@ -172,7 +172,6 @@ class Sandbox
         }
 
         Container::setInstance($application);
-        // TODO: only clean necessary facade names
         Facade::clearResolvedInstances();
         Facade::setFacadeApplication($application);
     }
