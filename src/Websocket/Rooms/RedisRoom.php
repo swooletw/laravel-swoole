@@ -18,9 +18,10 @@ class RedisRoom implements RoomContract
         $this->config = $config;
     }
 
-    public function prepare()
+    public function prepare(RedisClient $redis = null)
     {
-        $this->setRedis();
+        $this->setRedis($redis);
+        $this->cleanRooms();
     }
 
     /**
@@ -119,11 +120,19 @@ class RedisRoom implements RoomContract
     {
         $this->checkTable($table);
 
-        return $this->redis->get($this->getKey($key, $table));
+        return $this->redis->smembers($this->getKey($key, $table));
     }
 
     public function getKey(string $key, string $table)
     {
         return static::PREFIX . "{$table}:{$key}";
+    }
+
+    protected function cleanRooms()
+    {
+        $keys = $this->redis->keys(static::PREFIX . '*');
+        if (count($keys)) {
+            $this->redis->del($keys);
+        }
     }
 }

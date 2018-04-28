@@ -52,6 +52,7 @@ return [
     */
     'drivers' => [
         'table' => SwooleTW\Http\Websocket\Rooms\TableRoom::class,
+        'redis' => SwooleTW\Http\Websocket\Rooms\RedisRoom::class,
     ],
 
     /*

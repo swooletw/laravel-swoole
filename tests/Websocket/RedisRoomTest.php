@@ -11,8 +11,16 @@ class RedisRoomTest extends TestCase
 {
     public function testPrepare()
     {
+        $redis = $this->getRedis();
+        $redis->shouldReceive('keys')
+            ->once()
+            ->andReturn($keys = ['foo', 'bar']);
+        $redis->shouldReceive('del')
+            ->with($keys)
+            ->once();
+
         $redisRoom = new RedisRoom([]);
-        $redisRoom->prepare();
+        $redisRoom->prepare($redis);
 
         $this->assertTrue($redisRoom->getRedis() instanceOf RedisClient);
     }
@@ -100,7 +108,7 @@ class RedisRoomTest extends TestCase
     public function testGetRooms()
     {
         $redis = $this->getRedis();
-        $redis->shouldReceive('get')
+        $redis->shouldReceive('smembers')
             ->with('swoole:sids:1')
             ->once();
         $redisRoom = $this->getRedisRoom($redis);
@@ -111,7 +119,7 @@ class RedisRoomTest extends TestCase
     public function testGetClients()
     {
         $redis = $this->getRedis();
-        $redis->shouldReceive('get')
+        $redis->shouldReceive('smembers')
             ->with('swoole:rooms:foo')
             ->once();
         $redisRoom = $this->getRedisRoom($redis);
