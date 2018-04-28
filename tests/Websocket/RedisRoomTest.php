@@ -37,9 +37,8 @@ class RedisRoomTest extends TestCase
     public function testAddValue()
     {
         $redis = $this->getRedis();
-        $redis->shouldReceive('sadd')
-            ->with('swoole:sids:1', m::type('string'))
-            ->twice();
+        $redis->shouldReceive('pipeline')
+            ->once();
         $redisRoom = $this->getRedisRoom($redis);
 
         $redisRoom->addValue(1, ['foo', 'bar'], 'sids');
@@ -48,61 +47,41 @@ class RedisRoomTest extends TestCase
     public function testAddAll()
     {
         $redis = $this->getRedis();
-        $redis->shouldReceive('sadd')
-            ->with('swoole:sids:1', m::type('string'))
-            ->twice();
-        $redis->shouldReceive('sadd')
-            ->with('swoole:rooms:foo', $fd = 1)
-            ->once();
-        $redis->shouldReceive('sadd')
-            ->with('swoole:rooms:bar', $fd)
-            ->once();
+        $redis->shouldReceive('pipeline')
+            ->times(3);
         $redisRoom = $this->getRedisRoom($redis);
 
-        $redisRoom->addAll($fd, ['foo', 'bar']);
+        $redisRoom->addAll(1, ['foo', 'bar']);
     }
 
     public function testAdd()
     {
         $redis = $this->getRedis();
-        $redis->shouldReceive('sadd')
-            ->with('swoole:sids:1', m::type('string'))
-            ->once();
-        $redis->shouldReceive('sadd')
-            ->with('swoole:rooms:foo', $fd = 1)
-            ->once();
+        $redis->shouldReceive('pipeline')
+            ->twice();
         $redisRoom = $this->getRedisRoom($redis);
-        $redisRoom->add($fd, 'foo');
+
+        $redisRoom->add(1, 'foo');
     }
 
     public function testDeleteAll()
     {
         $redis = $this->getRedis();
-        $redis->shouldReceive('srem')
-            ->with('swoole:sids:1', m::type('string'))
-            ->twice();
-        $redis->shouldReceive('srem')
-            ->with('swoole:rooms:foo', $fd = 1)
-            ->once();
-        $redis->shouldReceive('srem')
-            ->with('swoole:rooms:bar', $fd)
-            ->once();
+        $redis->shouldReceive('pipeline')
+            ->times(3);
         $redisRoom = $this->getRedisRoom($redis);
 
-        $redisRoom->deleteAll($fd, ['foo', 'bar']);
+        $redisRoom->deleteAll(1, ['foo', 'bar']);
     }
 
     public function testDelete()
     {
         $redis = $this->getRedis();
-        $redis->shouldReceive('srem')
-            ->with('swoole:sids:1', m::type('string'))
-            ->once();
-        $redis->shouldReceive('srem')
-            ->with('swoole:rooms:foo', $fd = 1)
-            ->once();
+        $redis->shouldReceive('pipeline')
+            ->twice();
         $redisRoom = $this->getRedisRoom($redis);
-        $redisRoom->delete($fd, 'foo');
+
+        $redisRoom->delete(1, 'foo');
     }
 
     public function testGetRooms()

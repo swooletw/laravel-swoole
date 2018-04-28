@@ -25,7 +25,7 @@ class RedisRoom implements RoomContract
     }
 
     /**
-     * Set redis manager provided by illuminate redis.
+     * Set redis client.
      */
     public function setRedis(RedisClient $redis = null)
     {
@@ -40,7 +40,7 @@ class RedisRoom implements RoomContract
     }
 
     /**
-     * Get redis manager.
+     * Get redis client.
      */
     public function getRedis()
     {
@@ -68,6 +68,7 @@ class RedisRoom implements RoomContract
 
     public function deleteAll(int $fd, array $roomNames = [])
     {
+        $roomNames = count($roomNames) ? $roomNames : $this->getRooms($fd);
         $this->removeValue($fd, $roomNames, 'sids');
 
         foreach ($roomNames as $room) {
@@ -80,9 +81,11 @@ class RedisRoom implements RoomContract
         $this->checkTable($table);
         $redisKey = $this->getKey($key, $table);
 
-        foreach ($values as $value) {
-            $this->redis->sadd($redisKey, $value);
-        }
+        $this->redis->pipeline(function ($pipe) use ($redisKey, $values) {
+            foreach ($values as $value) {
+                $pipe->sadd($redisKey, $value);
+            }
+        });
 
         return $this;
     }
@@ -92,9 +95,11 @@ class RedisRoom implements RoomContract
         $this->checkTable($table);
         $redisKey = $this->getKey($key, $table);
 
-        foreach ($values as $value) {
-            $this->redis->srem($redisKey, $value);
-        }
+        $this->redis->pipeline(function ($pipe) use ($redisKey, $values) {
+            foreach ($values as $value) {
+                $pipe->srem($redisKey, $value);
+            }
+        });
 
         return $this;
     }
