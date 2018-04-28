@@ -7,11 +7,11 @@ use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
 class RedisRoom implements RoomContract
 {
-    const PREFIX = 'swoole:';
-
     protected $redis;
 
     protected $config;
+
+    protected $prefix = 'swoole:';
 
     public function __construct(array $config)
     {
@@ -21,6 +21,7 @@ class RedisRoom implements RoomContract
     public function prepare(RedisClient $redis = null)
     {
         $this->setRedis($redis);
+        $this->setPrefix();
         $this->cleanRooms();
     }
 
@@ -32,10 +33,25 @@ class RedisRoom implements RoomContract
         $server = $this->config['server'] ?? [];
         $options = $this->config['options'] ?? [];
 
+        // forbid setting prefix from options
+        if (array_key_exists('prefix', $options)) {
+            unset($options['prefix']);
+        }
+
         if ($redis) {
             $this->redis = $redis;
         } else {
             $this->redis = new RedisClient($server, $options);
+        }
+    }
+
+    /**
+     * Set key prefix from config.
+     */
+    protected function setPrefix()
+    {
+        if (array_key_exists('prefix', $this->config)) {
+            $this->prefix = $this->config['prefix'];
         }
     }
 
@@ -130,12 +146,12 @@ class RedisRoom implements RoomContract
 
     public function getKey(string $key, string $table)
     {
-        return static::PREFIX . "{$table}:{$key}";
+        return "{$this->prefix}{$table}:{$key}";
     }
 
     protected function cleanRooms()
     {
-        $keys = $this->redis->keys(static::PREFIX . '*');
+        $keys = $this->redis->keys("{$this->prefix}*");
         if (count($keys)) {
             $this->redis->del($keys);
         }

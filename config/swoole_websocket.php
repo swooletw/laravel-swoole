@@ -80,6 +80,7 @@ return [
             'options' => [
                 //
             ],
+            'prefix' => 'swoole:',
         ]
     ],
 ];
