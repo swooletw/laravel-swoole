@@ -2,7 +2,7 @@
 
 namespace SwooleTW\Http\Websocket\Rooms;
 
-use Illuminate\Redis\RedisManager;
+use Predis\Client as RedisClient;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
 class RedisRoom implements RoomContract
@@ -26,16 +26,15 @@ class RedisRoom implements RoomContract
     /**
      * Set redis manager provided by illuminate redis.
      */
-    public function setRedis(RedisManager $redis = null)
+    public function setRedis(RedisClient $redis = null)
     {
+        $server = $this->config['server'] ?? [];
+        $options = $this->config['options'] ?? [];
+
         if ($redis) {
             $this->redis = $redis;
         } else {
-            $config = $this->config;
-            $client = $config['client'] ?? 'predis';
-            unset($config['client']);
-
-            $this->redis = new RedisManager($client, $config);
+            $this->redis = new RedisClient($server, $options);
         }
     }
 

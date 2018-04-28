@@ -4,7 +4,7 @@ namespace SwooleTW\Http\Tests\Websocket;
 
 use Mockery as m;
 use SwooleTW\Http\Tests\TestCase;
-use Illuminate\Redis\RedisManager;
+use Predis\Client as RedisClient;
 use SwooleTW\Http\Websocket\Rooms\RedisRoom;
 
 class RedisRoomTest extends TestCase
@@ -14,7 +14,7 @@ class RedisRoomTest extends TestCase
         $redisRoom = new RedisRoom([]);
         $redisRoom->prepare();
 
-        $this->assertTrue($redisRoom->getRedis() instanceOf RedisManager);
+        $this->assertTrue($redisRoom->getRedis() instanceOf RedisClient);
     }
 
     public function testInvalidTableName()
@@ -129,7 +129,7 @@ class RedisRoomTest extends TestCase
 
     protected function getRedis()
     {
-        $redis = m::mock(RedisManager::class);
+        $redis = m::mock(RedisClient::class);
 
         return $redis;
     }
