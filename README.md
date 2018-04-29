@@ -62,7 +62,7 @@ Transfer/sec:      1.55MB
 
 ## Support
 
-Bugs and feature request are tracked on [Github](https://github.com/swooletw/laravel-swoole-http/issues).
+Bugs and feature request are tracked on [Github](https://github.com/swooletw/laravel-swoole/issues).
 
 ## Credits
 
