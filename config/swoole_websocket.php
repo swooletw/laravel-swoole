@@ -4,7 +4,7 @@ return [
     /*
     |--------------------------------------------------------------------------
     | Websocket handler for onOpen and onClose callback
-    | Replace this handler before you start it
+    | Replace this handler if you want to customize your websocket handler
     |--------------------------------------------------------------------------
     */
     'handler' => SwooleTW\Http\Websocket\SocketIO\WebsocketHandler::class,
@@ -33,21 +33,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Heartbeat interval (ms)
+    | Websocket client's heartbeat interval (ms)
     |--------------------------------------------------------------------------
     */
     'ping_interval' => 25000,
 
     /*
     |--------------------------------------------------------------------------
-    | Heartbeat interval timeout (ms)
+    | Websocket client's heartbeat interval timeout (ms)
     |--------------------------------------------------------------------------
     */
     'ping_timeout' => 60000,
 
     /*
     |--------------------------------------------------------------------------
-    | Drivers mapping
+    | Room drivers mapping
     |--------------------------------------------------------------------------
     */
     'drivers' => [
@@ -57,7 +57,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Drivers settings
+    | Room drivers settings
     |--------------------------------------------------------------------------
     */
     'settings' => [

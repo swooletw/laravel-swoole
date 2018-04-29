@@ -18,7 +18,11 @@ return [
             'pid_file' => env('SWOOLE_HTTP_PID_FILE', base_path('storage/logs/swoole_http.pid')),
             'log_file' => env('SWOOLE_HTTP_LOG_FILE', base_path('storage/logs/swoole_http.log')),
             'daemonize' => env('SWOOLE_HTTP_DAEMONIZE', false),
+            // Normally this value should be 1~4 times lager according to your cpu cores.
+            'worker_num' => env('SWOOLE_HTTP_WORKER_NUM', 4),
             'task_worker_num' => env('SWOOLE_HTTP_TASK_WORKER_NUM', 4),
+            // The data to receive can't be larger than buffer_output_size.
+            'package_max_length' => 10 * 1024 * 1024,
             // The data to send can't be larger than buffer_output_size.
             'buffer_output_size' => 10 * 1024 * 1024
         ],
@@ -38,7 +42,7 @@ return [
     | Laravel app will be cloned on every requset.
     |--------------------------------------------------------------------------
     */
-    'sandbox_mode' => env('SWOOLE_SANDBOX_MODE', false),
+    'sandbox_mode' => env('SWOOLE_SANDBOX_MODE', true),
 
     /*
     |--------------------------------------------------------------------------
