@@ -23,7 +23,7 @@ This package provides a high performance HTTP server to speed up your laravel/lu
 
 ## Documentation
 
-Please see [Documentation](https://github.com/swooletw/laravel-swoole/wiki)
+Please see [Wiki](https://github.com/swooletw/laravel-swoole/wiki)
 
 ## Performance Reference
 
