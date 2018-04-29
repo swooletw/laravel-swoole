@@ -66,7 +66,7 @@ Bugs and feature request are tracked on [Github](https://github.com/swooletw/lar
 
 ## Credits
 
-The original author of this package: [Huang-Yi](https://github.com/huang-yi)
+[Huang-Yi](https://github.com/huang-yi)
 
 ## License
 
