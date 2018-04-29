@@ -233,6 +233,16 @@ class Websocket
     }
 
     /**
+     * Close current connection.
+     *
+     * @param integer
+     */
+    public function close(int $fd = null)
+    {
+        return app('swoole.server')->close($fd ?: $this->sender);
+    }
+
+    /**
      * Set sender fd.
      *
      * @param integer
