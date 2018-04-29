@@ -66,7 +66,6 @@ class Sandbox
 
         $snapshot = clone $this->application;
         $this->resetLaravelApp($snapshot->getApplication());
-        $this->rebindRouterContainer($snapshot->getApplication());
 
         return $this->snapshot = $snapshot;
     }
@@ -85,6 +84,9 @@ class Sandbox
             $reflector->setAccessible(true);
             $reflector->invoke($application);
         }
+
+        $this->rebindRouterContainer($application);
+        $this->rebindViewContainer($application);
     }
 
     /**
@@ -106,6 +108,22 @@ class Sandbox
                 $application->router->app = $application;
             }
         }
+    }
+
+    /**
+     * Rebind laravel/lumen's container in view.
+     */
+    protected function rebindViewContainer($application)
+    {
+        $view = $application->make('view');
+
+        $closure = function () use ($application) {
+            $this->container = $application;
+            $this->shared['app'] = $application;
+        };
+
+        $resetView = $closure->bindTo($view, $view);
+        $resetView();
     }
 
     /**
