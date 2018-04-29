@@ -2,10 +2,16 @@
 
 namespace SwooleTW\Http\Server;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Http\Request;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\ServiceProvider;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+
+use Laravel\Lumen\Application as LumenApplication;
 
 class Application
 {
@@ -36,11 +42,36 @@ class Application
     protected $kernel;
 
     /**
-     * Preserved service providers to be reset.
+     * Service providers to be reset.
      *
      * @var array
      */
     protected $providers = [];
+
+    /**
+     * Instance names to be reset.
+     *
+     * @var array
+     */
+    protected $instances = [];
+
+    /**
+     * Resolved facades to be reset.
+     *
+     * @var array
+     */
+    protected $facades = [];
+
+    /**
+     * Aliases for pre-resolving.
+     *
+     * @var array
+     */
+    protected $resolves = [
+        'view', 'files', 'session', 'session.store', 'routes',
+        'db', 'db.factory', 'cache', 'cache.store', 'config',
+        'encrypter', 'hash', 'router', 'translator', 'url', 'log'
+    ];
 
     /**
      * Make an application.
@@ -67,6 +98,8 @@ class Application
 
         $this->bootstrap();
         $this->initProviders();
+        $this->initFacades();
+        $this->initInstances();
     }
 
     /**
@@ -74,10 +107,16 @@ class Application
      */
     protected function bootstrap()
     {
-        if ($this->framework == 'laravel') {
+        $application = $this->getApplication();
+
+        if ($this->framework === 'laravel') {
             $bootstrappers = $this->getBootstrappers();
-            $this->getApplication()->bootstrapWith($bootstrappers);
+            $application->bootstrapWith($bootstrappers);
+        } elseif (is_null(Facade::getFacadeApplication())) {
+            $application->withFacades();
         }
+
+        $this->preResolveInstances($application);
     }
 
     /**
@@ -86,7 +125,7 @@ class Application
     protected function initProviders()
     {
         $app = $this->getApplication();
-        $providers = $app['config']->get('swoole_http.providers');
+        $providers = $app['config']->get('swoole_http.providers', []);
 
         foreach ($providers as $provider) {
             if (! $provider instanceof ServiceProvider) {
@@ -97,11 +136,37 @@ class Application
     }
 
     /**
+     * Initialize customized instances.
+     */
+    protected function initInstances()
+    {
+        $app = $this->getApplication();
+        $instances = $app['config']->get('swoole_http.instances', []);
+
+        $this->instances = array_filter($instances, function ($value) {
+            return is_string($value);
+        });
+    }
+
+    /**
+     * Initialize customized facades.
+     */
+    protected function initFacades()
+    {
+        $app = $this->getApplication();
+        $facades = $app['config']->get('swoole_http.facades', []);
+
+        $this->facades = array_filter($facades, function ($value) {
+            return is_string($value);
+        });
+    }
+
+    /**
      * Re-register and reboot service providers.
      */
     public function resetProviders()
     {
-        foreach ($this->providers as $key => $provider) {
+        foreach ($this->providers as $provider) {
             if (method_exists($provider, 'register')) {
                 $provider->register();
             }
@@ -109,6 +174,26 @@ class Application
             if (method_exists($provider, 'boot')) {
                 $this->getApplication()->call([$provider, 'boot']);
             }
+        }
+    }
+
+    /**
+     * Clear resolved facades.
+     */
+    public function clearFacades()
+    {
+        foreach ($this->facades as $facade) {
+            Facade::clearResolvedInstance($facade);
+        }
+    }
+
+    /**
+     * Clear resolved instances.
+     */
+    public function clearInstances()
+    {
+        foreach ($this->instances as $instance) {
+            $this->getApplication()->forgetInstance($instance);
         }
     }
 
@@ -147,6 +232,14 @@ class Application
     }
 
     /**
+     * Get application framework.
+     */
+    public function getFramework()
+    {
+        return $this->framework;
+    }
+
+    /**
      * Run framework.
      *
      * @param \Illuminate\Http\Request $request
@@ -154,10 +247,33 @@ class Application
      */
     public function run(Request $request)
     {
+        ob_start();
+
+        // handle request with laravel or lumen
         $method = sprintf('run%s', ucfirst($this->framework));
         $response = $this->$method($request);
 
+        // prepare content for ob
+        $content = '';
+        $shouldUseOb = $this->application['config']->get('swoole_http.ob_output', true);
+        if ($response instanceof StreamedResponse ||
+            $response instanceof BinaryFileResponse) {
+            $shouldUseOb = false;
+        } elseif ($response instanceof SymfonyResponse) {
+            $content = $response->getContent();
+        } else {
+            $content = (string) $response;
+        }
+
+        // process terminating logics
         $this->terminate($request, $response);
+
+        // set ob content to response
+        if ($shouldUseOb && strlen($content) === 0 && ob_get_length() > 0) {
+            $response->setContent(ob_get_contents());
+        }
+
+        ob_end_clean();
 
         return $response;
     }
@@ -193,7 +309,6 @@ class Application
     {
         $kernel = $this->getKernel();
 
-        // Reflect Kernel
         $reflection = new \ReflectionObject($kernel);
 
         $bootstrappersMethod = $reflection->getMethod('bootstrappers');
@@ -253,6 +368,24 @@ class Application
     protected function terminateLaravel(Request $request, $response)
     {
         $this->getKernel()->terminate($request, $response);
+
+        // clean laravel session
+        if ($request->hasSession()) {
+            $session = $request->getSession();
+            if (method_exists($session, 'clear')) {
+                $session->clear();
+            } elseif (method_exists($session, 'flush')) {
+                $session->flush();
+            }
+        }
+
+        // clean laravel cookie queue
+        if (isset($this->application['cookie'])) {
+            $cookies = $this->application['cookie'];
+            foreach ($cookies->getQueuedCookies() as $name => $cookie) {
+                $cookies->unqueue($name);
+            }
+        }
     }
 
     /**
@@ -265,7 +398,6 @@ class Application
     {
         $application = $this->getApplication();
 
-        // Reflections
         $reflection = new \ReflectionObject($application);
 
         $middleware = $reflection->getProperty('middleware');
@@ -276,6 +408,32 @@ class Application
 
         if (count($middleware->getValue($application)) > 0) {
             $callTerminableMiddleware->invoke($application, $response);
+        }
+    }
+
+    /**
+     * Reslove some instances before request.
+     */
+    protected function preResolveInstances($application)
+    {
+        foreach ($this->resolves as $abstract) {
+            if ($application->offsetExists($abstract)) {
+                $application->make($abstract);
+            }
+        }
+    }
+
+    /**
+     * Clone laravel app and kernel while being cloned.
+     */
+    public function __clone()
+    {
+        $application = clone $this->application;
+
+        $this->application = $application;
+
+        if ($this->framework === 'laravel') {
+            $this->kernel->setApplication($application);
         }
     }
 }

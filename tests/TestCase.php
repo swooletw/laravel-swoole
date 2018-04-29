@@ -2,6 +2,8 @@
 
 namespace SwooleTW\Http\Tests;
 
+use Mockery as m;
+use Illuminate\Support\Facades\Facade;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
@@ -9,7 +11,10 @@ class TestCase extends BaseTestCase
     public function tearDown()
     {
         $this->addToAssertionCount(
-            \Mockery::getContainer()->mockery_getExpectationCount()
+            m::getContainer()->mockery_getExpectationCount()
         );
+
+        Facade::clearResolvedInstances();
+        parent::tearDown();
     }
 }

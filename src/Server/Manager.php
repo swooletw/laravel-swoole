@@ -3,18 +3,20 @@
 namespace SwooleTW\Http\Server;
 
 use Exception;
-use Swoole\Table as SwooleTable;
+use SwooleTW\Http\Server\Sandbox;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
-use Illuminate\Contracts\Container\Container;
-use Swoole\WebSocket\Server as WebSocketServer;
 use SwooleTW\Http\Websocket\Websocket;
+use SwooleTW\Http\Table\CanSwooleTable;
 use SwooleTW\Http\Websocket\CanWebsocket;
+use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use Swoole\WebSocket\Server as WebSocketServer;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 
 class Manager
 {
-    use CanWebsocket;
+    use CanWebsocket, CanSwooleTable;
 
     const MAC_OSX = 'Darwin';
 
@@ -43,11 +45,6 @@ class Manager
     protected $app;
 
     /**
-     * @var \SwooleTW\Http\Server\Table
-     */
-    protected $table;
-
-    /**
      * @var string
      */
     protected $framework;
@@ -56,6 +53,16 @@ class Manager
      * @var string
      */
     protected $basePath;
+
+    /**
+     * @var boolean
+     */
+    protected $isSandbox;
+
+    /**
+     * @var \SwooleTW\Http\Server\Sandbox
+     */
+    protected $sandbox;
 
     /**
      * Server events.
@@ -107,6 +114,7 @@ class Manager
     {
         $this->setProcessName('manager process');
 
+        $this->setIsSandbox();
         $this->createTables();
         $this->prepareWebsocket();
         $this->createSwooleServer();
@@ -117,25 +125,15 @@ class Manager
     /**
      * Prepare settings if websocket is enabled.
      */
-    protected function createTables()
-    {
-        $this->table = new Table;
-        $this->registerTables();
-    }
-
-    /**
-     * Prepare settings if websocket is enabled.
-     */
     protected function prepareWebsocket()
     {
         $isWebsocket = $this->container['config']->get('swoole_http.websocket.enabled');
-        $formatter = $this->container['config']->get('swoole_websocket.formatter');
+        $parser = $this->container['config']->get('swoole_websocket.parser');
 
         if ($isWebsocket) {
             array_push($this->events, ...$this->wsEvents);
             $this->isWebsocket = true;
-            $this->setFormatter(new $formatter);
-            $this->setWebsocketHandler();
+            $this->setParser(new $parser);
             $this->setWebsocketRoom();
         }
     }
@@ -196,24 +194,37 @@ class Manager
     /**
      * "onWorkerStart" listener.
      */
-    public function onWorkerStart()
+    public function onWorkerStart(HttpServer $server)
     {
         $this->clearCache();
         $this->setProcessName('worker process');
 
         $this->container['events']->fire('swoole.workerStart', func_get_args());
 
+        // don't init laravel app in task workers
+        if ($server->taskworker) {
+            return;
+        }
+
         // clear events instance in case of repeated listeners in worker process
         Facade::clearResolvedInstance('events');
 
+        // initialize laravel app
         $this->createApplication();
         $this->setLaravelApp();
-        $this->bindSwooleServer();
-        $this->bindSwooleTable();
 
+        // bind after setting laravel app
+        $this->bindToLaravelApp();
+
+        // set application to sandbox environment
+        if ($this->isSandbox) {
+            $this->sandbox = Sandbox::make($this->getApplication());
+        }
+
+        // load websocket handlers after binding websocket to laravel app
         if ($this->isWebsocket) {
-            $this->bindRoom();
-            $this->bindWebsocket();
+            $this->setWebsocketHandler();
+            $this->loadWebsocketRoutes();
         }
     }
 
@@ -225,28 +236,67 @@ class Manager
      */
     public function onRequest($swooleRequest, $swooleResponse)
     {
-        $this->container['events']->fire('swoole.request');
+        $this->app['events']->fire('swoole.request');
+
+        $this->resetOnRequest();
+
+        $application = $this->getApplication();
+
+        try {
+            // transform swoole request to illuminate request
+            $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
+
+            // use cloned application if sandbox mode is on
+            if ($this->isSandbox) {
+                $application->getApplication()->instance('request', $illuminateRequest);
+                $application = $this->sandbox->getApplication();
+                $this->sandbox->enable();
+            }
+
+            // bind illuminate request to laravel/lumen
+            $application->getApplication()->instance('request', $illuminateRequest);
+            Facade::clearResolvedInstance('request');
+
+            // handle request via laravel/lumen's dispatcher
+            $illuminateResponse = $application->run($illuminateRequest);
+            $response = Response::make($illuminateResponse, $swooleResponse);
+            $response->send();
+
+            // disable and recycle sandbox resource
+            if ($this->isSandbox) {
+                $this->sandbox->disable();
+            }
+        } catch (Exception $e) {
+            try {
+                $exceptionResponse = $this->app[ExceptionHandler::class]->render($illuminateRequest, $e);
+                $response = Response::make($exceptionResponse, $swooleResponse);
+                $response->send();
+            } catch (Exception $e) {
+                $this->logServerError($e);
+            }
+        }
+    }
+
+    /**
+     * Reset on every request.
+     */
+    protected function resetOnRequest()
+    {
+        // Reset websocket data
+        if ($this->isWebsocket) {
+            $this->websocket->reset(true);
+        }
+
+        if ($this->isSandbox) {
+            return;
+        }
 
         // Reset user-customized providers
         $this->getApplication()->resetProviders();
-        $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
-
-        try {
-            $illuminateResponse = $this->getApplication()->run($illuminateRequest);
-            $response = Response::make($illuminateResponse, $swooleResponse);
-            $response->send();
-        } catch (Exception $e) {
-            $this->logServerError($e);
-
-            try {
-                $swooleResponse->status(500);
-                $swooleResponse->end('Oops! An unexpected error occurred.');
-            } catch (Exception $e) {
-                // Catch: zm_deactivate_swoole: Fatal error: Uncaught exception
-                // 'ErrorException' with message 'swoole_http_response::status():
-                // http client#2 is not exist.
-            }
-        }
+        // Clear user-customized facades
+        $this->getApplication()->clearFacades();
+        // Clear user-customized instances
+        $this->getApplication()->clearInstances();
     }
 
     /**
@@ -283,7 +333,7 @@ class Manager
     {
         $this->removePidFile();
 
-        $this->container['events']->fire('swoole.shutdown', func_get_args());
+        $this->app['events']->fire('swoole.shutdown', func_get_args());
     }
 
     /**
@@ -309,6 +359,28 @@ class Manager
     }
 
     /**
+     * Set bindings to Laravel app.
+     */
+    protected function bindToLaravelApp()
+    {
+        $this->bindSwooleServer();
+        $this->bindSwooleTable();
+
+        if ($this->isWebsocket) {
+            $this->bindRoom();
+            $this->bindWebsocket();
+        }
+    }
+
+    /**
+     * Set isSandbox config.
+     */
+    protected function setIsSandbox()
+    {
+        $this->isSandbox = $this->container['config']->get('swoole_http.sandbox_mode', false);
+    }
+
+    /**
      * Set Laravel app.
      */
     protected function setLaravelApp()
@@ -323,16 +395,6 @@ class Manager
     {
         $this->app->singleton('swoole.server', function () {
             return $this->server;
-        });
-    }
-
-    /**
-     * Bind swoole table to Laravel app container.
-     */
-    protected function bindSwooleTable()
-    {
-        $this->app->singleton('swoole.table', function () {
-            return $this->table;
         });
     }
 
@@ -415,28 +477,5 @@ class Manager
         $prefix = sprintf("[%s #%d *%d]\tERROR\t", date('Y-m-d H:i:s'), $this->server->master_pid, $this->server->worker_id);
 
         fwrite($output, sprintf('%s%s(%d): %s', $prefix, $e->getFile(), $e->getLine(), $e->getMessage()) . PHP_EOL);
-    }
-
-    /**
-     * Register user-defined swoole tables.
-     */
-    protected function registerTables()
-    {
-        $tables = $this->container['config']->get('swoole_http.tables') ?? [];
-
-        foreach ($tables as $key => $value) {
-            $table = new SwooleTable($value['size']);
-            $columns = $value['columns'] ?? [];
-            foreach ($columns as $column) {
-                if (isset($column['size'])) {
-                    $table->column($column['name'], $column['type'], $column['size']);
-                } else {
-                    $table->column($column['name'], $column['type']);
-                }
-            }
-            $table->create();
-
-            $this->table->add($key, $table);
-        }
     }
 }

@@ -1,8 +1,9 @@
 <?php
 
-namespace SwooleTW\Http\Tests\Server;
+namespace SwooleTW\Http\Tests\Websocket;
 
 use Mockery as m;
+use InvalidArgumentException;
 use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
@@ -79,6 +80,35 @@ class WebsocketTest extends TestCase
         $websocket = $this->getWebsocket($room)
             ->setSender($sender)
             ->leaveAll($names);
+    }
+
+    public function testCallbacks()
+    {
+        $websocket = $this->getWebsocket();
+
+        $websocket->on('foo', function () {
+            return 'bar';
+        });
+
+        $this->assertTrue($websocket->eventExists('foo'));
+        $this->assertFalse($websocket->eventExists('bar'));
+
+        $this->expectException(InvalidArgumentException::class);
+        $websocket->on('invalid', 123);
+    }
+
+    public function testReset()
+    {
+        $websocket = $this->getWebsocket();
+        $websocket->setSender(1)
+            ->broadcast()
+            ->to('foo');
+
+        $websocket->reset(true);
+
+        $this->assertNull($websocket->getSender());
+        $this->assertFalse($websocket->getIsBroadcast());
+        $this->assertSame([], $websocket->getTo());
     }
 
     protected function getWebsocket(RoomContract $room = null)

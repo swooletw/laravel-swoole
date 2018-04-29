@@ -17,4 +17,14 @@ class LaravelServiceProvider extends HttpServiceProvider
             return new Manager($app, 'laravel');
         });
     }
+
+    /**
+     * Boot routes.
+     *
+     * @return void
+     */
+    protected function bootRoutes()
+    {
+        require __DIR__.'/../routes/laravel_routes.php';
+    }
 }

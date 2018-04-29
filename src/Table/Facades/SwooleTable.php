@@ -1,10 +1,10 @@
 <?php
 
-namespace SwooleTW\Http\Server\Facades;
+namespace SwooleTW\Http\Table\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class Table extends Facade
+class SwooleTable extends Facade
 {
     /**
      * Get the registered name of the component.

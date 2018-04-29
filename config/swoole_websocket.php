@@ -7,16 +7,14 @@ return [
     | Replace this handler before you start it
     |--------------------------------------------------------------------------
     */
-    'handler' => SwooleTW\Http\Websocket\WebsocketHandler::class,
+    'handler' => SwooleTW\Http\Websocket\SocketIO\WebsocketHandler::class,
 
     /*
     |--------------------------------------------------------------------------
-    | Websocket handlers mapping for onMessage callback
+    | Websocket route file path
     |--------------------------------------------------------------------------
     */
-    'handlers' => [
-        // 'event_name' => 'App\Handlers\ExampleHandler@function',
-    ],
+    'route_file' => base_path('routes/websocket.php'),
 
     /*
     |--------------------------------------------------------------------------
@@ -27,11 +25,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default message formatter
+    | Default frame parser
     | Replace it if you want to customize your websocket payload
     |--------------------------------------------------------------------------
     */
-    'formatter' => SwooleTW\Http\Websocket\Formatters\DefaultFormatter::class,
+    'parser' => SwooleTW\Http\Websocket\SocketIO\SocketIOParser::class,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Heartbeat interval (ms)
+    |--------------------------------------------------------------------------
+    */
+    'ping_interval' => 25000,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Heartbeat interval timeout (ms)
+    |--------------------------------------------------------------------------
+    */
+    'ping_timeout' => 60000,
 
     /*
     |--------------------------------------------------------------------------
@@ -40,6 +52,7 @@ return [
     */
     'drivers' => [
         'table' => SwooleTW\Http\Websocket\Rooms\TableRoom::class,
+        'redis' => SwooleTW\Http\Websocket\Rooms\RedisRoom::class,
     ],
 
     /*
@@ -54,6 +67,20 @@ return [
             'room_size' => 2048,
             'client_rows' => 8192,
             'client_size' => 2048
+        ],
+
+        'redis' => [
+            'server' => [
+                'host' => env('REDIS_HOST', '127.0.0.1'),
+                'password' => env('REDIS_PASSWORD', null),
+                'port' => env('REDIS_PORT', 6379),
+                'database' => 0,
+                'persistent' => true,
+            ],
+            'options' => [
+                //
+            ],
+            'prefix' => 'swoole:',
         ]
     ],
 ];
