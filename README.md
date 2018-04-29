@@ -70,7 +70,7 @@ Bugs and feature request are tracked on [Github](https://github.com/swooletw/lar
 
 ## License
 
-The Laravel-Swoole-Http package is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+The Laravel-Swoole package is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
 
 ## Support on Beerpay
 Hey dude! Help me out for a couple of :beers:!
