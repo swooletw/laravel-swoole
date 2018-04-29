@@ -25,7 +25,7 @@ This package provides a high performance HTTP server to speed up your laravel/lu
 
 Please see [Wiki](https://github.com/swooletw/laravel-swoole/wiki)
 
-## Performance Reference
+## Benchmark
 
 Test with clean Lumen 5.5, using MacBook Air 13, 2015.
 Benchmarking Tool: [wrk](https://github.com/wg/wrk)
