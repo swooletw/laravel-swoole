@@ -38,7 +38,7 @@ return [
     | Laravel app will be cloned on every requset.
     |--------------------------------------------------------------------------
     */
-    'sandbox_mode' => env('SWOOLE_SANDBOX_MODE', false),
+    'sandbox_mode' => env('SWOOLE_SANDBOX_MODE', true),
 
     /*
     |--------------------------------------------------------------------------
