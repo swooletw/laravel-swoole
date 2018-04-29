@@ -71,3 +71,8 @@ The original author of this package: [Huang-Yi](https://github.com/huang-yi)
 ## License
 
 The Laravel-Swoole-Http package is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+
+## Support on Beerpay
+Hey dude! Help me out for a couple of :beers:!
+
+[![Beerpay](https://beerpay.io/swooletw/laravel-swoole/badge.svg?style=beer-square)](https://beerpay.io/swooletw/laravel-swoole)  [![Beerpay](https://beerpay.io/swooletw/laravel-swoole/make-wish.svg?style=flat-square)](https://beerpay.io/swooletw/laravel-swoole?focus=wish)
