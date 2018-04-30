@@ -5,7 +5,7 @@
 [![Total Downloads](https://poser.pugx.org/swooletw/laravel-swoole/downloads)](https://packagist.org/packages/swooletw/laravel-swoole)
 [![travis-badge](https://api.travis-ci.org/swooletw/laravel-swoole.svg?branch=master)](https://travis-ci.org/swooletw/laravel-swoole)
 
-This package provides a high performance HTTP server to speed up your laravel/lumen application based on [Swoole](http://www.swoole.com/).
+This package provides a high performance HTTP server to speed up your Laravel/Lumen application based on [Swoole](http://www.swoole.com/).
 
 ## Version Compatibility
 
@@ -15,11 +15,12 @@ This package provides a high performance HTTP server to speed up your laravel/lu
 
 ## Features
 
-* Run Laravel/Lumen application on top of Swoole.
-* Sandbox mode to decrease technical gap for beginners.
-* Support running websocket server in Laravel.
+* Run **Laravel/Lumen** application on top of **Swoole**.
+* Outstanding performance boosting up to **30x**. 
+* Sandbox mode to isolate app container.
+* Support running websocket server in **Laravel**.
 * Support `Socket.io` protocol.
-* Support Swoole table.
+* Support Swoole table for cross-process data sharing.
 
 ## Documentation
 
