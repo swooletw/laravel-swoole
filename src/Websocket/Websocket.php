@@ -10,6 +10,8 @@ class Websocket
 {
     const PUSH_ACTION = 'push';
 
+    const EVENT_CONNECT = 'connect';
+
     /**
      * Determine if to broadcast.
      *
@@ -227,9 +229,12 @@ class Websocket
             return null;
         }
 
+        // inject request param while on connect event
+        $dataKey = $event === static::EVENT_CONNECT ? 'request' : 'data';
+
         return App::call($this->callbacks[$event], [
             'websocket' => $this,
-            'data' => $data
+            $dataKey => $data
         ]);
     }
 
