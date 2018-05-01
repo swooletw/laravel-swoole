@@ -1,8 +1,9 @@
 # Laravel-Swoole
 
-![php-badge](https://img.shields.io/badge/php-%3E%3D%205.5.9-8892BF.svg)
+![php-badge](https://img.shields.io/badge/php-%3E%3D%207.1-8892BF.svg)
 [![packagist-badge](https://img.shields.io/packagist/v/swooletw/laravel-swoole.svg)](https://packagist.org/packages/swooletw/laravel-swoole)
 [![Total Downloads](https://poser.pugx.org/swooletw/laravel-swoole/downloads)](https://packagist.org/packages/swooletw/laravel-swoole)
+[![travis-badge](https://api.travis-ci.org/swooletw/laravel-swoole.svg?branch=master)](https://travis-ci.org/swooletw/laravel-swoole)
 
 This package provides a high performance HTTP server to speed up your laravel/lumen application based on [Swoole](http://www.swoole.com/).
 
@@ -10,139 +11,21 @@ This package provides a high performance HTTP server to speed up your laravel/lu
 
 | PHP     | Laravel | Lumen | Swoole  |
 |:-------:|:-------:|:-----:|:-------:|
-| >=5.5.9 | ~5.1    | ~5.1  | >=1.9.3 |
+| >=7.1 | ~5.1    | ~5.1  | >=1.9.3 |
 
-## Installation
+## Features
 
-Require this package with composer by using the following command:
+* Run Laravel/Lumen application on top of Swoole.
+* Sandbox mode to decrease technical gap for beginners.
+* Support running websocket server in Laravel.
+* Support `Socket.io` protocol.
+* Support Swoole table.
 
-```
-$ composer require swooletw/laravel-swoole
-```
+## Documentation
 
-> This package relies on Swoole. Please make sure your machine has been installed the Swoole extension. Using this command to install quickly: `pecl install swoole`. Visit the [official website](https://wiki.swoole.com/wiki/page/6.html) for more information.
+Please see [Wiki](https://github.com/swooletw/laravel-swoole/wiki)
 
-Then, add the service provider:
-
-If you are using Laravel, add the service provider to the providers array in `config/app.php`:
-
-```php
-[
-    'providers' => [
-        SwooleTW\Http\LaravelServiceProvider::class,
-    ],
-]
-```
-
-If you are using Lumen, append the following code to `bootstrap/app.php`:
-
-```php
-$app->register(SwooleTW\Http\LumenServiceProvider::class);
-```
-
-## Configuration
-
-If you want to change the default configurations, please run the following command to generate a configuration file `http.php` in directory `config/`:
-
-```
-$ php artisan vendor:publish
-```
-
-`server.host`: The swoole_http_server host.
-
-`server.port`: The swoole_http_server port.
-
-`server.options`: The configurations for `Swoole\Server`. To get more information about swoole server, please read [the official documentation](https://wiki.swoole.com/wiki/page/274.html).
-
-For example, if you want to set the 'max_request':
-
-```php
-[
-    'server' => [
-        'options' => [
-            'max_request' => 1000,
-        ],
-    ]
-]
-```
-
-## Command
-
-> The swoole_http_server can only run in cli environment, and this package provides convenient artisan commands to manage it.
-> By default, you can visit your site at http://127.0.0.1:1215
-
-Start the swoole_http_server:
-
-```
-$ php artisan swoole:http start
-```
-
-Stop the swoole_http_server:
-
-```
-$ php artisan swoole:http stop
-```
-
-Restart the swoole_http_server:
-
-```
-$ php artisan swoole:http restart
-```
-
-Reload the swoole_http_server:
-
-```
-$ php artisan swoole:http reload
-```
-
-Now, you can run the following command to start the **swoole_http_server**.
-
-```
-$ php artisan swoole:http start
-```
-
-## Nginx Configuration
-
-> The support of swoole_http_server for Http is not complete. So, you should configure the domains via nginx proxy in your production environment.
-
-```nginx
-server {
-    listen 80;
-    server_name your.domain.com;
-    root /path/to/laravel/public;
-    index index.php;
-
-    location = /index.php {
-        # Ensure that there is no such file named "not_exists"
-        # in your "public" directory.
-        try_files /not_exists @swoole;
-    }
-
-    location / {
-        try_files $uri $uri/ @swoole;
-    }
-
-    location @swoole {
-        set $suffix "";
-
-        if ($uri = /index.php) {
-            set $suffix "/";
-        }
-
-        proxy_set_header Host $host;
-        proxy_set_header SERVER_PORT $server_port;
-        proxy_set_header REMOTE_ADDR $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-        # IF https
-        # proxy_set_header HTTPS "on";
-
-        proxy_pass http://127.0.0.1:1215$suffix;
-    }
-}
-```
-
-## Performance Reference
+## Benchmark
 
 Test with clean Lumen 5.5, using MacBook Air 13, 2015.
 Benchmarking Tool: [wrk](https://github.com/wg/wrk)
@@ -177,20 +60,19 @@ Requests/sec:   8717.00
 Transfer/sec:      1.55MB
 ```
 
-## Notices
-
-1. Please reload or restart the swoole_http_server after released your code. Because the Laravel program will be kept in memory after the swoole_http_server started. That's why the swoole_http_server has high performance.
-2. Never use `dd()`, `exit()` or `die()` function to print your debug message. It will terminate your swoole worker unexpectedly.
-3. You should have basic knowledge of multi-process programming and swoole. If you still write your code with a single-process conception, your app might have unexpected bugs.
-
 ## Support
 
-Bugs and feature request are tracked on [Github](https://github.com/swooletw/laravel-swoole-http/issues).
+Bugs and feature request are tracked on [Github](https://github.com/swooletw/laravel-swoole/issues).
 
 ## Credits
 
-The original author of this package: [Huang-Yi](https://github.com/huang-yi)
+[Huang-Yi](https://github.com/huang-yi)
 
 ## License
 
-The Laravel-Swoole-Http package is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+The Laravel-Swoole package is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+
+## Support on Beerpay
+Hey dude! Help me out for a couple of :beers:!
+
+[![Beerpay](https://beerpay.io/swooletw/laravel-swoole/badge.svg?style=beer-square)](https://beerpay.io/swooletw/laravel-swoole)  [![Beerpay](https://beerpay.io/swooletw/laravel-swoole/make-wish.svg?style=flat-square)](https://beerpay.io/swooletw/laravel-swoole?focus=wish)
