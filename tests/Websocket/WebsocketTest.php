@@ -3,7 +3,9 @@
 namespace SwooleTW\Http\Tests\Websocket;
 
 use Mockery as m;
+use Illuminate\Http\Request;
 use InvalidArgumentException;
+use Illuminate\Pipeline\Pipeline;
 use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
@@ -111,8 +113,37 @@ class WebsocketTest extends TestCase
         $this->assertSame([], $websocket->getTo());
     }
 
-    protected function getWebsocket(RoomContract $room = null)
+    public function testPipeline()
     {
-        return new Websocket($room ?? m::mock(RoomContract::class));
+        $request = m::mock(Request::class);
+        $middlewares = ['foo', 'bar'];
+        $pipeline = m::mock(Pipeline::class);
+        $pipeline->shouldReceive('send')
+            ->with($request)
+            ->once()
+            ->andReturnSelf();
+        $pipeline->shouldReceive('through')
+            ->with($middlewares)
+            ->once()
+            ->andReturnSelf();
+        $pipeline->shouldReceive('then')
+            ->once()
+            ->andReturn($request);
+
+        $websocket = $this->getWebsocket(null, $pipeline);
+        $websocket->middleware($middlewares);
+        $websocket->on('connect', function () {
+            return 'connect';
+        });
+
+        $websocket->call('connect', $request);
+    }
+
+    protected function getWebsocket(RoomContract $room = null, $pipeline = null)
+    {
+        $room = $room ?: m::mock(RoomContract::class);
+        $pipeline = $pipeline ?: m::mock(Pipeline::class);
+
+        return new Websocket($room, $pipeline);
     }
 }

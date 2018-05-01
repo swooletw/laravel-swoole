@@ -5,6 +5,7 @@ namespace SwooleTW\Http\Websocket;
 use InvalidArgumentException;
 use Illuminate\Support\Facades\App;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use Illuminate\Contracts\Pipeline\Pipeline as PipelineContract;
 
 class Websocket
 {
@@ -41,6 +42,20 @@ class Websocket
     protected $callbacks = [];
 
     /**
+     * Middlewares for on connect request.
+     *
+     * @var array
+     */
+    protected $middlewares = [];
+
+    /**
+     * Pipeline instance.
+     *
+     * @var Illuminate\Contracts\Pipeline\Pipeline
+     */
+    protected $pipeline;
+
+    /**
      * Room adapter.
      *
      * @var SwooleTW\Http\Websocket\Rooms\RoomContract
@@ -49,10 +64,14 @@ class Websocket
 
     /**
      * Websocket constructor.
+     *
+     * @var SwooleTW\Http\Websocket\Rooms\RoomContract $rrom
+     * @var Illuminate\Contracts\Pipeline\Pipeline $pipeline
      */
-    public function __construct(RoomContract $room)
+    public function __construct(RoomContract $room, PipelineContract $pipeline)
     {
         $this->room = $room;
+        $this->pipeline = $pipeline;
     }
 
     /**
@@ -229,8 +248,14 @@ class Websocket
             return null;
         }
 
-        // inject request param while on connect event
-        $dataKey = $event === static::EVENT_CONNECT ? 'request' : 'data';
+        // inject request param on connect event
+        $isConnect = $event === static::EVENT_CONNECT;
+        $dataKey = $isConnect ? 'request' : 'data';
+
+        // dispatch request to pipeline if middlewares are set
+        if ($isConnect && count($this->middlewares)) {
+            $data = $this->setRequestThroughMiddleware($data);
+        }
 
         return App::call($this->callbacks[$event], [
             'websocket' => $this,
@@ -314,5 +339,39 @@ class Websocket
         }
 
         return $this;
+    }
+
+    /**
+     * Get or set middlewares.
+     */
+    public function middleware($middleware = null)
+    {
+        if (is_null($middleware)) {
+            return $this->middlewares;
+        }
+
+        if (is_string($middleware)) {
+            $middleware = func_get_args();
+        }
+
+        $this->middlewares = array_unique(array_merge($this->middlewares, $middleware));
+
+        return $this;
+    }
+
+    /**
+     * Set the given request through the middleware.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Request
+     */
+    protected function setRequestThroughMiddleware($request)
+    {
+        return $this->pipeline
+            ->send($request)
+            ->through($this->middlewares)
+            ->then(function ($request) {
+                return $request;
+            });
     }
 }

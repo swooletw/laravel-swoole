@@ -5,6 +5,7 @@ namespace SwooleTW\Http\Websocket;
 use Exception;
 use Swoole\Websocket\Frame;
 use Swoole\Websocket\Server;
+use Illuminate\Pipeline\Pipeline;
 use SwooleTW\Http\Server\Request;
 use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Websocket\Websocket;
@@ -241,7 +242,7 @@ trait CanWebsocket
     protected function bindWebsocket()
     {
         $this->app->singleton(Websocket::class, function ($app) {
-            return $this->websocket = new Websocket($app['swoole.room']);
+            return $this->websocket = new Websocket($app['swoole.room'], new Pipeline($app));
         });
         $this->app->alias(Websocket::class, 'swoole.websocket');
     }
