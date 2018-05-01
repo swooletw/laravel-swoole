@@ -11,7 +11,7 @@ class TableRoom implements RoomContract
 
     protected $rooms;
 
-    protected $sids;
+    protected $fds;
 
     public function __construct(array $config)
     {
@@ -21,7 +21,7 @@ class TableRoom implements RoomContract
     public function prepare()
     {
         $this->initRoomsTable();
-        $this->initSidsTable();
+        $this->initFdsTable();
     }
 
     public function add(int $fd, string $room)
@@ -34,16 +34,16 @@ class TableRoom implements RoomContract
         $rooms = $this->getRooms($fd);
 
         foreach ($roomNames as $room) {
-            $sids = $this->getClients($room);
+            $fds = $this->getClients($room);
 
-            if (in_array($fd, $sids)) {
+            if (in_array($fd, $fds)) {
                 continue;
             }
 
-            $sids[] = $fd;
+            $fds[] = $fd;
             $rooms[] = $room;
 
-            $this->setClients($room, $sids);
+            $this->setClients($room, $fds);
         }
 
         $this->setRooms($fd, $rooms);
@@ -61,17 +61,17 @@ class TableRoom implements RoomContract
 
         $removeRooms = [];
         foreach ($rooms as $room) {
-            $sids = $this->getClients($room);
+            $fds = $this->getClients($room);
 
-            if (! in_array($fd, $sids)) {
+            if (! in_array($fd, $fds)) {
                 continue;
             }
 
-            $this->setClients($room, array_values(array_diff($sids, [$fd])), 'rooms');
+            $this->setClients($room, array_values(array_diff($fds, [$fd])), 'rooms');
             $removeRooms[] = $room;
         }
 
-        $this->setRooms($fd, array_values(array_diff($allRooms, $removeRooms)), 'sids');
+        $this->setRooms($fd, array_values(array_diff($allRooms, $removeRooms)), 'fds');
     }
 
     public function getClients(string $room)
@@ -81,17 +81,17 @@ class TableRoom implements RoomContract
 
     public function getRooms(int $fd)
     {
-        return $this->getValue($fd, 'sids');
+        return $this->getValue($fd, 'fds');
     }
 
-    protected function setClients(string $room, array $sids)
+    protected function setClients(string $room, array $fds)
     {
-        return $this->setValue($room, $sids, 'rooms');
+        return $this->setValue($room, $fds, 'rooms');
     }
 
     protected function setRooms(int $fd, array $rooms)
     {
-        return $this->setValue($fd, $rooms, 'sids');
+        return $this->setValue($fd, $rooms, 'fds');
     }
 
     protected function initRoomsTable()
@@ -101,11 +101,11 @@ class TableRoom implements RoomContract
         $this->rooms->create();
     }
 
-    protected function initSidsTable()
+    protected function initFdsTable()
     {
-        $this->sids = new Table($this->config['client_rows']);
-        $this->sids->column('value', Table::TYPE_STRING, $this->config['client_size']);
-        $this->sids->create();
+        $this->fds = new Table($this->config['client_rows']);
+        $this->fds->column('value', Table::TYPE_STRING, $this->config['client_size']);
+        $this->fds->create();
     }
 
     public function setValue($key, array $value, string $table)

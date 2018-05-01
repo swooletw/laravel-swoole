@@ -41,7 +41,7 @@ class RedisRoomTest extends TestCase
             ->once();
         $redisRoom = $this->getRedisRoom($redis);
 
-        $redisRoom->addValue(1, ['foo', 'bar'], 'sids');
+        $redisRoom->addValue(1, ['foo', 'bar'], 'fds');
     }
 
     public function testAddAll()
@@ -88,7 +88,7 @@ class RedisRoomTest extends TestCase
     {
         $redis = $this->getRedis();
         $redis->shouldReceive('smembers')
-            ->with('swoole:sids:1')
+            ->with('swoole:fds:1')
             ->once();
         $redisRoom = $this->getRedisRoom($redis);
 

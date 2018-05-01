@@ -70,7 +70,7 @@ class RedisRoom implements RoomContract
 
     public function addAll(int $fd, array $roomNames)
     {
-        $this->addValue($fd, $roomNames, 'sids');
+        $this->addValue($fd, $roomNames, 'fds');
 
         foreach ($roomNames as $room) {
             $this->addValue($room, [$fd], 'rooms');
@@ -85,7 +85,7 @@ class RedisRoom implements RoomContract
     public function deleteAll(int $fd, array $roomNames = [])
     {
         $roomNames = count($roomNames) ? $roomNames : $this->getRooms($fd);
-        $this->removeValue($fd, $roomNames, 'sids');
+        $this->removeValue($fd, $roomNames, 'fds');
 
         foreach ($roomNames as $room) {
             $this->removeValue($room, [$fd], 'rooms');
@@ -127,12 +127,12 @@ class RedisRoom implements RoomContract
 
     public function getRooms(int $fd)
     {
-        return $this->getValue($fd, 'sids');
+        return $this->getValue($fd, 'fds');
     }
 
     protected function checkTable(string $table)
     {
-        if (! in_array($table, ['rooms', 'sids'])) {
+        if (! in_array($table, ['rooms', 'fds'])) {
             throw new \InvalidArgumentException('invalid table name.');
         }
     }

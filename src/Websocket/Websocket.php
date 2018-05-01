@@ -45,8 +45,9 @@ class Websocket
      */
     protected $room;
 
-    // https://gist.github.com/alexpchin/3f257d0bb813e2c8c476
-    // https://github.com/socketio/socket.io/blob/master/docs/emit.md
+    /**
+     * Websocket constructor.
+     */
     public function __construct(RoomContract $room)
     {
         $this->room = $room;
@@ -75,7 +76,7 @@ class Websocket
     }
 
     /**
-     * Set multiple recepients' fdd or room names.
+     * Set multiple recepients' fd or room names.
      *
      * @param array (fds or rooms)
      */
