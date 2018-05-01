@@ -7,38 +7,12 @@ use Swoole\Websocket\Frame;
 use Swoole\Websocket\Server;
 use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Support\Facades\App;
-use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
 use SwooleTW\Http\Websocket\SocketIO\Strategies\HeartbeatStrategy;
 
 class ParserTest extends TestCase
 {
-    public function testBaseEncode()
-    {
-        $event = 'foo';
-        $data = 'bar';
-
-        $parser = new Parser;
-        $this->assertSame(json_encode([
-            'event' => $event,
-            'data' => $data
-        ]), $parser->encode($event, $data));
-    }
-
-    public function testBaseDecode()
-    {
-        $payload = json_encode($data = [
-            'event' => 'foo',
-            'data' => 'bar'
-        ]);
-        $frame = m::mock(Frame::class);
-        $frame->data = $payload;
-
-        $parser = new Parser;
-        $this->assertSame($data, $parser->decode($frame));
-    }
-
-    public function testSocketEncode()
+    public function testEncode()
     {
         $event = 'foo';
         $data = 'bar';
@@ -53,7 +27,7 @@ class ParserTest extends TestCase
         $this->assertSame('42["foo",{"message":"test"}]', $parser->encode($event, $data));
     }
 
-    public function testSocketDecode()
+    public function testDecode()
     {
         $payload = '42["foo",{"message":"test"}]';
         $frame = m::mock(Frame::class);
