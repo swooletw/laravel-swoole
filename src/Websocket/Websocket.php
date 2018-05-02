@@ -73,6 +73,7 @@ class Websocket
     {
         $this->room = $room;
         $this->pipeline = $pipeline;
+        $this->setDafaultMiddlewares();
     }
 
     /**
@@ -358,6 +359,14 @@ class Websocket
         $this->middlewares = array_unique(array_merge($this->middlewares, $middleware));
 
         return $this;
+    }
+
+    /**
+     * Set default middlewares.
+     */
+    protected function setDafaultMiddlewares()
+    {
+        $this->middlewares = app('config')->get('swoole_websocket.middlewares', []);
     }
 
     /**
