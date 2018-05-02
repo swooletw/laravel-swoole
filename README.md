@@ -15,11 +15,12 @@ This package provides a high performance HTTP server to speed up your laravel/lu
 
 ## Features
 
-* Run Laravel/Lumen application on top of Swoole.
-* Sandbox mode to decrease technical gap for beginners.
-* Support running websocket server in Laravel.
+* Run **Laravel/Lumen** application on top of **Swoole**.
+* Outstanding performance boosting up to **30x**. 
+* Sandbox mode to isolate app container.
+* Support running websocket server in **Laravel**.
 * Support `Socket.io` protocol.
-* Support Swoole table.
+* Support Swoole table for cross-process data sharing.
 
 ## Documentation
 
