@@ -8,6 +8,7 @@ use Swoole\Websocket\Server;
 use Illuminate\Pipeline\Pipeline;
 use SwooleTW\Http\Server\Request;
 use SwooleTW\Http\Websocket\Parser;
+use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\HandlerContract;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
@@ -284,8 +285,19 @@ trait CanWebsocket
      */
     protected function callOnConnect($illuminateRequest)
     {
+        $application = $this->sandbox->getLaravelApp();
+
+        // bind illuminate request to laravel/lumen
+        $application->instance('request', $illuminateRequest);
+        Facade::clearResolvedInstance('request');
+
+        // reset session
+        if (isset($application['session'])) {
+            $application['session']->flush();
+        }
+
         // set sandbox container to websocket pipeline
-        $this->websocket->setContainer($this->sandbox->getLaravelApp());
+        $this->websocket->setContainer($application);
         $this->sandbox->enable();
         $this->websocket->call('connect', $illuminateRequest);
         $this->sandbox->disable();
