@@ -466,16 +466,6 @@ class Manager
      */
     protected function logServerError(Exception $e)
     {
-        $logFile = $this->container['config']->get('swoole_http.server.options.log_file');
-
-        try {
-            $output = fopen($logFile ,'w');
-        } catch (Exception $e) {
-            $output = STDOUT;
-        }
-
-        $prefix = sprintf("[%s #%d *%d]\tERROR\t", date('Y-m-d H:i:s'), $this->server->master_pid, $this->server->worker_id);
-
-        fwrite($output, sprintf('%s%s(%d): %s', $prefix, $e->getFile(), $e->getLine(), $e->getMessage()) . PHP_EOL);
+        $this->app[ExceptionHandler::class]->report($e);
     }
 }
