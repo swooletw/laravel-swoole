@@ -217,7 +217,7 @@ class Manager
         $this->bindToLaravelApp();
 
         // set application to sandbox environment
-        if ($this->isSandbox) {
+        if ($this->isSandbox || $this->isWebsocket) {
             $this->sandbox = Sandbox::make($this->getApplication());
         }
 

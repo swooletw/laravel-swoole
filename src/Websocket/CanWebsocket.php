@@ -58,12 +58,13 @@ trait CanWebsocket
 
         try {
             // check if socket.io connection established
-            if ($this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
-                $this->websocket->reset(true)->setSender($swooleRequest->fd);
-                // trigger 'connect' websocket event
-                if ($this->websocket->eventExists('connect')) {
-                    $this->websocket->call('connect', $illuminateRequest);
-                }
+            if (! $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
+                return;
+            }
+            $this->websocket->reset(true)->setSender($swooleRequest->fd);
+            // trigger 'connect' websocket event
+            if ($this->websocket->eventExists('connect')) {
+                $this->callOnConnect($illuminateRequest);
             }
         } catch (Exception $e) {
             $this->logServerError($e);
@@ -81,16 +82,17 @@ trait CanWebsocket
         $data = $frame->data;
 
         try {
-            $skip = $this->parser->execute($server, $frame);
-
-            if ($skip) {
+            // execute parser strategies and skip non-message packet
+            if ($this->parser->execute($server, $frame)) {
                 return;
             }
 
+            // decode raw message via parser
             $payload = $this->parser->decode($frame);
 
             $this->websocket->reset(true)->setSender($frame->fd);
 
+            // dispatch message to registered event callback
             if ($this->websocket->eventExists($payload['event'])) {
                 $this->websocket->call($payload['event'], $payload['data']);
             } else {
@@ -242,7 +244,7 @@ trait CanWebsocket
     protected function bindWebsocket()
     {
         $this->app->singleton(Websocket::class, function ($app) {
-            return $this->websocket = new Websocket($app['swoole.room'], new Pipeline($app));
+            return $this->websocket = new Websocket($app['swoole.room'], new Pipeline);
         });
         $this->app->alias(Websocket::class, 'swoole.websocket');
     }
@@ -275,5 +277,17 @@ trait CanWebsocket
         $message = $data['message'] ?? null;
 
         return [$opcode, $sender, $fds, $broadcast, $assigned, $event, $message];
+    }
+
+    /**
+     * Call on connect event callback .
+     */
+    protected function callOnConnect($illuminateRequest)
+    {
+        // set sandbox container to websocket pipeline
+        $this->websocket->setContainer($this->sandbox->getLaravelApp());
+        $this->sandbox->enable();
+        $this->websocket->call('connect', $illuminateRequest);
+        $this->sandbox->disable();
     }
 }

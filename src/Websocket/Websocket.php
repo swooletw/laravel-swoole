@@ -4,6 +4,7 @@ namespace SwooleTW\Http\Websocket;
 
 use InvalidArgumentException;
 use Illuminate\Support\Facades\App;
+use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use Illuminate\Contracts\Pipeline\Pipeline as PipelineContract;
 
@@ -357,6 +358,21 @@ class Websocket
         $this->middlewares = array_unique(array_merge($this->middlewares, $middleware));
 
         return $this;
+    }
+
+    /**
+     * Set container to pipeline.
+     */
+    public function setContainer(Container $container)
+    {
+        $pipeline = $this->pipeline;
+
+        $closure = function () use ($container) {
+            $this->container = $container;
+        };
+
+        $resetPipeline = $closure->bindTo($pipeline, $pipeline);
+        $resetPipeline();
     }
 
     /**
