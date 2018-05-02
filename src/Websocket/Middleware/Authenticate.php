@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Websocket\Middleware;
 
 use Closure;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Factory as Auth;
 
 class Authenticate
@@ -36,10 +37,14 @@ class Authenticate
      */
     public function handle($request, Closure $next)
     {
-        if ($user = $this->auth->authenticate()) {
-            $request->setUserResolver(function () use ($user) {
-                return $user;
-            });
+        try {
+            if ($user = $this->auth->authenticate()) {
+                $request->setUserResolver(function () use ($user) {
+                    return $user;
+                });
+            }
+        } catch (AuthenticationException $e) {
+            // do nothing
         }
 
         return $next($request);
