@@ -69,7 +69,7 @@ class Application
      */
     protected $resolves = [
         'view', 'files', 'session', 'session.store', 'routes',
-        'db', 'db.factory', 'cache', 'cache.store', 'config',
+        'db', 'db.factory', 'cache', 'cache.store', 'config', 'cookie',
         'encrypter', 'hash', 'router', 'translator', 'url', 'log'
     ];
 
@@ -247,7 +247,11 @@ class Application
      */
     public function run(Request $request)
     {
-        ob_start();
+        $shouldUseOb = $this->application['config']->get('swoole_http.ob_output', true);
+
+        if ($shouldUseOb) {
+            ob_start();
+        }
 
         // handle request with laravel or lumen
         $method = sprintf('run%s', ucfirst($this->framework));
@@ -255,14 +259,15 @@ class Application
 
         // prepare content for ob
         $content = '';
-        $shouldUseOb = $this->application['config']->get('swoole_http.ob_output', true);
-        if ($response instanceof StreamedResponse ||
-            $response instanceof BinaryFileResponse) {
-            $shouldUseOb = false;
-        } elseif ($response instanceof SymfonyResponse) {
-            $content = $response->getContent();
-        } else {
-            $content = (string) $response;
+        if ($shouldUseOb) {
+            if ($response instanceof StreamedResponse ||
+                $response instanceof BinaryFileResponse) {
+                $shouldUseOb = false;
+            } elseif ($response instanceof SymfonyResponse) {
+                $content = $response->getContent();
+            } else {
+                $content = (string) $response;
+            }
         }
 
         // process terminating logics
@@ -273,7 +278,9 @@ class Application
             $response->setContent(ob_get_contents());
         }
 
-        ob_end_clean();
+        if ($shouldUseOb) {
+            ob_end_clean();
+        }
 
         return $response;
     }
@@ -372,11 +379,7 @@ class Application
         // clean laravel session
         if ($request->hasSession()) {
             $session = $request->getSession();
-            if (method_exists($session, 'clear')) {
-                $session->clear();
-            } elseif (method_exists($session, 'flush')) {
-                $session->flush();
-            }
+            $session->flush();
         }
 
         // clean laravel cookie queue

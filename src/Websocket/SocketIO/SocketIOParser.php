@@ -17,11 +17,13 @@ class SocketIOParser extends Parser
     ];
 
     /**
-     * Encode output message for websocket push.
+     * Encode output payload for websocket push.
      *
+     * @param string $event
+     * @param mixed $data
      * @return mixed
      */
-    public function encode($event, $data)
+    public function encode(string $event, $data)
     {
         $packet = Packet::MESSAGE . Packet::EVENT;
         $shouldEncode = is_array($data) || is_object($data);

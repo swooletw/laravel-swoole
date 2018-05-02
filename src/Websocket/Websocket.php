@@ -4,11 +4,15 @@ namespace SwooleTW\Http\Websocket;
 
 use InvalidArgumentException;
 use Illuminate\Support\Facades\App;
+use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use Illuminate\Contracts\Pipeline\Pipeline as PipelineContract;
 
 class Websocket
 {
     const PUSH_ACTION = 'push';
+
+    const EVENT_CONNECT = 'connect';
 
     /**
      * Determine if to broadcast.
@@ -39,17 +43,37 @@ class Websocket
     protected $callbacks = [];
 
     /**
+     * Middlewares for on connect request.
+     *
+     * @var array
+     */
+    protected $middlewares = [];
+
+    /**
+     * Pipeline instance.
+     *
+     * @var Illuminate\Contracts\Pipeline\Pipeline
+     */
+    protected $pipeline;
+
+    /**
      * Room adapter.
      *
      * @var SwooleTW\Http\Websocket\Rooms\RoomContract
      */
     protected $room;
 
-    // https://gist.github.com/alexpchin/3f257d0bb813e2c8c476
-    // https://github.com/socketio/socket.io/blob/master/docs/emit.md
-    public function __construct(RoomContract $room)
+    /**
+     * Websocket constructor.
+     *
+     * @var SwooleTW\Http\Websocket\Rooms\RoomContract $rrom
+     * @var Illuminate\Contracts\Pipeline\Pipeline $pipeline
+     */
+    public function __construct(RoomContract $room, PipelineContract $pipeline)
     {
         $this->room = $room;
+        $this->pipeline = $pipeline;
+        $this->setDafaultMiddleware();
     }
 
     /**
@@ -75,7 +99,7 @@ class Websocket
     }
 
     /**
-     * Set multiple recepients' fdd or room names.
+     * Set multiple recepients' fd or room names.
      *
      * @param array (fds or rooms)
      */
@@ -226,9 +250,18 @@ class Websocket
             return null;
         }
 
+        // inject request param on connect event
+        $isConnect = $event === static::EVENT_CONNECT;
+        $dataKey = $isConnect ? 'request' : 'data';
+
+        // dispatch request to pipeline if middleware are set
+        if ($isConnect && count($this->middleware)) {
+            $data = $this->setRequestThroughMiddleware($data);
+        }
+
         return App::call($this->callbacks[$event], [
             'websocket' => $this,
-            'data' => $data
+            $dataKey => $data
         ]);
     }
 
@@ -308,5 +341,62 @@ class Websocket
         }
 
         return $this;
+    }
+
+    /**
+     * Get or set middleware.
+     */
+    public function middleware($middleware = null)
+    {
+        if (is_null($middleware)) {
+            return $this->middleware;
+        }
+
+        if (is_string($middleware)) {
+            $middleware = func_get_args();
+        }
+
+        $this->middleware = array_unique(array_merge($this->middleware, $middleware));
+
+        return $this;
+    }
+
+    /**
+     * Set default middleware.
+     */
+    protected function setDafaultMiddleware()
+    {
+        $this->middleware = app('config')->get('swoole_websocket.middleware', []);
+    }
+
+    /**
+     * Set container to pipeline.
+     */
+    public function setContainer(Container $container)
+    {
+        $pipeline = $this->pipeline;
+
+        $closure = function () use ($container) {
+            $this->container = $container;
+        };
+
+        $resetPipeline = $closure->bindTo($pipeline, $pipeline);
+        $resetPipeline();
+    }
+
+    /**
+     * Set the given request through the middleware.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Request
+     */
+    protected function setRequestThroughMiddleware($request)
+    {
+        return $this->pipeline
+            ->send($request)
+            ->through($this->middleware)
+            ->then(function ($request) {
+                return $request;
+            });
     }
 }

@@ -6,7 +6,7 @@ use Swoole\Websocket\Frame;
 use Swoole\Websocket\Server;
 use Illuminate\Support\Facades\App;
 
-class Parser
+abstract class Parser
 {
     /**
      * Strategy classes need to implement handle method.
@@ -40,15 +40,11 @@ class Parser
     /**
      * Encode output payload for websocket push.
      *
+     * @param string $event
+     * @param mixed $data
      * @return mixed
      */
-    public function encode($event, $data)
-    {
-        return json_encode([
-            'event' => $event,
-            'data' => $data
-        ]);
-    }
+    abstract public function encode(string $event, $data);
 
     /**
      * Input message on websocket connected.
@@ -57,13 +53,5 @@ class Parser
      * @param \Swoole\Websocket\Frame $frame
      * @return array
      */
-    public function decode(Frame $frame)
-    {
-        $data = json_decode($frame->data, true);
-
-        return [
-            'event' => $data['event'] ?? null,
-            'data' => $data['data'] ?? null
-        ];
-    }
+    abstract public function decode(Frame $frame);
 }
