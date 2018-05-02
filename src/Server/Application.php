@@ -379,9 +379,7 @@ class Application
         // clean laravel session
         if ($request->hasSession()) {
             $session = $request->getSession();
-            if (method_exists($session, 'flush')) {
-                $session->flush();
-            }
+            $session->flush();
         }
 
         // clean laravel cookie queue
