@@ -69,7 +69,7 @@ class Application
      */
     protected $resolves = [
         'view', 'files', 'session', 'session.store', 'routes',
-        'db', 'db.factory', 'cache', 'cache.store', 'config',
+        'db', 'db.factory', 'cache', 'cache.store', 'config', 'cookie',
         'encrypter', 'hash', 'router', 'translator', 'url', 'log'
     ];
 
