@@ -73,7 +73,7 @@ class Websocket
     {
         $this->room = $room;
         $this->pipeline = $pipeline;
-        $this->setDafaultMiddlewares();
+        $this->setDafaultMiddleware();
     }
 
     /**
@@ -254,8 +254,8 @@ class Websocket
         $isConnect = $event === static::EVENT_CONNECT;
         $dataKey = $isConnect ? 'request' : 'data';
 
-        // dispatch request to pipeline if middlewares are set
-        if ($isConnect && count($this->middlewares)) {
+        // dispatch request to pipeline if middleware are set
+        if ($isConnect && count($this->middleware)) {
             $data = $this->setRequestThroughMiddleware($data);
         }
 
@@ -344,29 +344,29 @@ class Websocket
     }
 
     /**
-     * Get or set middlewares.
+     * Get or set middleware.
      */
     public function middleware($middleware = null)
     {
         if (is_null($middleware)) {
-            return $this->middlewares;
+            return $this->middleware;
         }
 
         if (is_string($middleware)) {
             $middleware = func_get_args();
         }
 
-        $this->middlewares = array_unique(array_merge($this->middlewares, $middleware));
+        $this->middleware = array_unique(array_merge($this->middleware, $middleware));
 
         return $this;
     }
 
     /**
-     * Set default middlewares.
+     * Set default middleware.
      */
-    protected function setDafaultMiddlewares()
+    protected function setDafaultMiddleware()
     {
-        $this->middlewares = app('config')->get('swoole_websocket.middlewares', []);
+        $this->middleware = app('config')->get('swoole_websocket.middleware', []);
     }
 
     /**
@@ -394,7 +394,7 @@ class Websocket
     {
         return $this->pipeline
             ->send($request)
-            ->through($this->middlewares)
+            ->through($this->middleware)
             ->then(function ($request) {
                 return $request;
             });
