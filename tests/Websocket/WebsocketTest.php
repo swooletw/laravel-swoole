@@ -99,6 +99,30 @@ class WebsocketTest extends TestCase
         $websocket->on('invalid', 123);
     }
 
+    public function testLogingUsingId()
+    {
+        $room = m::mock(RoomContract::class);
+        $room->shouldReceive('add')
+            ->with($sender = 1, 'uid_1')
+            ->once();
+
+        $websocket = $this->getWebsocket($room)
+            ->setSender($sender)
+            ->loginUsingId(1);
+    }
+
+    public function testToUser()
+    {
+        $room = m::mock(RoomContract::class);
+        $room->shouldReceive('getClients')
+            ->with('uid_1')
+            ->once()
+            ->andReturn([$uid = 1]);
+
+        $websocket = $this->getWebsocket($room)->toUser($uid);
+        $this->assertTrue(in_array($uid, $websocket->getTo()));
+    }
+
     public function testReset()
     {
         $websocket = $this->getWebsocket();
