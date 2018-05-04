@@ -451,7 +451,7 @@ class Application
         $this->application = $application;
 
         if ($this->framework === 'laravel') {
-            $this->rebindKernelContainer($this->kernel);
+            $this->rebindKernelContainer($this->getKernel());
         }
     }
 }
