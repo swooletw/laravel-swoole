@@ -4,12 +4,15 @@ namespace SwooleTW\Http\Websocket;
 
 use InvalidArgumentException;
 use Illuminate\Support\Facades\App;
+use SwooleTW\Http\Websocket\Authenticatable;
 use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use Illuminate\Contracts\Pipeline\Pipeline as PipelineContract;
 
 class Websocket
 {
+    use Authenticatable;
+
     const PUSH_ACTION = 'push';
     const EVENT_CONNECT = 'connect';
     const USER_PREFIX = 'uid_';
@@ -309,35 +312,6 @@ class Websocket
     public function getTo()
     {
         return $this->to;
-    }
-
-    /**
-     * Login using current userId.
-     */
-    public function loginUsingId($userId)
-    {
-        return $this->join(static::USER_PREFIX . $userId);
-    }
-
-    /**
-     * Set a recepient's fd by userId
-     */
-    public function toUser($userId)
-    {
-        return $this->toUsers([$userId]);
-    }
-
-    /**
-     * Set multiple recepients' fds by userIds
-     */
-    public function toUsers(array $userIds)
-    {
-        foreach ($userIds as $userId) {
-            $fds = $this->room->getClients(static::USER_PREFIX . $userId);
-            $this->toAll($fds);
-        }
-
-        return $this;
     }
 
     /**
