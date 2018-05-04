@@ -295,7 +295,13 @@ class Websocket
         $rooms = array_diff($this->to, $fds);
 
         foreach ($rooms as $room) {
-            $fds = array_merge($fds, $this->room->getClients($room));
+            $clients = $this->room->getClients($room);
+            // rollback fd with wrong type back to fds array
+            if (empty($clients) && is_numeric($room)) {
+                $fds[] = $room;
+            } else {
+                $fds = array_merge($fds, $this->room->getClients($clients));
+            }
         }
 
         return array_values(array_unique($fds));
