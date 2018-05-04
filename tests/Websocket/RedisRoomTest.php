@@ -51,7 +51,7 @@ class RedisRoomTest extends TestCase
             ->times(3);
         $redisRoom = $this->getRedisRoom($redis);
 
-        $redisRoom->addAll(1, ['foo', 'bar']);
+        $redisRoom->add(1, ['foo', 'bar']);
     }
 
     public function testAdd()
@@ -71,7 +71,7 @@ class RedisRoomTest extends TestCase
             ->times(3);
         $redisRoom = $this->getRedisRoom($redis);
 
-        $redisRoom->deleteAll(1, ['foo', 'bar']);
+        $redisRoom->delete(1, ['foo', 'bar']);
     }
 
     public function testDelete()
