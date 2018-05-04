@@ -4,15 +4,18 @@ namespace SwooleTW\Http\Websocket;
 
 use InvalidArgumentException;
 use Illuminate\Support\Facades\App;
+use SwooleTW\Http\Websocket\Authenticatable;
 use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use Illuminate\Contracts\Pipeline\Pipeline as PipelineContract;
 
 class Websocket
 {
-    const PUSH_ACTION = 'push';
+    use Authenticatable;
 
+    const PUSH_ACTION = 'push';
     const EVENT_CONNECT = 'connect';
+    const USER_PREFIX = 'uid_';
 
     /**
      * Determine if to broadcast.
@@ -87,24 +90,14 @@ class Websocket
     }
 
     /**
-     * Set a recepient's fd or a room name.
-     *
-     * @param integer, string
-     */
-    public function to($value)
-    {
-        $this->toAll([$value]);
-
-        return $this;
-    }
-
-    /**
      * Set multiple recepients' fd or room names.
      *
-     * @param array (fds or rooms)
+     * @param integer, string, array
      */
-    public function toAll(array $values)
+    public function to($values)
     {
+        $values = is_string($values) || is_integer($values) ? func_get_args() : $values;
+
         foreach ($values as $value) {
             if (! in_array($value, $this->to)) {
                 $this->to[] = $value;
@@ -115,37 +108,15 @@ class Websocket
     }
 
     /**
-     * Join sender to a room.
-     *
-     * @param string
-     */
-    public function join(string $room)
-    {
-        $this->room->add($this->sender, $room);
-
-        return $this;
-    }
-
-    /**
      * Join sender to multiple rooms.
      *
-     * @param array
+     * @param string, array
      */
-    public function joinAll(array $rooms)
+    public function join($rooms)
     {
+        $rooms = is_string($rooms) || is_integer($rooms) ? func_get_args() : $rooms;
+
         $this->room->addAll($this->sender, $rooms);
-
-        return $this;
-    }
-
-    /**
-     * Make sender leave a room.
-     *
-     * @param string
-     */
-    public function leave(string $room)
-    {
-        $this->room->delete($this->sender, $room);
 
         return $this;
     }
@@ -153,10 +124,12 @@ class Websocket
     /**
      * Make sender leave multiple rooms.
      *
-     * @param array
+     * @param string, array
      */
-    public function leaveAll(array $rooms = [])
+    public function leave($rooms)
     {
+        $rooms = is_string($rooms) || is_integer($rooms) ? func_get_args() : $rooms;
+
         $this->room->deleteAll($this->sender, $rooms);
 
         return $this;
@@ -322,7 +295,13 @@ class Websocket
         $rooms = array_diff($this->to, $fds);
 
         foreach ($rooms as $room) {
-            $fds = array_merge($fds, $this->room->getClients($room));
+            $clients = $this->room->getClients($room);
+            // rollback fd with wrong type back to fds array
+            if (empty($clients) && is_numeric($room)) {
+                $fds[] = $room;
+            } else {
+                $fds = array_merge($fds, $this->room->getClients($clients));
+            }
         }
 
         return array_values(array_unique($fds));

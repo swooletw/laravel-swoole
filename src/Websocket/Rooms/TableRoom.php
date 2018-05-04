@@ -24,14 +24,10 @@ class TableRoom implements RoomContract
         $this->initFdsTable();
     }
 
-    public function add(int $fd, string $room)
-    {
-        $this->addAll($fd, [$room]);
-    }
-
-    public function addAll(int $fd, array $roomNames)
+    public function add(int $fd, $roomNames)
     {
         $rooms = $this->getRooms($fd);
+        $roomNames = is_array($roomNames) ? $roomNames : [$roomNames];
 
         foreach ($roomNames as $room) {
             $fds = $this->getClients($room);
@@ -49,14 +45,10 @@ class TableRoom implements RoomContract
         $this->setRooms($fd, $rooms);
     }
 
-    public function delete(int $fd, string $room)
-    {
-        $this->deleteAll($fd, [$room]);
-    }
-
-    public function deleteAll(int $fd, array $roomNames = [])
+    public function delete(int $fd, $roomNames = [])
     {
         $allRooms = $this->getRooms($fd);
+        $roomNames = is_array($roomNames) ? $roomNames : [$roomNames];
         $rooms = count($roomNames) ? $roomNames : $allRooms;
 
         $removeRooms = [];

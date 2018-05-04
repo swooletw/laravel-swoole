@@ -63,13 +63,10 @@ class RedisRoom implements RoomContract
         return $this->redis;
     }
 
-    public function add(int $fd, string $room)
+    public function add(int $fd, $roomNames)
     {
-        $this->addAll($fd, [$room]);
-    }
+        $roomNames = is_array($roomNames) ? $roomNames : [$roomNames];
 
-    public function addAll(int $fd, array $roomNames)
-    {
         $this->addValue($fd, $roomNames, 'fds');
 
         foreach ($roomNames as $room) {
@@ -77,14 +74,11 @@ class RedisRoom implements RoomContract
         }
     }
 
-    public function delete(int $fd, string $room)
+    public function delete(int $fd, $roomNames = [])
     {
-        $this->deleteAll($fd, [$room]);
-    }
-
-    public function deleteAll(int $fd, array $roomNames = [])
-    {
+        $roomNames = is_array($roomNames) ? $roomNames : [$roomNames];
         $roomNames = count($roomNames) ? $roomNames : $this->getRooms($fd);
+
         $this->removeValue($fd, $roomNames, 'fds');
 
         foreach ($roomNames as $room) {

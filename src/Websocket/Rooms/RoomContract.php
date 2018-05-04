@@ -10,36 +10,20 @@ interface RoomContract
     public function prepare();
 
     /**
-     * Add a socket to a room.
+     * Add multiple socket fds to a room.
      *
      * @int fd
-     * @string room
+     * @string|array rooms
      */
-    public function add(int $fd, string $room);
+    public function add(int $fd, $rooms);
 
     /**
-     * Add a socket to multiple rooms.
+     * Delete multiple socket fds from a room.
      *
      * @int fd
-     * @array room
+     * @string|array rooms
      */
-    public function addAll(int $fd, array $rooms);
-
-    /**
-     * Delete a socket from a room.
-     *
-     * @int fd
-     * @string room
-     */
-    public function delete(int $fd, string $room);
-
-    /**
-     * Delete a socket from all rooms.
-     *
-     * @int fd
-     * @string room
-     */
-    public function deleteAll(int $fd);
+    public function delete(int $fd, $rooms);
 
     /**
      * Get all sockets by a room key.
