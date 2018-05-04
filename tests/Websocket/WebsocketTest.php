@@ -40,7 +40,7 @@ class WebsocketTest extends TestCase
     public function testJoin()
     {
         $room = m::mock(RoomContract::class);
-        $room->shouldReceive('addAll')
+        $room->shouldReceive('add')
             ->with($sender = 1, $name = ['room'])
             ->once();
 
@@ -52,7 +52,7 @@ class WebsocketTest extends TestCase
     public function testJoinAll()
     {
         $room = m::mock(RoomContract::class);
-        $room->shouldReceive('addAll')
+        $room->shouldReceive('add')
             ->with($sender = 1, $names = ['room1', 'room2'])
             ->once();
 
@@ -64,7 +64,7 @@ class WebsocketTest extends TestCase
     public function testLeave()
     {
         $room = m::mock(RoomContract::class);
-        $room->shouldReceive('deleteAll')
+        $room->shouldReceive('delete')
             ->with($sender = 1, $name = ['room'])
             ->once();
 
@@ -76,7 +76,7 @@ class WebsocketTest extends TestCase
     public function testLeaveAll()
     {
         $room = m::mock(RoomContract::class);
-        $room->shouldReceive('deleteAll')
+        $room->shouldReceive('delete')
             ->with($sender = 1, $names = ['room1', 'room2'])
             ->once();
 
@@ -108,7 +108,7 @@ class WebsocketTest extends TestCase
             ->andReturn($id = 1);
 
         $room = m::mock(RoomContract::class);
-        $room->shouldReceive('addAll')
+        $room->shouldReceive('add')
             ->with($sender = 1, ['uid_1'])
             ->once();
 
@@ -120,7 +120,7 @@ class WebsocketTest extends TestCase
     public function testLoginUsingId()
     {
         $room = m::mock(RoomContract::class);
-        $room->shouldReceive('addAll')
+        $room->shouldReceive('add')
             ->with($sender = 1, ['uid_1'])
             ->once();
 

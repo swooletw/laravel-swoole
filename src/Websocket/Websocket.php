@@ -116,7 +116,7 @@ class Websocket
     {
         $rooms = is_string($rooms) || is_integer($rooms) ? func_get_args() : $rooms;
 
-        $this->room->addAll($this->sender, $rooms);
+        $this->room->add($this->sender, $rooms);
 
         return $this;
     }
@@ -126,11 +126,11 @@ class Websocket
      *
      * @param string, array
      */
-    public function leave($rooms)
+    public function leave($rooms = [])
     {
         $rooms = is_string($rooms) || is_integer($rooms) ? func_get_args() : $rooms;
 
-        $this->room->deleteAll($this->sender, $rooms);
+        $this->room->delete($this->sender, $rooms);
 
         return $this;
     }
@@ -175,7 +175,7 @@ class Websocket
      *
      * @param string
      */
-    public function in(string $room)
+    public function in($room)
     {
         $this->join($room);
 

@@ -119,7 +119,7 @@ trait CanWebsocket
 
         try {
             // leave all rooms
-            $this->websocket->reset(true)->setSender($fd)->leaveAll();
+            $this->websocket->reset(true)->setSender($fd)->leave();
             // trigger 'disconnect' websocket event
             if ($this->websocket->eventExists('disconnect')) {
                 $this->websocket->call('disconnect');
