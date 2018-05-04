@@ -90,24 +90,14 @@ class Websocket
     }
 
     /**
-     * Set a recepient's fd or a room name.
-     *
-     * @param integer, string
-     */
-    public function to($value)
-    {
-        $this->toAll([$value]);
-
-        return $this;
-    }
-
-    /**
      * Set multiple recepients' fd or room names.
      *
-     * @param array (fds or rooms)
+     * @param integer, string, array
      */
-    public function toAll(array $values)
+    public function to($values)
     {
+        $values = is_string($values) || is_integer($values) ? func_get_args() : $values;
+
         foreach ($values as $value) {
             if (! in_array($value, $this->to)) {
                 $this->to[] = $value;
@@ -118,37 +108,15 @@ class Websocket
     }
 
     /**
-     * Join sender to a room.
-     *
-     * @param string
-     */
-    public function join(string $room)
-    {
-        $this->room->add($this->sender, $room);
-
-        return $this;
-    }
-
-    /**
      * Join sender to multiple rooms.
      *
-     * @param array
+     * @param string, array
      */
-    public function joinAll(array $rooms)
+    public function join($rooms)
     {
+        $rooms = is_string($rooms) || is_integer($rooms) ? func_get_args() : $rooms;
+
         $this->room->addAll($this->sender, $rooms);
-
-        return $this;
-    }
-
-    /**
-     * Make sender leave a room.
-     *
-     * @param string
-     */
-    public function leave(string $room)
-    {
-        $this->room->delete($this->sender, $room);
 
         return $this;
     }
@@ -156,10 +124,12 @@ class Websocket
     /**
      * Make sender leave multiple rooms.
      *
-     * @param array
+     * @param string, array
      */
-    public function leaveAll(array $rooms = [])
+    public function leave($rooms)
     {
+        $rooms = is_string($rooms) || is_integer($rooms) ? func_get_args() : $rooms;
+
         $this->room->deleteAll($this->sender, $rooms);
 
         return $this;

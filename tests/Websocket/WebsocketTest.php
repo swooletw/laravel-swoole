@@ -27,7 +27,7 @@ class WebsocketTest extends TestCase
         $websocket = $this->getWebsocket()->to($foo = 'foo');
         $this->assertTrue(in_array($foo, $websocket->getTo()));
 
-        $websocket->toAll($bar = ['foo', 'bar', 'seafood']);
+        $websocket->to($bar = ['foo', 'bar', 'seafood']);
         $this->assertSame($bar, $websocket->getTo());
     }
 
@@ -40,8 +40,8 @@ class WebsocketTest extends TestCase
     public function testJoin()
     {
         $room = m::mock(RoomContract::class);
-        $room->shouldReceive('add')
-            ->with($sender = 1, $name = 'room')
+        $room->shouldReceive('addAll')
+            ->with($sender = 1, $name = ['room'])
             ->once();
 
         $websocket = $this->getWebsocket($room)
@@ -58,14 +58,14 @@ class WebsocketTest extends TestCase
 
         $websocket = $this->getWebsocket($room)
             ->setSender($sender)
-            ->joinAll($names);
+            ->join($names);
     }
 
     public function testLeave()
     {
         $room = m::mock(RoomContract::class);
-        $room->shouldReceive('delete')
-            ->with($sender = 1, $name = 'room')
+        $room->shouldReceive('deleteAll')
+            ->with($sender = 1, $name = ['room'])
             ->once();
 
         $websocket = $this->getWebsocket($room)
@@ -82,7 +82,7 @@ class WebsocketTest extends TestCase
 
         $websocket = $this->getWebsocket($room)
             ->setSender($sender)
-            ->leaveAll($names);
+            ->leave($names);
     }
 
     public function testCallbacks()
@@ -108,8 +108,8 @@ class WebsocketTest extends TestCase
             ->andReturn($id = 1);
 
         $room = m::mock(RoomContract::class);
-        $room->shouldReceive('add')
-            ->with($sender = 1, 'uid_1')
+        $room->shouldReceive('addAll')
+            ->with($sender = 1, ['uid_1'])
             ->once();
 
         $websocket = $this->getWebsocket($room)
@@ -120,8 +120,8 @@ class WebsocketTest extends TestCase
     public function testLoginUsingId()
     {
         $room = m::mock(RoomContract::class);
-        $room->shouldReceive('add')
-            ->with($sender = 1, 'uid_1')
+        $room->shouldReceive('addAll')
+            ->with($sender = 1, ['uid_1'])
             ->once();
 
         $websocket = $this->getWebsocket($room)

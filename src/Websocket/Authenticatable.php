@@ -28,7 +28,7 @@ trait Authenticatable
      */
     public function toUser($users)
     {
-        $users = is_string($users) || is_object($users) ? func_get_args() : $users;
+        $users = is_object($users) ? func_get_args() : $users;
 
         $userIds = array_map(function ($user) {
             $this->checkUser($user);
@@ -47,7 +47,7 @@ trait Authenticatable
 
         foreach ($userIds as $userId) {
             $fds = $this->room->getClients(static::USER_PREFIX . $userId);
-            $this->toAll($fds);
+            $this->to($fds);
         }
 
         return $this;
