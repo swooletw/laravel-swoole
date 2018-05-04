@@ -39,14 +39,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Laravel app will be cloned on every requset.
+    | Laravel app will be cloned on every request.
     |--------------------------------------------------------------------------
     */
     'sandbox_mode' => env('SWOOLE_SANDBOX_MODE', true),
 
     /*
     |--------------------------------------------------------------------------
-    | Console output will be transfered to response content if enabled.
+    | Console output will be transferred to response content if enabled.
     |--------------------------------------------------------------------------
     */
     'ob_output' => env('SWOOLE_OB_OUTPUT', true),
