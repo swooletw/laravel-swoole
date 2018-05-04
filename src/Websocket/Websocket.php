@@ -300,7 +300,7 @@ class Websocket
             if (empty($clients) && is_numeric($room)) {
                 $fds[] = $room;
             } else {
-                $fds = array_merge($fds, $this->room->getClients($clients));
+                $fds = array_merge($fds, $clients);
             }
         }
 
