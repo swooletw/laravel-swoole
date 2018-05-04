@@ -427,6 +427,21 @@ class Application
     }
 
     /**
+     * Rebind laravel's container in kernel.
+     */
+    protected function rebindKernelContainer($kernel)
+    {
+        $application = $this->application;
+
+        $closure = function () use ($application) {
+            $this->app = $application;
+        };
+
+        $resetKernel = $closure->bindTo($kernel, $kernel);
+        $resetKernel();
+    }
+
+    /**
      * Clone laravel app and kernel while being cloned.
      */
     public function __clone()
@@ -436,7 +451,7 @@ class Application
         $this->application = $application;
 
         if ($this->framework === 'laravel') {
-            $this->kernel->setApplication($application);
+            $this->rebindKernelContainer($this->kernel);
         }
     }
 }
