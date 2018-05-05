@@ -313,7 +313,9 @@ class HttpServerCommand extends Command
     protected function checkEnvironment()
     {
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            throw new \RuntimeException("Swoole extension doesn't support Windows OS yet");
+            throw new \RuntimeException("Swoole extension doesn't support Windows OS yet.");
+        } elseif (! extension_loaded('swoole')) {
+            throw new \RuntimeException("Can't detect Swoole extension installed.");
         }
     }
 }

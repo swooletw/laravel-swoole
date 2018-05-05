@@ -15,7 +15,6 @@
     ],
     "require": {
         "php": "^7.1",
-        "ext-swoole": ">=1.9.3 || >=2.1.0",
         "illuminate/console": "~5.1",
         "illuminate/contracts": "~5.1",
         "illuminate/http": "~5.1",
