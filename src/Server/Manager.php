@@ -292,7 +292,9 @@ class Manager
     protected function handleStaticRequest($illuminateRequest, $swooleResponse)
     {
         $uri = $illuminateRequest->getRequestUri();
-        if (strpos($uri, '.php') || strpos($uri, '.htaccess') || strpos($uri, '.config')) {
+        $blackList = ['php', 'htaccess', 'config'];
+        $extension = substr(strrchr($uri, '.'), 1);
+        if ($extension && in_array($extension, $blackList)) {
             return;
         }
 
@@ -304,7 +306,13 @@ class Manager
         }
 
         $swooleResponse->status(200);
-        $swooleResponse->header('Content-Type', mime_content_type($filename));
+        $mime = mime_content_type($filename);
+        if ($extension === 'js') {
+            $mime = 'text/javascript';
+        } elseif ($extension === 'css') {
+            $mime = 'text/css';
+        }
+        $swooleResponse->header('Content-Type', $mime);
         $swooleResponse->sendfile($filename);
 
         return true;
