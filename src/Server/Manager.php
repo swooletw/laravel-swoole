@@ -365,8 +365,6 @@ class Manager
     public function onShutdown()
     {
         $this->removePidFile();
-
-        $this->app['events']->fire('swoole.shutdown', func_get_args());
     }
 
     /**
