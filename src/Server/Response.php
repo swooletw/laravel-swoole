@@ -70,7 +70,12 @@ class Response
         }
 
         // headers
-        foreach ($illuminateResponse->headers->allPreserveCaseWithoutCookies() as $name => $values) {
+        // allPreserveCaseWithoutCookies() doesn't exist before Laravel 5.3
+        $headers = $illuminateResponse->headers->allPreserveCase();
+        if (isset($headers['Set-Cookie'])) {
+            unset($headers['Set-Cookie']);
+        }
+        foreach ($headers as $name => $values) {
             foreach ($values as $value) {
                 $this->swooleResponse->header($name, $value);
             }

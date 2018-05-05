@@ -50,6 +50,7 @@ class HttpServerCommand extends Command
      */
     public function handle()
     {
+        $this->checkEnvironment();
         $this->loadConfigs();
         $this->initAction();
         $this->runAction();
@@ -304,5 +305,17 @@ class HttpServerCommand extends Command
     protected function isDaemon()
     {
         return $this->configs['server']['options']['daemonize'];
+    }
+
+    /**
+     * Check running enironment.
+     */
+    protected function checkEnvironment()
+    {
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            throw new \RuntimeException("Swoole extension doesn't support Windows OS yet.");
+        } elseif (! extension_loaded('swoole')) {
+            throw new \RuntimeException("Can't detect Swoole extension installed.");
+        }
     }
 }
