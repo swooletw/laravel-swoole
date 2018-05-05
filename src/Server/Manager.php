@@ -299,7 +299,7 @@ class Manager
         $publicPath = $this->container['config']->get('swoole_http.server.public_path', base_path('public'));
         $filename = $publicPath . $uri;
 
-        if (! file_exists($filename)) {
+        if (! is_file($filename)) {
             return;
         }
 
