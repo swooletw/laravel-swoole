@@ -86,9 +86,8 @@ class Response
 
         // cookies
         foreach ($illuminateResponse->headers->getCookies() as $cookie) {
-            $method = $cookie->isRaw() ? 'rawcookie' : 'cookie';
-
-            $this->swooleResponse->$method(
+            // may need to consider rawcookie
+            $this->swooleResponse->cookie(
                 $cookie->getName(), $cookie->getValue(),
                 $cookie->getExpiresTime(), $cookie->getPath(),
                 $cookie->getDomain(), $cookie->isSecure(),
