@@ -240,11 +240,17 @@ class Manager
 
         $this->resetOnRequest();
 
-        $application = $this->getApplication();
-
         try {
             // transform swoole request to illuminate request
             $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
+
+            // handle static file request first
+            if ($this->handleStaticRequest($illuminateRequest, $swooleResponse)) {
+                return;
+            }
+
+            // get laravel/lumen's application instance
+            $application = $this->getApplication();
 
             // use cloned application if sandbox mode is on
             if ($this->isSandbox) {
@@ -275,6 +281,33 @@ class Manager
                 $this->logServerError($e);
             }
         }
+    }
+
+    /**
+     * Handle static file request.
+     *
+     * @param \Illuminate\Http\Request $illuminateRequest
+     * @param \Swoole\Http\Response $swooleResponse
+     */
+    protected function handleStaticRequest($illuminateRequest, $swooleResponse)
+    {
+        $uri = $illuminateRequest->getRequestUri();
+        if (strpos($uri, '.php') || strpos($uri, '.htaccess') || strpos($uri, '.config')) {
+            return;
+        }
+
+        $publicPath = $this->container['config']->get('swoole_http.server.public_path', base_path('public'));
+        $filename = $publicPath . $uri;
+
+        if (! file_exists($filename)) {
+            return;
+        }
+
+        $swooleResponse->status(200);
+        $swooleResponse->header('Content-Type', mime_content_type($filename));
+        $swooleResponse->sendfile($filename);
+
+        return true;
     }
 
     /**
