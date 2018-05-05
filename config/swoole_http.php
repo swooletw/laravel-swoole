@@ -19,7 +19,7 @@ return [
             'pid_file' => env('SWOOLE_HTTP_PID_FILE', base_path('storage/logs/swoole_http.pid')),
             'log_file' => env('SWOOLE_HTTP_LOG_FILE', base_path('storage/logs/swoole_http.log')),
             'daemonize' => env('SWOOLE_HTTP_DAEMONIZE', false),
-            // Normally this value should be 1~4 times lager according to your cpu cores.
+            // Normally this value should be 1~4 times larger according to your cpu cores.
             'reactor_num' => env('SWOOLE_HTTP_REACTOR_NUM', swoole_cpu_num() * 2),
             'worker_num' => env('SWOOLE_HTTP_WORKER_NUM', swoole_cpu_num() * 2),
             'task_worker_num' => env('SWOOLE_HTTP_TASK_WORKER_NUM', swoole_cpu_num() * 2),
