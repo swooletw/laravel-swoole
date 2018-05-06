@@ -303,7 +303,7 @@ class Manager
         $publicPath = $this->container['config']->get('swoole_http.server.public_path', base_path('public'));
         $filename = $publicPath . $uri;
 
-        if (! is_file($filename)) {
+        if (! is_file($filename) || filesize($filename) === 0) {
             return;
         }
 
