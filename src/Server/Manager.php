@@ -240,12 +240,14 @@ class Manager
 
         $this->resetOnRequest();
 
+        $handleStatic = $this->container['config']->get('swoole_http.handle_static_files', true);
+
         try {
             // transform swoole request to illuminate request
             $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
 
             // handle static file request first
-            if ($this->handleStaticRequest($illuminateRequest, $swooleResponse)) {
+            if ($handleStatic && $this->handleStaticRequest($illuminateRequest, $swooleResponse)) {
                 return;
             }
 
