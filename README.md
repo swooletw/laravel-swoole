@@ -61,7 +61,9 @@ Requests/sec:   8717.00
 Transfer/sec:      1.55MB
 ```
 
-## Support
+## Issues and Support
+
+Please read [Issues Guideline](https://github.com/swooletw/laravel-swoole/wiki/Z2.-Issues-Guideline) before you submit an issue, thanks.
 
 Bugs and feature request are tracked on [GitHub](https://github.com/swooletw/laravel-swoole/issues).
 
