@@ -98,6 +98,14 @@ class Sandbox
             $router = $application->make('router');
             $closure = function () use ($application) {
                 $this->container = $application;
+                if (! isset($application['request'])) {
+                    return;
+                }
+                $route = $this->routes->match($application['request']);
+                // clear resolved controller
+                if (property_exists($route, 'container')) {
+                    $route->controller = null;
+                }
             };
 
             $resetRouter = $closure->bindTo($router, $router);
