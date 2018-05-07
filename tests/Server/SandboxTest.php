@@ -19,8 +19,7 @@ class SandboxTest extends TestCase
 
     public function testMakeSandbox()
     {
-        $application = m::mock(Application::class);
-        $sandbox = Sandbox::make($application);
+        $sandbox = Sandbox::make($this->getApplication());
 
         $this->assertTrue($sandbox instanceof Sandbox);
     }
@@ -55,8 +54,8 @@ class SandboxTest extends TestCase
     protected function getContainer()
     {
         $container = m::mock(Container::class);
-        $container->shouldReceive('bootstrapWith')
-            ->andReturnNull();
+        $container->shouldReceive('offsetGet')
+            ->andReturn((object)[]);
 
         return $container;
     }
