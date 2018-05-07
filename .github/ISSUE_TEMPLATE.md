@@ -8,14 +8,18 @@ Please answer these questions before submitting your issue. Thanks!
 
 
 
-3. What did you do? If possible, provide a recipe for reproducing the error.
+3. Which release version of this package are you using?
 
 
 
-4. What did you expect to see?
+4. What did you do? If possible, provide a recipe for reproducing the error.
 
 
 
-5. What did you see instead?
+5. What did you expect to see?
+
+
+
+6. What did you see instead?
 
 

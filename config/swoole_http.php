@@ -15,6 +15,8 @@ return [
         'host' => env('SWOOLE_HTTP_HOST', '127.0.0.1'),
         'port' => env('SWOOLE_HTTP_PORT', '1215'),
         'public_path' => base_path('public'),
+        // If use swoole to respond request for static files
+        'handle_static_files' => true,
         'options' => [
             'pid_file' => env('SWOOLE_HTTP_PID_FILE', base_path('storage/logs/swoole_http.pid')),
             'log_file' => env('SWOOLE_HTTP_LOG_FILE', base_path('storage/logs/swoole_http.log')),
@@ -31,6 +33,8 @@ return [
             'socket_buffer_size' => 128 * 1024 * 1024,
             // Worker will restart after processing this number of request
             'max_request' => 3000,
+            // Enable coroutine send
+            'send_yield' => true,
         ],
     ],
 

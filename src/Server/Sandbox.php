@@ -20,6 +20,11 @@ class Sandbox
     protected $snapshot;
 
     /**
+     * @var \Illuminate\Config\Repository
+     */
+    protected $config;
+
+    /**
      * @var boolean
      */
     public $enabled = false;
@@ -41,6 +46,7 @@ class Sandbox
     public function __construct(Application $application)
     {
         $this->setApplication($application);
+        $this->setInitialConfig($application);
     }
 
     /**
@@ -51,6 +57,16 @@ class Sandbox
     public function setApplication(Application $application)
     {
         $this->application = $application;
+    }
+
+    /**
+     * Set config snapshot.
+     *
+     * @param \SwooleTW\Http\Server\Application
+     */
+    protected function setInitialConfig(Application $application)
+    {
+        $this->config = clone $application->getApplication()['config'];
     }
 
     /**
@@ -75,18 +91,17 @@ class Sandbox
      */
     protected function resetLaravelApp($application)
     {
-        if ($this->isFramework('laravel')) {
-            $application->bootstrapWith([
-                'Illuminate\Foundation\Bootstrap\LoadConfiguration'
-            ]);
-        } elseif ($this->isFramework('lumen')) {
-            $reflector = new \ReflectionMethod(LumenApplication::class, 'registerConfigBindings');
-            $reflector->setAccessible(true);
-            $reflector->invoke($application);
-        }
-
+        $this->resetConfigInstance($application);
         $this->rebindRouterContainer($application);
         $this->rebindViewContainer($application);
+    }
+
+    /**
+     * Reset laravel/lumen's config to initial values.
+     */
+    protected function resetConfigInstance($application)
+    {
+        $application->instance('config', clone $this->config);
     }
 
     /**
@@ -98,6 +113,14 @@ class Sandbox
             $router = $application->make('router');
             $closure = function () use ($application) {
                 $this->container = $application;
+                if (! isset($application['request'])) {
+                    return;
+                }
+                $route = $this->routes->match($application['request']);
+                // clear resolved controller
+                if (property_exists($route, 'container')) {
+                    $route->controller = null;
+                }
             };
 
             $resetRouter = $closure->bindTo($router, $router);
