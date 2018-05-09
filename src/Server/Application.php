@@ -260,9 +260,10 @@ class Application
         // prepare content for ob
         $content = '';
         if ($shouldUseOb) {
-            if ($response instanceof StreamedResponse ||
-                $response instanceof BinaryFileResponse) {
+            if ($isBinary = $response instanceof BinaryFileResponse) {
                 $shouldUseOb = false;
+            } elseif ($isStream = $response instanceof StreamedResponse) {
+                $response->sendContent();
             } elseif ($response instanceof SymfonyResponse) {
                 $content = $response->getContent();
             } else {
@@ -275,10 +276,14 @@ class Application
 
         // set ob content to response
         if ($shouldUseOb && strlen($content) === 0 && ob_get_length() > 0) {
-            $response->setContent(ob_get_contents());
+            if ($isStream) {
+                $response->output = ob_get_contents();
+            } else {
+                $response->setContent(ob_get_contents());
+            }
         }
 
-        if ($shouldUseOb) {
+        if ($shouldUseOb || $isBinary) {
             ob_end_clean();
         }
 

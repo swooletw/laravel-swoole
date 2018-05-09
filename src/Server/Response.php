@@ -103,8 +103,10 @@ class Response
     {
         $illuminateResponse = $this->getIlluminateResponse();
 
-        if ($illuminateResponse instanceof StreamedResponse) {
-            $illuminateResponse->sendContent();
+        if ($illuminateResponse instanceof StreamedResponse &&
+            property_exists($illuminateResponse, 'output')
+        ) {
+            $this->swooleResponse->end($illuminateResponse->output);
         } elseif ($illuminateResponse instanceof BinaryFileResponse) {
             $this->swooleResponse->sendfile($illuminateResponse->getFile()->getPathname());
         } else {
