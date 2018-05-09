@@ -260,7 +260,7 @@ class Application
         // prepare content for ob
         $content = '';
         if ($shouldUseOb) {
-            if ($isBinary = $response instanceof BinaryFileResponse) {
+            if ($response instanceof BinaryFileResponse) {
                 $shouldUseOb = false;
             } elseif ($isStream = $response instanceof StreamedResponse) {
                 $response->sendContent();
@@ -283,7 +283,7 @@ class Application
             }
         }
 
-        if ($shouldUseOb || $isBinary) {
+        if ($shouldUseOb || $response instanceof BinaryFileResponse) {
             ob_end_clean();
         }
 
