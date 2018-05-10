@@ -164,6 +164,7 @@ class Sandbox
     {
         if ($this->isFramework('laravel')) {
             $router = $application->make('router');
+            $request = $this->request;
             $closure = function () use ($application, $request) {
                 $this->container = $application;
                 if (is_null($request)) {
