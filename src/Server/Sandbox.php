@@ -92,8 +92,20 @@ class Sandbox
     protected function resetLaravelApp($application)
     {
         $this->resetConfigInstance($application);
+        $this->clearInstances($application);
         $this->rebindRouterContainer($application);
         $this->rebindViewContainer($application);
+    }
+
+    /**
+     * Clear resolved instances.
+     */
+    protected function clearInstances($application)
+    {
+        $instances = $this->config->get('swoole_http.instances', []);
+        foreach ($instances as $instance) {
+            $application->forgetInstance($instance);
+        }
     }
 
     /**

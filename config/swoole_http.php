@@ -49,35 +49,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Laravel app will be cloned on every request.
-    |--------------------------------------------------------------------------
-    */
-    'sandbox_mode' => env('SWOOLE_SANDBOX_MODE', true),
-
-    /*
-    |--------------------------------------------------------------------------
     | Console output will be transferred to response content if enabled.
     |--------------------------------------------------------------------------
     */
     'ob_output' => env('SWOOLE_OB_OUTPUT', true),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Providers here will be registered on every request.
-    |--------------------------------------------------------------------------
-    */
-    'providers' => [
-        // Illuminate\Auth\AuthServiceProvider::class,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Resolved facades here will be cleared on every request.
-    |--------------------------------------------------------------------------
-    */
-    'facades' => [
-        'auth', 'auth.driver', 'auth.password', 'request'
-    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -92,7 +67,7 @@ return [
     |--------------------------------------------------------------------------
     | Define your swoole tables here.
     |
-    | @see https://wiki.swoole.com/wiki/page/p-table.html
+    | @see https://www.swoole.co.uk/docs/modules/swoole-table
     |--------------------------------------------------------------------------
     */
     'tables' => [

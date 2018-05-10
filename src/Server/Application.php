@@ -42,27 +42,6 @@ class Application
     protected $kernel;
 
     /**
-     * Service providers to be reset.
-     *
-     * @var array
-     */
-    protected $providers = [];
-
-    /**
-     * Instance names to be reset.
-     *
-     * @var array
-     */
-    protected $instances = [];
-
-    /**
-     * Resolved facades to be reset.
-     *
-     * @var array
-     */
-    protected $facades = [];
-
-    /**
      * Aliases for pre-resolving.
      *
      * @var array
@@ -95,11 +74,7 @@ class Application
     {
         $this->setFramework($framework);
         $this->setBasePath($basePath);
-
         $this->bootstrap();
-        $this->initProviders();
-        $this->initFacades();
-        $this->initInstances();
     }
 
     /**
@@ -117,84 +92,6 @@ class Application
         }
 
         $this->preResolveInstances($application);
-    }
-
-    /**
-     * Initialize customized service providers.
-     */
-    protected function initProviders()
-    {
-        $app = $this->getApplication();
-        $providers = $app['config']->get('swoole_http.providers', []);
-
-        foreach ($providers as $provider) {
-            if (! $provider instanceof ServiceProvider) {
-                $provider = new $provider($app);
-            }
-            $this->providers[get_class($provider)] = $provider;
-        }
-    }
-
-    /**
-     * Initialize customized instances.
-     */
-    protected function initInstances()
-    {
-        $app = $this->getApplication();
-        $instances = $app['config']->get('swoole_http.instances', []);
-
-        $this->instances = array_filter($instances, function ($value) {
-            return is_string($value);
-        });
-    }
-
-    /**
-     * Initialize customized facades.
-     */
-    protected function initFacades()
-    {
-        $app = $this->getApplication();
-        $facades = $app['config']->get('swoole_http.facades', []);
-
-        $this->facades = array_filter($facades, function ($value) {
-            return is_string($value);
-        });
-    }
-
-    /**
-     * Re-register and reboot service providers.
-     */
-    public function resetProviders()
-    {
-        foreach ($this->providers as $provider) {
-            if (method_exists($provider, 'register')) {
-                $provider->register();
-            }
-
-            if (method_exists($provider, 'boot')) {
-                $this->getApplication()->call([$provider, 'boot']);
-            }
-        }
-    }
-
-    /**
-     * Clear resolved facades.
-     */
-    public function clearFacades()
-    {
-        foreach ($this->facades as $facade) {
-            Facade::clearResolvedInstance($facade);
-        }
-    }
-
-    /**
-     * Clear resolved instances.
-     */
-    public function clearInstances()
-    {
-        foreach ($this->instances as $instance) {
-            $this->getApplication()->forgetInstance($instance);
-        }
     }
 
     /**
@@ -262,6 +159,7 @@ class Application
         if ($shouldUseOb) {
             if ($response instanceof BinaryFileResponse) {
                 $shouldUseOb = false;
+                ob_end_clean();
             } elseif ($isStream = $response instanceof StreamedResponse) {
                 $response->sendContent();
             } elseif ($response instanceof SymfonyResponse) {
@@ -283,7 +181,7 @@ class Application
             }
         }
 
-        if ($shouldUseOb || $response instanceof BinaryFileResponse) {
+        if ($shouldUseOb) {
             ob_end_clean();
         }
 

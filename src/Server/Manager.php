@@ -55,11 +55,6 @@ class Manager
     protected $basePath;
 
     /**
-     * @var boolean
-     */
-    protected $isSandbox;
-
-    /**
      * @var \SwooleTW\Http\Server\Sandbox
      */
     protected $sandbox;
@@ -114,7 +109,6 @@ class Manager
     {
         $this->setProcessName('manager process');
 
-        $this->setIsSandbox();
         $this->createTables();
         $this->prepareWebsocket();
         $this->createSwooleServer();
@@ -217,9 +211,7 @@ class Manager
         $this->bindToLaravelApp();
 
         // set application to sandbox environment
-        if ($this->isSandbox || $this->isWebsocket) {
-            $this->sandbox = Sandbox::make($this->getApplication());
-        }
+        $this->sandbox = Sandbox::make($this->getApplication());
 
         // load websocket handlers after binding websocket to laravel app
         if ($this->isWebsocket) {
@@ -251,15 +243,12 @@ class Manager
                 return;
             }
 
-            // get laravel/lumen's application instance
-            $application = $this->getApplication();
+            // set request to original app
+            $this->app->instance('request', $illuminateRequest);
 
-            // use cloned application if sandbox mode is on
-            if ($this->isSandbox) {
-                $application->getApplication()->instance('request', $illuminateRequest);
-                $application = $this->sandbox->getApplication();
-                $this->sandbox->enable();
-            }
+            // enable sandbox
+            $application = $this->sandbox->getApplication();
+            $this->sandbox->enable();
 
             // bind illuminate request to laravel/lumen
             $application->getApplication()->instance('request', $illuminateRequest);
@@ -271,9 +260,7 @@ class Manager
             $response->send();
 
             // disable and recycle sandbox resource
-            if ($this->isSandbox) {
-                $this->sandbox->disable();
-            }
+            $this->sandbox->disable();
         } catch (Exception $e) {
             try {
                 $exceptionResponse = $this->app[ExceptionHandler::class]->render($illuminateRequest, $e);
@@ -329,17 +316,6 @@ class Manager
         if ($this->isWebsocket) {
             $this->websocket->reset(true);
         }
-
-        if ($this->isSandbox) {
-            return;
-        }
-
-        // Reset user-customized providers
-        $this->getApplication()->resetProviders();
-        // Clear user-customized facades
-        $this->getApplication()->clearFacades();
-        // Clear user-customized instances
-        $this->getApplication()->clearInstances();
     }
 
     /**
