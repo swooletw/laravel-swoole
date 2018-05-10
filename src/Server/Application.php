@@ -42,27 +42,6 @@ class Application
     protected $kernel;
 
     /**
-     * Service providers to be reset.
-     *
-     * @var array
-     */
-    protected $providers = [];
-
-    /**
-     * Instance names to be reset.
-     *
-     * @var array
-     */
-    protected $instances = [];
-
-    /**
-     * Resolved facades to be reset.
-     *
-     * @var array
-     */
-    protected $facades = [];
-
-    /**
      * Aliases for pre-resolving.
      *
      * @var array
@@ -95,11 +74,7 @@ class Application
     {
         $this->setFramework($framework);
         $this->setBasePath($basePath);
-
         $this->bootstrap();
-        $this->initProviders();
-        $this->initFacades();
-        $this->initInstances();
     }
 
     /**
@@ -117,84 +92,6 @@ class Application
         }
 
         $this->preResolveInstances($application);
-    }
-
-    /**
-     * Initialize customized service providers.
-     */
-    protected function initProviders()
-    {
-        $app = $this->getApplication();
-        $providers = $app['config']->get('swoole_http.providers', []);
-
-        foreach ($providers as $provider) {
-            if (! $provider instanceof ServiceProvider) {
-                $provider = new $provider($app);
-            }
-            $this->providers[get_class($provider)] = $provider;
-        }
-    }
-
-    /**
-     * Initialize customized instances.
-     */
-    protected function initInstances()
-    {
-        $app = $this->getApplication();
-        $instances = $app['config']->get('swoole_http.instances', []);
-
-        $this->instances = array_filter($instances, function ($value) {
-            return is_string($value);
-        });
-    }
-
-    /**
-     * Initialize customized facades.
-     */
-    protected function initFacades()
-    {
-        $app = $this->getApplication();
-        $facades = $app['config']->get('swoole_http.facades', []);
-
-        $this->facades = array_filter($facades, function ($value) {
-            return is_string($value);
-        });
-    }
-
-    /**
-     * Re-register and reboot service providers.
-     */
-    public function resetProviders()
-    {
-        foreach ($this->providers as $provider) {
-            if (method_exists($provider, 'register')) {
-                $provider->register();
-            }
-
-            if (method_exists($provider, 'boot')) {
-                $this->getApplication()->call([$provider, 'boot']);
-            }
-        }
-    }
-
-    /**
-     * Clear resolved facades.
-     */
-    public function clearFacades()
-    {
-        foreach ($this->facades as $facade) {
-            Facade::clearResolvedInstance($facade);
-        }
-    }
-
-    /**
-     * Clear resolved instances.
-     */
-    public function clearInstances()
-    {
-        foreach ($this->instances as $instance) {
-            $this->getApplication()->forgetInstance($instance);
-        }
     }
 
     /**
@@ -260,9 +157,11 @@ class Application
         // prepare content for ob
         $content = '';
         if ($shouldUseOb) {
-            if ($response instanceof StreamedResponse ||
-                $response instanceof BinaryFileResponse) {
+            if ($response instanceof BinaryFileResponse) {
                 $shouldUseOb = false;
+                ob_end_clean();
+            } elseif ($isStream = $response instanceof StreamedResponse) {
+                $response->sendContent();
             } elseif ($response instanceof SymfonyResponse) {
                 $content = $response->getContent();
             } else {
@@ -275,7 +174,11 @@ class Application
 
         // set ob content to response
         if ($shouldUseOb && strlen($content) === 0 && ob_get_length() > 0) {
-            $response->setContent(ob_get_contents());
+            if ($isStream) {
+                $response->output = ob_get_contents();
+            } else {
+                $response->setContent(ob_get_contents());
+            }
         }
 
         if ($shouldUseOb) {
@@ -375,20 +278,6 @@ class Application
     protected function terminateLaravel(Request $request, $response)
     {
         $this->getKernel()->terminate($request, $response);
-
-        // clean laravel session
-        if ($request->hasSession()) {
-            $session = $request->getSession();
-            $session->flush();
-        }
-
-        // clean laravel cookie queue
-        if (isset($this->application['cookie'])) {
-            $cookies = $this->application['cookie'];
-            foreach ($cookies->getQueuedCookies() as $name => $cookie) {
-                $cookies->unqueue($name);
-            }
-        }
     }
 
     /**

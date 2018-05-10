@@ -25,6 +25,11 @@ class Sandbox
     protected $config;
 
     /**
+     * @var \Illuminate\Http\Request
+     */
+    protected $request;
+
+    /**
      * @var boolean
      */
     public $enabled = false;
@@ -60,6 +65,16 @@ class Sandbox
     }
 
     /**
+     * Set current request.
+     *
+     * @param \Illuminate\Http\Request
+     */
+    public function setRequest(Request $request)
+    {
+        $this->request = $request;
+    }
+
+    /**
      * Set config snapshot.
      *
      * @param \SwooleTW\Http\Server\Application
@@ -92,8 +107,22 @@ class Sandbox
     protected function resetLaravelApp($application)
     {
         $this->resetConfigInstance($application);
+        $this->resetSession($application);
+        $this->resetCookie($application);
+        $this->clearInstances($application);
         $this->rebindRouterContainer($application);
         $this->rebindViewContainer($application);
+    }
+
+    /**
+     * Clear resolved instances.
+     */
+    protected function clearInstances($application)
+    {
+        $instances = $this->config->get('swoole_http.instances', []);
+        foreach ($instances as $instance) {
+            $application->forgetInstance($instance);
+        }
     }
 
     /**
@@ -105,22 +134,47 @@ class Sandbox
     }
 
     /**
+     * Reset laravel's session data.
+     */
+    protected function resetSession($application)
+    {
+        if (isset($application['session'])) {
+            $session = $application->make('session');
+            $session->flush();
+        }
+    }
+
+    /**
+     * Reset laravel's cookie.
+     */
+    protected function resetCookie($application)
+    {
+        if (isset($application['cookie'])) {
+            foreach ($application->make('cookie')->getQueuedCookies() as $key => $value) {
+                $cookies->unqueue($key);
+            }
+        }
+    }
+
+    /**
      * Rebind laravel's container in router.
      */
     protected function rebindRouterContainer($application)
     {
         if ($this->isFramework('laravel')) {
             $router = $application->make('router');
-            $closure = function () use ($application) {
+            $closure = function () use ($application, $request) {
                 $this->container = $application;
-                if (! isset($application['request'])) {
+                if (is_null($request)) {
                     return;
                 }
-                $route = $this->routes->match($application['request']);
+                $route = $this->routes->match($request);
                 // clear resolved controller
                 if (property_exists($route, 'container')) {
                     $route->controller = null;
                 }
+                // rebind matched route's container
+                $route->setContainer($application);
             };
 
             $resetRouter = $closure->bindTo($router, $router);
@@ -196,6 +250,8 @@ class Sandbox
         if ($this->snapshot instanceOf Application) {
             $this->snapshot = null;
         }
+
+        $this->request = null;
 
         $this->setInstance($this->application->getApplication());
     }
