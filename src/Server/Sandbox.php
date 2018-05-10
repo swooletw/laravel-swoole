@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Server;
 
+use Illuminate\Http\Request;
 use Illuminate\Container\Container;
 use SwooleTW\Http\Server\Application;
 use Illuminate\Support\Facades\Facade;
