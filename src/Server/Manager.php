@@ -243,8 +243,8 @@ class Manager
                 return;
             }
 
-            // set request to original app
-            $this->app->instance('request', $illuminateRequest);
+            // set currnt request to sandbox
+            $this->sandbox->setRequest($illuminateRequest);
 
             // enable sandbox
             $application = $this->sandbox->getApplication();
@@ -252,7 +252,6 @@ class Manager
 
             // bind illuminate request to laravel/lumen
             $application->getApplication()->instance('request', $illuminateRequest);
-            Facade::clearResolvedInstance('request');
 
             // handle request via laravel/lumen's dispatcher
             $illuminateResponse = $application->run($illuminateRequest);

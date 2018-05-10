@@ -25,6 +25,11 @@ class Sandbox
     protected $config;
 
     /**
+     * @var \Illuminate\Http\Request
+     */
+    protected $request;
+
+    /**
      * @var boolean
      */
     public $enabled = false;
@@ -57,6 +62,16 @@ class Sandbox
     public function setApplication(Application $application)
     {
         $this->application = $application;
+    }
+
+    /**
+     * Set current request.
+     *
+     * @param \Illuminate\Http\Request
+     */
+    public function setRequest(Request $request)
+    {
+        $this->request = $request;
     }
 
     /**
@@ -123,16 +138,18 @@ class Sandbox
     {
         if ($this->isFramework('laravel')) {
             $router = $application->make('router');
-            $closure = function () use ($application) {
+            $closure = function () use ($application, $request) {
                 $this->container = $application;
-                if (! isset($application['request'])) {
+                if (is_null($request)) {
                     return;
                 }
-                $route = $this->routes->match($application['request']);
+                $route = $this->routes->match($request);
                 // clear resolved controller
                 if (property_exists($route, 'container')) {
                     $route->controller = null;
                 }
+                // rebind matched route's container
+                $route->setContainer($application);
             };
 
             $resetRouter = $closure->bindTo($router, $router);
@@ -208,6 +225,8 @@ class Sandbox
         if ($this->snapshot instanceOf Application) {
             $this->snapshot = null;
         }
+
+        $this->request = null;
 
         $this->setInstance($this->application->getApplication());
     }
