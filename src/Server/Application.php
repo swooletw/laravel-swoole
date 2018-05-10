@@ -278,20 +278,6 @@ class Application
     protected function terminateLaravel(Request $request, $response)
     {
         $this->getKernel()->terminate($request, $response);
-
-        // clean laravel session
-        if ($request->hasSession()) {
-            $session = $request->getSession();
-            $session->flush();
-        }
-
-        // clean laravel cookie queue
-        if (isset($this->application['cookie'])) {
-            $cookies = $this->application['cookie'];
-            foreach ($cookies->getQueuedCookies() as $name => $cookie) {
-                $cookies->unqueue($name);
-            }
-        }
     }
 
     /**

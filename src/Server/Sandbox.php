@@ -107,6 +107,8 @@ class Sandbox
     protected function resetLaravelApp($application)
     {
         $this->resetConfigInstance($application);
+        $this->resetSession($application);
+        $this->resetCookie($application);
         $this->clearInstances($application);
         $this->rebindRouterContainer($application);
         $this->rebindViewContainer($application);
@@ -129,6 +131,29 @@ class Sandbox
     protected function resetConfigInstance($application)
     {
         $application->instance('config', clone $this->config);
+    }
+
+    /**
+     * Reset laravel's session data.
+     */
+    protected function resetSession($application)
+    {
+        if (isset($application['session'])) {
+            $session = $application->make('session');
+            $session->flush();
+        }
+    }
+
+    /**
+     * Reset laravel's cookie.
+     */
+    protected function resetCookie($application)
+    {
+        if (isset($application['cookie'])) {
+            foreach ($application->make('cookie')->getQueuedCookies() as $key => $value) {
+                $cookies->unqueue($key);
+            }
+        }
     }
 
     /**
