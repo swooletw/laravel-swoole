@@ -69,7 +69,7 @@ Bugs and feature request are tracked on [GitHub](https://github.com/swooletw/lar
 
 ## Credits
 
-[Huang-Yi](https://github.com/huang-yi)
+[Huang-Yi](https://github.com/huang-yi), <a href="https://unisharp.com"><img src="https://i.imgur.com/TjyJIoO.png" width="160"></a>
 
 ## License
 
