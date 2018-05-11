@@ -35,6 +35,9 @@ return [
             'max_request' => 3000,
             // Enable coroutine send
             'send_yield' => true,
+            // You must --enable-openssl while compiling Swoole
+            'ssl_cert_file' => null,
+            'ssl_key_file' => null,
         ],
     ],
 
