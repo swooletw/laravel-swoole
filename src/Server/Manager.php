@@ -253,9 +253,6 @@ class Manager
             $application = $this->sandbox->getApplication();
             $this->sandbox->enable();
 
-            // bind illuminate request to laravel/lumen
-            $application->getApplication()->instance('request', $illuminateRequest);
-
             // handle request via laravel/lumen's dispatcher
             $illuminateResponse = $application->run($illuminateRequest);
             $response = Response::make($illuminateResponse, $swooleResponse);

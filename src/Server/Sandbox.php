@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Container\Container;
 use SwooleTW\Http\Server\Application;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\ServiceProvider;
 use Laravel\Lumen\Application as LumenApplication;
 
 class Sandbox
@@ -31,6 +32,11 @@ class Sandbox
     protected $request;
 
     /**
+     * @var array
+     */
+    protected $providers = [];
+
+    /**
      * @var boolean
      */
     public $enabled = false;
@@ -52,7 +58,8 @@ class Sandbox
     public function __construct(Application $application)
     {
         $this->setApplication($application);
-        $this->setInitialConfig($application);
+        $this->setInitialConfig();
+        $this->setInitialProviders();
     }
 
     /**
@@ -77,12 +84,26 @@ class Sandbox
 
     /**
      * Set config snapshot.
-     *
-     * @param \SwooleTW\Http\Server\Application
      */
-    protected function setInitialConfig(Application $application)
+    protected function setInitialConfig()
     {
-        $this->config = clone $application->getApplication()['config'];
+        $this->config = clone $this->application->getApplication()->make('config');
+    }
+
+    /**
+     * Initialize customized service providers.
+     */
+    protected function setInitialProviders()
+    {
+        $application = $this->application->getApplication();
+        $providers = $this->config->get('swoole_http.providers', []);
+
+        foreach ($providers as $provider) {
+            if (class_exists($provider)) {
+                $provider = new $provider($application);
+                $this->providers[get_class($provider)] = $provider;
+            }
+        }
     }
 
     /**
@@ -111,8 +132,10 @@ class Sandbox
         $this->resetSession($application);
         $this->resetCookie($application);
         $this->clearInstances($application);
+        $this->bindRequest($application);
         $this->rebindRouterContainer($application);
         $this->rebindViewContainer($application);
+        $this->resetProviders($application);
     }
 
     /**
@@ -124,6 +147,42 @@ class Sandbox
         foreach ($instances as $instance) {
             $application->forgetInstance($instance);
         }
+    }
+
+    /**
+     * Bind illuminate request to laravel/lumen application.
+     */
+    protected function bindRequest($application)
+    {
+        if ($this->request instanceof Request) {
+            $application->instance('request', $this->request);
+        }
+    }
+
+    /**
+     * Re-register and reboot service providers.
+     */
+    protected function resetProviders($application)
+    {
+        foreach ($this->providers as $provider) {
+            $this->rebindProviderContainer($provider, $application);
+            if (method_exists($provider, 'register')) {
+                $provider->register();
+            }
+            if (method_exists($provider, 'boot')) {
+                $application->call([$provider, 'boot']);
+            }
+        }
+    }
+
+    protected function rebindProviderContainer($provider, $application)
+    {
+        $closure = function () use ($application) {
+            $this->app = $application;
+        };
+
+        $resetProvider = $closure->bindTo($provider, $provider);
+        $resetProvider();
     }
 
     /**

@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
-use Illuminate\Support\ServiceProvider;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;

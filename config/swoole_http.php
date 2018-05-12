@@ -68,6 +68,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Providers here will be registered on every request.
+    |--------------------------------------------------------------------------
+    */
+    'providers' => [
+        Illuminate\Pagination\PaginationServiceProvider::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Define your swoole tables here.
     |
     | @see https://www.swoole.co.uk/docs/modules/swoole-table
