@@ -17,7 +17,7 @@ Websocket::on('connect', function ($websocket, Request $request) {
 });
 
 Websocket::on('disconnect', function ($websocket) {
-    // called while socket on close
+    // called while socket on disconnect
 });
 
 Websocket::on('example', function ($websocket, $data) {
