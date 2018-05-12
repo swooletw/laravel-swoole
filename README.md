@@ -71,6 +71,10 @@ Bugs and feature request are tracked on [GitHub](https://github.com/swooletw/lar
 
 [Huang-Yi](https://github.com/huang-yi), <a href="https://unisharp.com"><img src="https://i.imgur.com/TjyJIoO.png" width="160"></a>
 
+## Alternatives
+
+* [laravel-s](https://github.com/hhxsv5/laravel-s)
+
 ## License
 
 The Laravel-Swoole package is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
