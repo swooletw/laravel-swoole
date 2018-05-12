@@ -175,6 +175,9 @@ class Sandbox
         }
     }
 
+    /**
+     * Rebind service provider's container.
+     */
     protected function rebindProviderContainer($provider, $application)
     {
         $closure = function () use ($application) {
