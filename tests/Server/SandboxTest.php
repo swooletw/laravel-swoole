@@ -53,9 +53,14 @@ class SandboxTest extends TestCase
 
     protected function getContainer()
     {
+        $config = m::mock(Illuminate\Config\Repository::class);
+        $config->shouldReceive('get')
+            ->andReturn([]);
         $container = m::mock(Container::class);
         $container->shouldReceive('offsetGet')
             ->andReturn((object)[]);
+        $container->shouldReceive('make')
+            ->andReturn($config);
 
         return $container;
     }

@@ -285,11 +285,11 @@ trait CanWebsocket
      */
     protected function callOnConnect($illuminateRequest)
     {
-        $application = $this->sandbox->getLaravelApp();
+        // set currnt request to sandbox
+        $this->sandbox->setRequest($illuminateRequest);
 
-        // bind illuminate request to laravel/lumen
-        $application->instance('request', $illuminateRequest);
-        Facade::clearResolvedInstance('request');
+        // get application from sandbox
+        $application = $this->sandbox->getLaravelApp();
 
         // reset session
         if (isset($application['session'])) {

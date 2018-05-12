@@ -140,8 +140,11 @@ class Manager
         $server = $this->isWebsocket ? WebsocketServer::class : HttpServer::class;
         $host = $this->container['config']->get('swoole_http.server.host');
         $port = $this->container['config']->get('swoole_http.server.port');
+        $hasCert = $this->container['config']->get('swoole_http.server.options.ssl_cert_file');
+        $hasKey = $this->container['config']->get('swoole_http.server.options.ssl_key_file');
+        $args = $hasCert && $hasKey ? [SWOOLE_PROCESS, SWOOLE_SOCK_TCP | SWOOLE_SSL] : [];
 
-        $this->server = new $server($host, $port);
+        $this->server = new $server($host, $port, ...$args);
     }
 
     /**
@@ -249,9 +252,6 @@ class Manager
             // enable sandbox
             $application = $this->sandbox->getApplication();
             $this->sandbox->enable();
-
-            // bind illuminate request to laravel/lumen
-            $application->getApplication()->instance('request', $illuminateRequest);
 
             // handle request via laravel/lumen's dispatcher
             $illuminateResponse = $application->run($illuminateRequest);
