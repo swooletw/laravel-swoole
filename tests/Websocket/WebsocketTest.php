@@ -193,6 +193,18 @@ class WebsocketTest extends TestCase
         $this->assertTrue(in_array(3, $websocket->getTo()));
     }
 
+    public function testGetUserId()
+    {
+        $room = m::mock(RoomContract::class);
+        $room->shouldReceive('getRooms')
+            ->with($sender = 1)
+            ->once()
+            ->andReturn(['uid_1']);
+
+        $websocket = $this->getWebsocket($room)->setSender($sender);
+        $this->assertEquals($sender, $websocket->getUserId());
+    }
+
     public function testReset()
     {
         $websocket = $this->getWebsocket();

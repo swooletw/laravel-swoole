@@ -58,15 +58,24 @@ trait CanWebsocket
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
 
         try {
+            $this->websocket->reset(true)->setSender($swooleRequest->fd);
+            // set currnt request to sandbox
+            $this->sandbox->setRequest($illuminateRequest);
+            // enable sandbox
+            $application = $this->sandbox->getLaravelApp();
+            $this->sandbox->enable();
             // check if socket.io connection established
             if (! $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
                 return;
             }
-            $this->websocket->reset(true)->setSender($swooleRequest->fd);
             // trigger 'connect' websocket event
             if ($this->websocket->eventExists('connect')) {
-                $this->callOnConnect($illuminateRequest);
+                // set sandbox container to websocket pipeline
+                $this->websocket->setContainer($application);
+                $this->websocket->call('connect', $illuminateRequest);
             }
+            // disable and recycle sandbox resource
+            $this->sandbox->disable();
         } catch (Exception $e) {
             $this->logServerError($e);
         }
@@ -93,12 +102,18 @@ trait CanWebsocket
 
             $this->websocket->reset(true)->setSender($frame->fd);
 
+            // enable sandbox
+            $application = $this->sandbox->getLaravelApp();
+            $this->sandbox->enable();
+
             // dispatch message to registered event callback
             if ($this->websocket->eventExists($payload['event'])) {
                 $this->websocket->call($payload['event'], $payload['data']);
             } else {
                 $this->websocketHandler->onMessage($frame);
             }
+            // disable and recycle sandbox resource
+            $this->sandbox->disable();
         } catch (Exception $e) {
             $this->logServerError($e);
         }
@@ -278,28 +293,5 @@ trait CanWebsocket
         $message = $data['message'] ?? null;
 
         return [$opcode, $sender, $fds, $broadcast, $assigned, $event, $message];
-    }
-
-    /**
-     * Call on connect event callback .
-     */
-    protected function callOnConnect($illuminateRequest)
-    {
-        // set currnt request to sandbox
-        $this->sandbox->setRequest($illuminateRequest);
-
-        // get application from sandbox
-        $application = $this->sandbox->getLaravelApp();
-
-        // reset session
-        if (isset($application['session'])) {
-            $application['session']->flush();
-        }
-
-        // set sandbox container to websocket pipeline
-        $this->websocket->setContainer($application);
-        $this->sandbox->enable();
-        $this->websocket->call('connect', $illuminateRequest);
-        $this->sandbox->disable();
     }
 }

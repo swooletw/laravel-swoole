@@ -15,8 +15,8 @@ return [
         'host' => env('SWOOLE_HTTP_HOST', '127.0.0.1'),
         'port' => env('SWOOLE_HTTP_PORT', '1215'),
         'public_path' => base_path('public'),
-        // If use swoole to respond request for static files
-        'handle_static_files' => true,
+        // Determine if to use swoole to respond request for static files
+        'handle_static_files' => env('SWOOLE_HANDLE_STATIC', true),
         'options' => [
             'pid_file' => env('SWOOLE_HTTP_PID_FILE', base_path('storage/logs/swoole_http.pid')),
             'log_file' => env('SWOOLE_HTTP_LOG_FILE', base_path('storage/logs/swoole_http.log')),
@@ -35,7 +35,7 @@ return [
             'max_request' => 3000,
             // Enable coroutine send
             'send_yield' => true,
-            // You must --enable-openssl while compiling Swoole
+            // You must add --enable-openssl while compiling Swoole
             'ssl_cert_file' => null,
             'ssl_key_file' => null,
         ],

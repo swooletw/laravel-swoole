@@ -317,6 +317,7 @@ class Websocket
 
         if ($force) {
             $this->sender = null;
+            $this->userId = null;
         }
 
         return $this;

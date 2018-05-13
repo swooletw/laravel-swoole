@@ -7,6 +7,8 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 
 trait Authenticatable
 {
+    protected $userId;
+
     /**
      * Login using current user.
      */
@@ -51,6 +53,26 @@ trait Authenticatable
         }
 
         return $this;
+    }
+
+    /**
+     * Get current auth user id by sender's fd.
+     */
+    public function getUserId()
+    {
+        if (! is_null($this->userId)) {
+            return $this->userId;
+        }
+
+        $rooms = $this->room->getRooms($this->getSender());
+
+        foreach ($rooms as $room) {
+            if (count($explode = explode(static::USER_PREFIX, $room)) === 2) {
+                $this->userId = $explode[1];
+            }
+        }
+
+        return $this->userId;
     }
 
     /**
