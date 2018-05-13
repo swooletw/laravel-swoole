@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use InvalidArgumentException;
 use Illuminate\Pipeline\Pipeline;
 use SwooleTW\Http\Tests\TestCase;
+use Illuminate\Support\Facades\Auth;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -191,6 +192,36 @@ class WebsocketTest extends TestCase
         $websocket->toUser($users = [$userA, $userB]);
         $this->assertTrue(in_array(2, $websocket->getTo()));
         $this->assertTrue(in_array(3, $websocket->getTo()));
+    }
+
+    public function testGetUserId()
+    {
+        $room = m::mock(RoomContract::class);
+        $room->shouldReceive('getRooms')
+            ->with($sender = 1)
+            ->once()
+            ->andReturn(['uid_1']);
+
+        $websocket = $this->getWebsocket($room)->setSender($sender);
+        $this->assertEquals($sender, $websocket->getUserId());
+    }
+
+    public function testGetUser()
+    {
+        $room = m::mock(RoomContract::class);
+        $room->shouldReceive('getRooms')
+            ->with($sender = 1)
+            ->once()
+            ->andReturn(['uid_1']);
+
+        $user = m::mock(AuthenticatableContract::class);
+        Auth::shouldReceive('loginUsingId')
+            ->with($sender)
+            ->once()
+            ->andReturn($user);
+
+        $websocket = $this->getWebsocket($room)->setSender($sender);
+        $this->assertEquals($user, $websocket->getUser());
     }
 
     public function testReset()

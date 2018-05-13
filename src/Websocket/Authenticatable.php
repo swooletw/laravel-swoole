@@ -3,10 +3,14 @@
 namespace SwooleTW\Http\Websocket;
 
 use InvalidArgumentException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 
 trait Authenticatable
 {
+    protected $user;
+    protected $userId;
+
     /**
      * Login using current user.
      */
@@ -51,6 +55,42 @@ trait Authenticatable
         }
 
         return $this;
+    }
+
+    /**
+     * Get current auth user by sender's fd.
+     */
+    public function getUser()
+    {
+        if ($this->user instanceof AuthenticatableContract) {
+            return $this->user;
+        }
+
+        if (! is_null($uid = $this->getUserId()) && $user = Auth::loginUsingId($uid)) {
+            $this->user = $user;
+        }
+
+        return $this->user;
+    }
+
+    /**
+     * Get current auth user id by sender's fd.
+     */
+    public function getUserId()
+    {
+        if (! is_null($this->userId)) {
+            return $this->userId;
+        }
+
+        $rooms = $this->room->getRooms($this->getSender());
+
+        foreach ($rooms as $room) {
+            if (count($explode = explode(static::USER_PREFIX, $room)) === 2) {
+                $this->userId = $explode[1];
+            }
+        }
+
+        return $this->userId;
     }
 
     /**
