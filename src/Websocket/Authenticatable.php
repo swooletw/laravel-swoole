@@ -3,12 +3,10 @@
 namespace SwooleTW\Http\Websocket;
 
 use InvalidArgumentException;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 
 trait Authenticatable
 {
-    protected $user;
     protected $userId;
 
     /**
@@ -55,22 +53,6 @@ trait Authenticatable
         }
 
         return $this;
-    }
-
-    /**
-     * Get current auth user by sender's fd.
-     */
-    public function getUser()
-    {
-        if ($this->user instanceof AuthenticatableContract) {
-            return $this->user;
-        }
-
-        if (! is_null($uid = $this->getUserId()) && $user = Auth::loginUsingId($uid)) {
-            $this->user = $user;
-        }
-
-        return $this->user;
     }
 
     /**
