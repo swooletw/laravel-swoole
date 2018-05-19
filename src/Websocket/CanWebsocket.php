@@ -133,14 +133,15 @@ trait CanWebsocket
         }
 
         try {
-            // leave all rooms
-            $this->websocket->reset(true)->setSender($fd)->leave();
+            $this->websocket->reset(true)->setSender($fd);
             // trigger 'disconnect' websocket event
             if ($this->websocket->eventExists('disconnect')) {
                 $this->websocket->call('disconnect');
             } else {
                 $this->websocketHandler->onClose($fd, $reactorId);
             }
+            // leave all rooms
+            $this->websocket->leave();
         } catch (Exception $e) {
             $this->logServerError($e);
         }
