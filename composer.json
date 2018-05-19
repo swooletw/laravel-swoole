@@ -29,7 +29,7 @@
     },
     "autoload": {
         "files": [
-            "src/Server/helpers.php",
+            "src/Server/helpers.php"
         ],
         "psr-4": {
             "SwooleTW\\Http\\": "src"
