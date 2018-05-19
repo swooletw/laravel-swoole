@@ -92,7 +92,6 @@ class HttpServerCommand extends Command
                 'swoole_http_server process is running: ps aux|grep "swoole")');
         }
 
-        $this->showInfos();
         $this->laravel->make('swoole.http')->run();
     }
 
@@ -167,7 +166,7 @@ class HttpServerCommand extends Command
      */
     protected function infos()
     {
-        $this->showInfos(true);
+        $this->showInfos();
     }
 
     /**
@@ -175,7 +174,7 @@ class HttpServerCommand extends Command
      *
      * @param bool $more
      */
-    protected function showInfos($more=false)
+    protected function showInfos()
     {
         $pid = $this->getPid();
         $isRunning = $this->isRunning($pid);
@@ -193,18 +192,14 @@ class HttpServerCommand extends Command
             ['Laravel Version', $this->getApplication()->getVersion()],
             ['Listen IP', $host],
             ['Listen Port', $port],
+            ['Server Status', $isRunning ? 'Online' : 'Offline'],
             ['Reactor Num', $reactorNum],
             ['Worker Num', $workerNum],
-            ['Task Worker Num', $taskWorkerNum],
+            ['Task Worker Num', $isWebsocket ? $taskWorkerNum : 0],
             ['Websocket Mode', $isWebsocket ? 'On' : 'Off'],
+            ['PID', $isRunning ? $pid : 'None'],
             ['Log Path', $logFile],
         ];
-        if ($more) {
-            $table = array_merge($table, [
-                ['Server Status', $isRunning ? 'Online' : 'Offline'],
-                ['PID', $isRunning ? $pid : 'None'],
-            ]);
-        }
 
         $this->table(['Name', 'Value'], $table);
     }
