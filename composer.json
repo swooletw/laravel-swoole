@@ -28,6 +28,9 @@
         "codedungeon/phpunit-result-printer": "^0.14.0"
     },
     "autoload": {
+        "files": [
+            "src/Server/helpers.php",
+        ],
         "psr-4": {
             "SwooleTW\\Http\\": "src"
         }
