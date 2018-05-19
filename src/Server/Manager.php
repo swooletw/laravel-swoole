@@ -154,6 +154,11 @@ class Manager
     {
         $config = $this->container['config']->get('swoole_http.server.options');
 
+        // only enable task worker in websocket mode
+        if (! $this->isWebsocket) {
+            unset($config['task_worker_num']);
+        }
+
         $this->server->set($config);
     }
 
