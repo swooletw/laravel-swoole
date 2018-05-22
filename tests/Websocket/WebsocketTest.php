@@ -205,6 +205,33 @@ class WebsocketTest extends TestCase
         $this->assertEquals($sender, $websocket->getUserId());
     }
 
+    public function testLogout()
+    {
+        $room = m::mock(RoomContract::class);
+        $room->shouldReceive('getRooms')
+            ->with($sender = 1)
+            ->once()
+            ->andReturn(['uid_1']);
+        $room->shouldReceive('delete')
+            ->with($sender, $name = ['uid_1'])
+            ->once();
+
+        $websocket = $this->getWebsocket($room)->setSender($sender);
+        $websocket->logout();
+    }
+
+    public function testIsUserIdOnline()
+    {
+        $room = m::mock(RoomContract::class);
+        $room->shouldReceive('getClients')
+            ->with('uid_1')
+            ->once()
+            ->andReturn([1]);
+
+        $websocket = $this->getWebsocket($room);
+        $this->assertTrue($websocket->isUserIdOnline(1));
+    }
+
     public function testReset()
     {
         $websocket = $this->getWebsocket();

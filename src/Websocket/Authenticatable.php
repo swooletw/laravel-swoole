@@ -26,6 +26,18 @@ trait Authenticatable
     }
 
     /**
+     * Logout with current sender's fd.
+     */
+    public function logout()
+    {
+        if (is_null($userId = $this->getUserId())) {
+            return;
+        }
+
+        return $this->leave(static::USER_PREFIX . $userId);
+    }
+
+    /**
      * Set multiple recepients' fds by users.
      */
     public function toUser($users)
@@ -73,6 +85,14 @@ trait Authenticatable
         }
 
         return $this->userId;
+    }
+
+    /**
+     * Check if a user is online by given userId.
+     */
+    public function isUserIdOnline($userId)
+    {
+        return ! empty($this->room->getClients(static::USER_PREFIX . $userId));
     }
 
     /**
