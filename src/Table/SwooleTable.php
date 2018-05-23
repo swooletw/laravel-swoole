@@ -18,6 +18,7 @@ class SwooleTable
      *
      * @param string $name
      * @param \Swoole\Table $table
+     * @return \SwooleTW\Http\Table\SwooleTable
      */
     public function add(string $name, Table $table)
     {
