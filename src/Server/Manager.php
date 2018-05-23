@@ -251,7 +251,7 @@ class Manager
                 return;
             }
 
-            // set currnt request to sandbox
+            // set current request to sandbox
             $this->sandbox->setRequest($illuminateRequest);
 
             // enable sandbox
@@ -262,9 +262,6 @@ class Manager
             $illuminateResponse = $application->run($illuminateRequest);
             $response = Response::make($illuminateResponse, $swooleResponse);
             $response->send();
-
-            // disable and recycle sandbox resource
-            $this->sandbox->disable();
         } catch (Exception $e) {
             try {
                 $exceptionResponse = $this->app[ExceptionHandler::class]->render($illuminateRequest, $e);
@@ -273,6 +270,9 @@ class Manager
             } catch (Exception $e) {
                 $this->logServerError($e);
             }
+        } finally {
+            // disable and recycle sandbox resource
+            $this->sandbox->disable();
         }
     }
 
@@ -281,6 +281,7 @@ class Manager
      *
      * @param \Illuminate\Http\Request $illuminateRequest
      * @param \Swoole\Http\Response $swooleResponse
+     * @return boolean
      */
     protected function handleStaticRequest($illuminateRequest, $swooleResponse)
     {
@@ -325,7 +326,7 @@ class Manager
     /**
      * Set onTask listener.
      */
-    public function onTask(HttpServer $server, $taskId, $fromId, $data)
+    public function onTask(HttpServer $server, $taskId, $srcWorkerId, $data)
     {
         $this->container['events']->fire('swoole.task', func_get_args());
 
@@ -445,7 +446,10 @@ class Manager
      */
     protected function removePidFile()
     {
-        unlink($this->getPidFile());
+        $pidFile = $this->getPidFile();
+        if (file_exists($pidFile)) {
+            unlink($pidFile);
+        }
     }
 
     /**
