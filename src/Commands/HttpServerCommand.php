@@ -89,7 +89,7 @@ class HttpServerCommand extends Command
         $this->info("Swoole http server started: <http://{$host}:{$port}>");
         if ($this->isDaemon()) {
             $this->info('> (You can run this command to ensure the ' .
-            'swoole_http_server process is running: ps aux|grep "swoole")');
+                'swoole_http_server process is running: ps aux|grep "swoole")');
         }
 
         $this->laravel->make('swoole.http')->run();
@@ -161,7 +161,6 @@ class HttpServerCommand extends Command
         $this->info('> success');
     }
 
-
     /**
      * Display PHP and Swoole misc info.
      */
@@ -172,6 +171,8 @@ class HttpServerCommand extends Command
 
     /**
      * Display PHP and Swoole miscs infos.
+     *
+     * @param bool $more
      */
     protected function showInfos()
     {
@@ -179,20 +180,28 @@ class HttpServerCommand extends Command
         $isRunning = $this->isRunning($pid);
         $host = $this->configs['server']['host'];
         $port = $this->configs['server']['port'];
+        $reactorNum = $this->configs['server']['options']['reactor_num'];
+        $workerNum = $this->configs['server']['options']['worker_num'];
+        $taskWorkerNum = $this->configs['server']['options']['task_worker_num'];
         $isWebsocket = $this->configs['websocket']['enabled'];
         $logFile = $this->configs['server']['options']['log_file'];
 
-        $this->table(['Name', 'Value'], [
+        $table = [
             ['PHP Version', 'Version' => phpversion()],
             ['Swoole Version', 'Version' => swoole_version()],
             ['Laravel Version', $this->getApplication()->getVersion()],
-            ['Server Status', $isRunning ? 'Online' : 'Offline'],
             ['Listen IP', $host],
             ['Listen Port', $port],
+            ['Server Status', $isRunning ? 'Online' : 'Offline'],
+            ['Reactor Num', $reactorNum],
+            ['Worker Num', $workerNum],
+            ['Task Worker Num', $isWebsocket ? $taskWorkerNum : 0],
             ['Websocket Mode', $isWebsocket ? 'On' : 'Off'],
             ['PID', $isRunning ? $pid : 'None'],
             ['Log Path', $logFile],
-        ]);
+        ];
+
+        $this->table(['Name', 'Value'], $table);
     }
 
     /**

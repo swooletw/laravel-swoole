@@ -74,10 +74,11 @@ trait CanWebsocket
                 $this->websocket->setContainer($application);
                 $this->websocket->call('connect', $illuminateRequest);
             }
-            // disable and recycle sandbox resource
-            $this->sandbox->disable();
         } catch (Exception $e) {
             $this->logServerError($e);
+        } finally {
+            // disable and recycle sandbox resource
+            $this->sandbox->disable();
         }
     }
 
@@ -112,10 +113,11 @@ trait CanWebsocket
             } else {
                 $this->websocketHandler->onMessage($frame);
             }
-            // disable and recycle sandbox resource
-            $this->sandbox->disable();
         } catch (Exception $e) {
             $this->logServerError($e);
+        } finally {
+            // disable and recycle sandbox resource
+            $this->sandbox->disable();
         }
     }
 
@@ -133,14 +135,15 @@ trait CanWebsocket
         }
 
         try {
-            // leave all rooms
-            $this->websocket->reset(true)->setSender($fd)->leave();
+            $this->websocket->reset(true)->setSender($fd);
             // trigger 'disconnect' websocket event
             if ($this->websocket->eventExists('disconnect')) {
                 $this->websocket->call('disconnect');
             } else {
                 $this->websocketHandler->onClose($fd, $reactorId);
             }
+            // leave all rooms
+            $this->websocket->leave();
         } catch (Exception $e) {
             $this->logServerError($e);
         }

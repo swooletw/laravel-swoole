@@ -296,7 +296,7 @@ class Websocket
 
         foreach ($rooms as $room) {
             $clients = $this->room->getClients($room);
-            // rollback fd with wrong type back to fds array
+            // fallback fd with wrong type back to fds array
             if (empty($clients) && is_numeric($room)) {
                 $fds[] = $room;
             } else {
