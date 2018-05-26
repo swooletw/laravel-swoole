@@ -213,7 +213,8 @@ class Sandbox
     protected function resetCookie($application)
     {
         if (isset($application['cookie'])) {
-            foreach ($application->make('cookie')->getQueuedCookies() as $key => $value) {
+            $cookies = $application->make('cookie');
+            foreach ($cookies->getQueuedCookies() as $key => $value) {
                 $cookies->unqueue($key);
             }
         }
