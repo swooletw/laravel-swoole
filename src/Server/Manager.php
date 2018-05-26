@@ -447,6 +447,7 @@ class Manager
     protected function removePidFile()
     {
         $pidFile = $this->getPidFile();
+
         if (file_exists($pidFile)) {
             unlink($pidFile);
         }
