@@ -3,7 +3,9 @@
 namespace SwooleTW\Http;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\MySqlConnection;
 use SwooleTW\Http\Commands\HttpServerCommand;
+use SwooleTW\Http\Coroutine\Connectors\MySqlConnector;
 
 abstract class HttpServiceProvider extends ServiceProvider
 {
