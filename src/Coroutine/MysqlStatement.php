@@ -4,7 +4,6 @@
  * Copyright: Swlib
  * Author: Twosee <twose@qq.com>
  * Modifier: Albert Chen
- * License: Apache 2.0
  */
 
 namespace SwooleTW\Http\Coroutine;
@@ -13,7 +12,6 @@ use SwooleTW\Http\Coroutine\Mysql;
 
 class MysqlStatement
 {
-
     private $parent;
     /**
      * @var \Swoole\Coroutine\Mysql\Statement | string
@@ -26,6 +24,8 @@ class MysqlStatement
     public $cursor = -1;
     public $cursorOrientation = \PDO::FETCH_ORI_NEXT;
     public $resultSet = [];
+
+    public static $fetchStyle = \PDO::FETCH_BOTH;
 
     public function __construct(Mysql $parent, $statement, array $driverOptions = [])
     {
@@ -111,6 +111,11 @@ class MysqlStatement
         return $ok;
     }
 
+    public function setFetchMode(int $fetchStyle)
+    {
+        static::$fetchStyle = $fetchStyle;
+    }
+
     private function __executeWhenStringQueryEmpty()
     {
         if (is_string($this->statement) && empty($this->resultSet)) {
@@ -137,7 +142,7 @@ class MysqlStatement
 
     private static function transStyle(
         $rawData,
-        int $fetchStyle = \PDO::FETCH_BOTH,
+        $fetchStyle = null,
         $fetchArgument = null,
         array $ctorArgs = []
     ) {
@@ -147,6 +152,8 @@ class MysqlStatement
         if (empty($rawData)) {
             return $rawData;
         }
+
+        $fetchStyle = is_null($fetchStyle) ? static::$fetchStyle : $fetchStyle;
 
         $resultSet = [];
         switch ($fetchStyle) {
@@ -178,7 +185,7 @@ class MysqlStatement
     }
 
     public function fetch(
-        int $fetchStyle = \PDO::FETCH_BOTH,
+        $fetchStyle = null,
         int $cursorOrientation = \PDO::FETCH_ORI_NEXT,
         int $cursorOffset = 0,
         $fetchArgument = null
@@ -225,7 +232,7 @@ class MysqlStatement
         return $this->fetch(\PDO::FETCH_COLUMN, \PDO::FETCH_ORI_NEXT, 0, $columnNumber);
     }
 
-    public function fetchAll(int $fetchStyle = \PDO::FETCH_BOTH, $fetchArgument = null, array $ctorArgs = [])
+    public function fetchAll($fetchStyle = null, $fetchArgument = null, array $ctorArgs = [])
     {
         $this->__executeWhenStringQueryEmpty();
         $resultSet = self::transStyle($this->resultSet, $fetchStyle, $fetchArgument, $ctorArgs);
@@ -233,5 +240,4 @@ class MysqlStatement
 
         return $resultSet;
     }
-
 }
