@@ -24,6 +24,7 @@ abstract class HttpServiceProvider extends ServiceProvider
         $this->mergeConfigs();
         $this->registerManager();
         $this->registerCommands();
+        $this->registerDatabaseDriver();
     }
 
     /**
@@ -75,5 +76,27 @@ abstract class HttpServiceProvider extends ServiceProvider
         $this->commands([
             HttpServerCommand::class,
         ]);
+    }
+
+    /**
+     * Register database driver for coroutine mysql.
+     */
+    protected function registerDatabaseDriver()
+    {
+        $this->app->resolving('db', function ($db) {
+            $db->extend('mysql-coroutine', function ($config, $name) {
+                $config['name'] = $name;
+                $connection = function () use ($config) {
+                    return (new MySqlConnector())->connect($config);
+                };
+
+                return new MySqlConnection(
+                    $connection,
+                    $config['database'],
+                    $config['prefix'],
+                    $config
+                );
+            });
+        });
     }
 }

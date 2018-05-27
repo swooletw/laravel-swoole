@@ -10,7 +10,7 @@ namespace SwooleTW\Http\Coroutine;
 
 use SwooleTW\Http\Coroutine\Mysql;
 
-class MysqlStatement
+class MysqlStatement extends \PDOStatement
 {
     private $parent;
     /**
@@ -49,7 +49,7 @@ class MysqlStatement
         return $this->statement->affected_rows;
     }
 
-    public function bindParam($parameter, &$variable)
+    public function bindParam($parameter, &$variable, $type = null, $maxlen = null, $driverdata = null)
     {
         if (! is_string($parameter) && ! is_int($parameter)) {
             return false;
@@ -61,7 +61,7 @@ class MysqlStatement
         return true;
     }
 
-    public function bindValue($parameter, $variable)
+    public function bindValue($parameter, $variable, $type = null)
     {
         if (! is_string($parameter) && ! is_int($parameter)) {
             return false;
@@ -87,7 +87,7 @@ class MysqlStatement
         $this->bindMap = [];
     }
 
-    public function execute(array $inputParameters = [], ?float $timeout = null)
+    public function execute($inputParameters = null)
     {
         if (! empty($inputParameters)) {
             foreach ($inputParameters as $key => $value) {
@@ -104,14 +104,14 @@ class MysqlStatement
             $inputParameters = $this->bindMap;
         }
 
-        $result = $this->statement->execute($inputParameters, $timeout ?? $this->timeout);
+        $result = $this->statement->execute($inputParameters, $this->timeout);
         $this->resultSet = ($ok = $result !== false) ? $result : [];
         $this->afterExecute();
 
         return $ok;
     }
 
-    public function setFetchMode(int $fetchStyle)
+    public function setFetchMode($fetchStyle, $params = null)
     {
         static::$fetchStyle = $fetchStyle;
     }
@@ -144,7 +144,7 @@ class MysqlStatement
         $rawData,
         $fetchStyle = null,
         $fetchArgument = null,
-        array $ctorArgs = []
+        $ctorArgs = null
     ) {
         if (! is_array($rawData)) {
             return false;
@@ -154,6 +154,7 @@ class MysqlStatement
         }
 
         $fetchStyle = is_null($fetchStyle) ? static::$fetchStyle : $fetchStyle;
+        $ctorArgs = is_null($ctorArgs) ? [] : $ctorArgs;
 
         $resultSet = [];
         switch ($fetchStyle) {
@@ -186,11 +187,15 @@ class MysqlStatement
 
     public function fetch(
         $fetchStyle = null,
-        int $cursorOrientation = \PDO::FETCH_ORI_NEXT,
-        int $cursorOffset = 0,
+        $cursorOrientation = null,
+        $cursorOffset = null,
         $fetchArgument = null
     ) {
         $this->__executeWhenStringQueryEmpty();
+
+        $cursorOrientation = is_null($cursorOrientation) ? \PDO::FETCH_ORI_NEXT : $cursorOrientation;
+        $cursorOffset = is_null($cursorOffset) ? 0 : (int) $cursorOffset;
+
         switch ($cursorOrientation) {
             case \PDO::FETCH_ORI_ABS:
                 $this->cursor = $cursorOffset;
@@ -226,13 +231,14 @@ class MysqlStatement
      *
      * @return bool|mixed
      */
-    public function fetchColumn(int $columnNumber = 0)
+    public function fetchColumn($columnNumber = null)
     {
+        $columnNumber = is_null($columnNumber) ? 0 : $columnNumber;
         $this->__executeWhenStringQueryEmpty();
         return $this->fetch(\PDO::FETCH_COLUMN, \PDO::FETCH_ORI_NEXT, 0, $columnNumber);
     }
 
-    public function fetchAll($fetchStyle = null, $fetchArgument = null, array $ctorArgs = [])
+    public function fetchAll($fetchStyle = null, $fetchArgument = null, $ctorArgs = null)
     {
         $this->__executeWhenStringQueryEmpty();
         $resultSet = self::transStyle($this->resultSet, $fetchStyle, $fetchArgument, $ctorArgs);
