@@ -326,5 +326,9 @@ class HttpServerCommand extends Command
         } elseif (! extension_loaded('swoole')) {
             throw new \RuntimeException("Can't detect Swoole extension installed.");
         }
+
+        if (! version_compare(swoole_version(), '4.0.0-alpha', 'ge')) {
+            throw new \RuntimeException("Your Swoole version must be higher than 4.0 to use coroutine.");
+        }
     }
 }
