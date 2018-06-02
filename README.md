@@ -61,6 +61,10 @@ Requests/sec:   8717.00
 Transfer/sec:      1.55MB
 ```
 
+## Q&A
+
+The common questions are collected in [Q&A](https://github.com/swooletw/laravel-swoole/wiki/Z4.-Q&A). You can go check if your question is listed in the document.
+
 ## Issues and Support
 
 Please read [Issues Guideline](https://github.com/swooletw/laravel-swoole/wiki/Z2.-Issues-Guideline) before you submit an issue, thanks.
