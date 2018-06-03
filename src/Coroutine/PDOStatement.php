@@ -4,6 +4,7 @@
  * Copyright: Swlib
  * Author: Twosee <twose@qq.com>
  * Modifier: Albert Chen
+ * License: Apache 2.0
  */
 
 namespace SwooleTW\Http\Coroutine;
