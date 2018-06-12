@@ -31,7 +31,7 @@ return [
             'buffer_output_size' => 10 * 1024 * 1024,
             // Max buffer size for socket connections
             'socket_buffer_size' => 128 * 1024 * 1024,
-            // Worker will restart after processing this number of request
+            // Worker will restart after processing this number of requests
             'max_request' => 3000,
             // Enable coroutine send
             'send_yield' => true,

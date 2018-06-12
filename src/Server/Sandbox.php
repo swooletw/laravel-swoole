@@ -2,12 +2,12 @@
 
 namespace SwooleTW\Http\Server;
 
+use Swoole\Coroutine;
 use Illuminate\Http\Request;
 use Illuminate\Container\Container;
 use SwooleTW\Http\Server\Application;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
-use SwooleTW\Http\Exceptions\SandboxException;
 use Laravel\Lumen\Application as LumenApplication;
 
 class Sandbox
@@ -18,19 +18,19 @@ class Sandbox
     protected $application;
 
     /**
-     * @var \SwooleTW\Http\Server\Application
-     */
-    protected $snapshot;
-
-    /**
      * @var \Illuminate\Config\Repository
      */
     protected $config;
 
     /**
-     * @var \Illuminate\Http\Request
+     * @var array
      */
-    protected $request;
+    protected $requests = [];
+
+    /**
+     * @var array
+     */
+    protected $snapshots = [];
 
     /**
      * @var array
@@ -38,12 +38,7 @@ class Sandbox
     protected $providers = [];
 
     /**
-     * @var boolean
-     */
-    public $enabled = false;
-
-    /**
-     * Make a sandbox.
+     * Make a sandbox instance.
      *
      * @param \SwooleTW\Http\Server\Application
      * @return \SwooleTW\Http\Server\Sandbox
@@ -71,6 +66,8 @@ class Sandbox
     public function setApplication(Application $application)
     {
         $this->application = $application;
+
+        return $this;
     }
 
     /**
@@ -80,7 +77,20 @@ class Sandbox
      */
     public function setRequest(Request $request)
     {
-        $this->request = $request;
+        $this->requests[$this->getCoroutineId()] = $request;
+
+        return $this;
+    }
+    /**
+     * Set current snapshot.
+     *
+     * @param \SwooleTW\Http\Server\Application
+     */
+    public function setSnapshot(Application $snapshot)
+    {
+        $this->snapshots[$this->getCoroutineId()] = $snapshot;
+
+        return $this;
     }
 
     /**
@@ -114,13 +124,15 @@ class Sandbox
      */
     public function getApplication()
     {
-        if ($this->snapshot instanceOf Application) {
-            return $this->snapshot;
-        } elseif (! $this->enabled) {
-            throw new SandboxException('Sandbox is not enabled yet.');
+        $snapshot = $this->getSnapshot();
+        if ($snapshot instanceOf Application) {
+            return $snapshot;
         }
 
-        return $this->snapshot = clone $this->application;
+        $snapshot = clone $this->application;
+        $this->setSnapshot($snapshot);
+
+        return $snapshot;
     }
 
     /**
@@ -154,8 +166,9 @@ class Sandbox
      */
     protected function bindRequest($application)
     {
-        if ($this->request instanceof Request) {
-            $application->instance('request', $this->request);
+        $request = $this->getRequest();
+        if ($request instanceof Request) {
+            $application->instance('request', $request);
         }
     }
 
@@ -227,7 +240,7 @@ class Sandbox
     {
         if ($this->isFramework('laravel')) {
             $router = $application->make('router');
-            $request = $this->request;
+            $request = $this->getRequest();
             $closure = function () use ($application, $request) {
                 $this->container = $application;
                 if (is_null($request)) {
@@ -283,8 +296,9 @@ class Sandbox
      */
     public function getLaravelApp()
     {
-        if ($this->snapshot instanceOf Application) {
-            return $this->snapshot->getApplication();
+        $snapshot = $this->getSnapshot();
+        if ($snapshot instanceOf Application) {
+            return $snapshot->getApplication();
         }
 
         return $this->getApplication()->getApplication();
@@ -297,7 +311,6 @@ class Sandbox
     {
         $this->setInstance($app = $this->getLaravelApp());
         $this->resetLaravelApp($app);
-        $this->enabled = true;
     }
 
     /**
@@ -305,15 +318,16 @@ class Sandbox
      */
     public function disable()
     {
-        if (! $this->enabled) {
+        $coroutineId = $this->getCoroutineId();
+        if (! array_key_exists($coroutineId, $this->snapshots)) {
             return;
         }
 
-        if ($this->snapshot instanceOf Application) {
-            $this->snapshot = null;
+        if ($this->getSnapshot() instanceOf Application) {
+            unset($this->snapshots[$coroutineId]);
         }
 
-        $this->request = null;
+        unset($this->requests[$coroutineId]);
 
         $this->setInstance($this->application->getApplication());
     }
@@ -321,7 +335,7 @@ class Sandbox
     /**
      * Replace app's self bindings.
      */
-    protected function setInstance($application)
+    public function setInstance(Container $application)
     {
         $application->instance('app', $application);
         $application->instance(Container::class, $application);
@@ -333,5 +347,29 @@ class Sandbox
         Container::setInstance($application);
         Facade::clearResolvedInstances();
         Facade::setFacadeApplication($application);
+    }
+
+    /**
+     * Get current coroutine id.
+     */
+    public function getCoroutineId()
+    {
+        return Coroutine::getuid();
+    }
+
+    /**
+     * Get current snapshot.
+     */
+    public function getSnapshot()
+    {
+        return $this->snapshots[$this->getCoroutineId()] ?? null;
+    }
+
+    /**
+     * Get current request.
+     */
+    public function getRequest()
+    {
+        return $this->requests[$this->getCoroutineId()] ?? null;
     }
 }

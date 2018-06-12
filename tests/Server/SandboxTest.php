@@ -3,12 +3,15 @@
 namespace SwooleTW\Http\Tests\Server;
 
 use Mockery as m;
-use ReflectionProperty;
 use RuntimeException;
+use Swoole\Coroutine;
+use ReflectionProperty;
+use Illuminate\Http\Request;
 use SwooleTW\Http\Server\Sandbox;
 use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Container\Container;
 use SwooleTW\Http\Server\Application;
+use Illuminate\Support\Facades\Facade;
 
 class SandboxTest extends TestCase
 {
@@ -29,6 +32,28 @@ class SandboxTest extends TestCase
         $this->assertTrue($this->getSandbox()->getApplication() instanceof Application);
     }
 
+    public function testSetRequest()
+    {
+        $request = m::mock(Request::class);
+        $sandbox = $this->getSandbox()->setRequest($request);
+
+        $this->assertSame($request, $sandbox->getRequest());
+    }
+
+    public function testSetSnapshot()
+    {
+        $application = $this->getApplication();
+        $application->foo = 'bar';
+        $sandbox = $this->getSandbox()->setSnapshot($application);
+
+        $this->assertSame($application, $sandbox->getSnapshot());
+    }
+
+    public function testGetCoroutineId()
+    {
+        $this->assertSame(-1, $this->getSandbox()->getCoroutineId());
+    }
+
     protected function getSandbox()
     {
         $container = $this->getContainer();
@@ -44,9 +69,9 @@ class SandboxTest extends TestCase
 
         $reflector = new \ReflectionClass(Sandbox::class);
 
-        $property = $reflector->getProperty('snapshot');
+        $property = $reflector->getProperty('snapshots');
         $property->setAccessible(true);
-        $property->setValue($sandbox, $application);
+        $property->setValue($sandbox, [ -1 => $application]);
 
         return $sandbox;
     }
