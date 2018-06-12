@@ -46,11 +46,11 @@ class Websocket
     protected $callbacks = [];
 
     /**
-     * Middlewares for on connect request.
+     * Middleware for on connect request.
      *
      * @var array
      */
-    protected $middlewares = [];
+    protected $middleware = [];
 
     /**
      * Pipeline instance.
