@@ -295,9 +295,9 @@ class Sandbox
      */
     public function enable()
     {
+        $this->enabled = true;
         $this->setInstance($app = $this->getLaravelApp());
         $this->resetLaravelApp($app);
-        $this->enabled = true;
     }
 
     /**
