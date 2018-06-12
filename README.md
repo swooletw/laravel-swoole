@@ -61,13 +61,23 @@ Requests/sec:   8717.00
 Transfer/sec:      1.55MB
 ```
 
-## Support
+## Q&A
+
+The common questions are collected in [Q&A](https://github.com/swooletw/laravel-swoole/wiki/Z4.-Q&A). You can go check if your question is listed in the document.
+
+## Issues and Support
+
+Please read [Issues Guideline](https://github.com/swooletw/laravel-swoole/wiki/Z2.-Issues-Guideline) before you submit an issue, thanks.
 
 Bugs and feature request are tracked on [GitHub](https://github.com/swooletw/laravel-swoole/issues).
 
 ## Credits
 
-[Huang-Yi](https://github.com/huang-yi)
+[Huang-Yi](https://github.com/huang-yi), <a href="https://unisharp.com"><img src="https://i.imgur.com/TjyJIoO.png" width="160"></a>
+
+## Alternatives
+
+* [laravel-s](https://github.com/hhxsv5/laravel-s)
 
 ## License
 
