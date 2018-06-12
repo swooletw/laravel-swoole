@@ -7,6 +7,7 @@ use Illuminate\Container\Container;
 use SwooleTW\Http\Server\Application;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
+use SwooleTW\Http\Exceptions\SandboxException;
 use Laravel\Lumen\Application as LumenApplication;
 
 class Sandbox
@@ -115,12 +116,11 @@ class Sandbox
     {
         if ($this->snapshot instanceOf Application) {
             return $this->snapshot;
+        } elseif (! $this->enabled) {
+            throw new SandboxException('Sandbox is not enabled yet.');
         }
 
-        $snapshot = clone $this->application;
-        $this->resetLaravelApp($snapshot->getApplication());
-
-        return $this->snapshot = $snapshot;
+        return $this->snapshot = clone $this->application;
     }
 
     /**
@@ -295,11 +295,8 @@ class Sandbox
      */
     public function enable()
     {
-        if (is_null($this->snapshot)) {
-            $this->getApplication($this->application);
-        }
-
-        $this->setInstance($this->getLaravelApp());
+        $this->setInstance($app = $this->getLaravelApp());
+        $this->resetLaravelApp($app);
         $this->enabled = true;
     }
 
