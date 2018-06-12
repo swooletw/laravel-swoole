@@ -117,10 +117,7 @@ class Sandbox
             return $this->snapshot;
         }
 
-        $snapshot = clone $this->application;
-        $this->resetLaravelApp($snapshot->getApplication());
-
-        return $this->snapshot = $snapshot;
+        return $this->snapshot = clone $this->application;
     }
 
     /**
@@ -295,11 +292,8 @@ class Sandbox
      */
     public function enable()
     {
-        if (is_null($this->snapshot)) {
-            $this->getApplication($this->application);
-        }
-
-        $this->setInstance($this->getLaravelApp());
+        $this->setInstance($app = $this->getLaravelApp());
+        $this->resetLaravelApp($app);
         $this->enabled = true;
     }
 
