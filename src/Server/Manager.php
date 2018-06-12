@@ -255,8 +255,8 @@ class Manager
             $this->sandbox->setRequest($illuminateRequest);
 
             // enable sandbox
-            $application = $this->sandbox->getApplication();
             $this->sandbox->enable();
+            $application = $this->sandbox->getApplication();
 
             // handle request via laravel/lumen's dispatcher
             $illuminateResponse = $application->run($illuminateRequest);

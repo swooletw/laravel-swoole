@@ -62,8 +62,8 @@ trait CanWebsocket
             // set currnt request to sandbox
             $this->sandbox->setRequest($illuminateRequest);
             // enable sandbox
-            $application = $this->sandbox->getLaravelApp();
             $this->sandbox->enable();
+            $application = $this->sandbox->getLaravelApp();
             // check if socket.io connection established
             if (! $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
                 return;
@@ -104,7 +104,6 @@ trait CanWebsocket
             $this->websocket->reset(true)->setSender($frame->fd);
 
             // enable sandbox
-            $application = $this->sandbox->getLaravelApp();
             $this->sandbox->enable();
 
             // dispatch message to registered event callback
