@@ -46,37 +46,37 @@ class Websocket
     protected $callbacks = [];
 
     /**
-     * Middlewares for on connect request.
+     * Middleware for on connect request.
      *
      * @var array
      */
-    protected $middlewares = [];
+    protected $middleware = [];
 
     /**
      * Pipeline instance.
      *
-     * @var Illuminate\Contracts\Pipeline\Pipeline
+     * @var PipelineContract
      */
     protected $pipeline;
 
     /**
      * Room adapter.
      *
-     * @var SwooleTW\Http\Websocket\Rooms\RoomContract
+     * @var RoomContract
      */
     protected $room;
 
     /**
      * Websocket constructor.
      *
-     * @var SwooleTW\Http\Websocket\Rooms\RoomContract $rrom
-     * @var Illuminate\Contracts\Pipeline\Pipeline $pipeline
+     * @var RoomContract $room
+     * @var PipelineContract $pipeline
      */
     public function __construct(RoomContract $room, PipelineContract $pipeline)
     {
         $this->room = $room;
         $this->pipeline = $pipeline;
-        $this->setDafaultMiddleware();
+        $this->setDefaultMiddleware();
     }
 
     /**
@@ -90,9 +90,10 @@ class Websocket
     }
 
     /**
-     * Set multiple recepients' fd or room names.
+     * Set multiple recipients fd or room names.
      *
      * @param integer, string, array
+     * @return $this
      */
     public function to($values)
     {
@@ -110,7 +111,8 @@ class Websocket
     /**
      * Join sender to multiple rooms.
      *
-     * @param string, array
+     * @param string, array $rooms
+     * @return $this
      */
     public function join($rooms)
     {
@@ -125,6 +127,7 @@ class Websocket
      * Make sender leave multiple rooms.
      *
      * @param string, array
+     * @return $this
      */
     public function leave($rooms = [])
     {
@@ -140,6 +143,7 @@ class Websocket
      *
      * @param string
      * @param mixed
+     * @return boolean
      */
     public function emit(string $event, $data)
     {
@@ -174,6 +178,7 @@ class Websocket
      * An alias of `join` function.
      *
      * @param string
+     * @return $this
      */
     public function in($room)
     {
@@ -187,6 +192,7 @@ class Websocket
      *
      * @param string
      * @param callback
+     * @return $this
      */
     public function on(string $event, $callback)
     {
@@ -205,6 +211,7 @@ class Websocket
      * Check if this event name exists.
      *
      * @param string
+     * @return boolean
      */
     public function eventExists(string $event)
     {
@@ -216,6 +223,7 @@ class Websocket
      *
      * @param string
      * @param mixed
+     * @return mixed
      */
     public function call(string $event, $data = null)
     {
@@ -242,6 +250,7 @@ class Websocket
      * Close current connection.
      *
      * @param integer
+     * @return boolean
      */
     public function close(int $fd = null)
     {
@@ -252,6 +261,7 @@ class Websocket
      * Set sender fd.
      *
      * @param integer
+     * @return $this
      */
     public function setSender(int $fd)
     {
@@ -344,7 +354,7 @@ class Websocket
     /**
      * Set default middleware.
      */
-    protected function setDafaultMiddleware()
+    protected function setDefaultMiddleware()
     {
         $this->middleware = app('config')->get('swoole_websocket.middleware', []);
     }

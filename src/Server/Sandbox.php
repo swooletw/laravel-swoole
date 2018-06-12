@@ -130,7 +130,6 @@ class Sandbox
         }
 
         $snapshot = clone $this->application;
-        $this->resetLaravelApp($snapshot->getApplication());
         $this->setSnapshot($snapshot);
 
         return $snapshot;
@@ -310,11 +309,8 @@ class Sandbox
      */
     public function enable()
     {
-        if (is_null($this->getSnapshot())) {
-            $this->getApplication($this->application);
-        }
-
-        $this->setInstance($this->getLaravelApp());
+        $this->setInstance($app = $this->getLaravelApp());
+        $this->resetLaravelApp($app);
     }
 
     /**
