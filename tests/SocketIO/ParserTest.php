@@ -12,6 +12,8 @@ use SwooleTW\Http\Websocket\SocketIO\Strategies\HeartbeatStrategy;
 
 class ParserTest extends TestCase
 {
+    protected static $server;
+
     public function testEncode()
     {
         $event = 'foo';
@@ -52,7 +54,7 @@ class ParserTest extends TestCase
     public function testExecute()
     {
         $frame = m::mock(Frame::class);
-        $server = new Server('0.0.0.0');
+        $server = $this->getServer();
 
         $app = App::shouldReceive('call')->once();
 
@@ -68,11 +70,11 @@ class ParserTest extends TestCase
         $frame->data = $payload;
         $frame->fd = 1;
 
-        // // will lead to mockery bug
-        // $server = m::mock(swoole_websocket_server::class);
+        // will lead to mockery bug
+        // $server = m::mock(Server::class);
         // $server->shouldReceive('push')->once();
 
-        $server = new Server('0.0.0.0');
+        $server = $this->getServer();
 
         $strategy = new HeartbeatStrategy;
         $this->assertFalse($strategy->handle($server, $frame));
@@ -83,5 +85,14 @@ class ParserTest extends TestCase
         // // will lead segmentation fault
         // $frame->data = '2probe';
         // $this->assertTrue($strategy->handle($server, $frame));
+    }
+
+    protected function getServer()
+    {
+        if (static::$server) {
+            return static::$server;
+        }
+
+        return static::$server = new Server('0.0.0.0');
     }
 }
