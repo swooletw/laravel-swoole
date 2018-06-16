@@ -16,7 +16,7 @@ This package provides a high performance HTTP server to speed up your Laravel/Lu
 ## Features
 
 * Run **Laravel/Lumen** application on top of **Swoole**.
-* Outstanding performance boosting up to **30x**.
+* Outstanding performance boosting up to **5x** faster.
 * Sandbox mode to isolate app container.
 * Support running websocket server in **Laravel**.
 * Support `Socket.io` protocol.
@@ -28,7 +28,8 @@ Please see [Wiki](https://github.com/swooletw/laravel-swoole/wiki)
 
 ## Benchmark
 
-Test with clean Lumen 5.5, using MacBook Air 13, 2015.
+Test with clean Lumen 5.6, using DigitalOcean 3 CPUs / 1 GB Memory / PHP 7.2 / Ubuntu 16.04.4 x64
+
 Benchmarking Tool: [wrk](https://github.com/wg/wrk)
 
 ```
@@ -38,27 +39,31 @@ wrk -t4 -c100 http://your.app
 ### Nginx with FPM
 
 ```
-Running 10s test @ http://lumen.app:9999
-  4 threads and 100 connections
+wrk -t4 -c10 http://lumen-swoole.local
+
+Running 10s test @ http://lumen-swoole.local
+  4 threads and 10 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     1.14s   191.03ms   1.40s    90.31%
-    Req/Sec    22.65     10.65    50.00     65.31%
-  815 requests in 10.07s, 223.65KB read
-Requests/sec:     80.93
-Transfer/sec:     22.21KB
+    Latency     6.41ms    1.56ms  19.71ms   71.32%
+    Req/Sec   312.99     28.71   373.00     72.00%
+  12469 requests in 10.01s, 3.14MB read
+Requests/sec:   1245.79
+Transfer/sec:    321.12KB
 ```
 
 ### Swoole HTTP Server
 
 ```
-Running 10s test @ http://127.0.0.1:1215
-  4 threads and 100 connections
+wrk -t4 -c10 http://lumen-swoole.local:1215
+
+Running 10s test @ http://lumen-swoole.local:1215
+  4 threads and 10 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    11.58ms    4.74ms  68.73ms   81.63%
-    Req/Sec     2.19k   357.43     2.90k    69.50%
-  87879 requests in 10.08s, 15.67MB read
-Requests/sec:   8717.00
-Transfer/sec:      1.55MB
+    Latency     2.39ms    4.88ms 105.21ms   94.55%
+    Req/Sec     1.26k   197.13     1.85k    68.75%
+  50248 requests in 10.02s, 10.88MB read
+Requests/sec:   5016.94
+Transfer/sec:      1.09MB
 ```
 
 ## Q&A
