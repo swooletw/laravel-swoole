@@ -11,6 +11,7 @@ namespace SwooleTW\Http\Coroutine;
 
 use PDOStatement as BaseStatement;
 use SwooleTW\Http\Coroutine\PDO;
+use Swoole\Coroutine\MySQL\Statement;
 
 class PDOStatement extends BaseStatement
 {
@@ -27,7 +28,7 @@ class PDOStatement extends BaseStatement
 
     public static $fetchStyle = PDO::FETCH_BOTH;
 
-    public function __construct(PDO $parent, $statement, array $driverOptions = [])
+    public function __construct(PDO $parent, Statement $statement, array $driverOptions = [])
     {
         $this->parent = $parent;
         $this->statement = $statement;

@@ -131,7 +131,7 @@ class PDO extends BasePDO
 
     public function inTransaction()
     {
-        return $this->client->connect_errno;
+        return $this->inTransaction;
     }
 
     public function lastInsertId($seqname = null)
@@ -146,7 +146,11 @@ class PDO extends BasePDO
 
     public function errorInfo()
     {
-        return $this->client->errno;
+        return [
+            $this->client->errno,
+            $this->client->errno,
+            $this->client->error,
+        ];
     }
 
     public function exec($statement): int
@@ -210,7 +214,7 @@ class PDO extends BasePDO
             case \PDO::ATTR_PERSISTENT:
             case \PDO::ATTR_PREFETCH:
             case \PDO::ATTR_SERVER_INFO:
-                return $this->serverInfo['timeout'] ?? self::$defaultOptions['timeout'];
+                return $this->serverInfo['timeout'] ?? static::$defaultOptions['timeout'];
             case \PDO::ATTR_SERVER_VERSION:
                 return 'Swoole Mysql';
             case \PDO::ATTR_TIMEOUT:
