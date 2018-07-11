@@ -231,4 +231,9 @@ as both the server and client side can cache a compiled form of the query.
 TXT
         );
     }
+
+    public function __destruct()
+    {
+        $this->client->close();
+    }
 }
