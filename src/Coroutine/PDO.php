@@ -10,7 +10,10 @@
 namespace SwooleTW\Http\Coroutine;
 
 use PDO as BasePDO;
+use Illuminate\Database\QueryException;
 use SwooleTW\Http\Coroutine\PDOStatement;
+use SwooleTW\Http\Coroutine\StatementException;
+use SwooleTW\Http\Coroutine\ConnectionException;
 
 class PDO extends BasePDO
 {
@@ -40,19 +43,30 @@ class PDO extends BasePDO
         string $password = '',
         array $driverOptions = []
     ) {
-        $options = $this->getOptions(...func_get_args());
-        $this->setClient($options);
+        $this->setClient();
+        $this->connect($this->getOptions(...func_get_args()));
     }
 
-    public function setClient(array $options = [], $client = null)
+    protected function setClient($client = null)
     {
         $this->client = $client ?: new \Swoole\Coroutine\Mysql();
+    }
+
+    protected function connect(array $options = [])
+    {
         $this->client->connect($options);
+
+        if (! $this->client->connected) {
+            $message = $this->client->connect_error ?: $this->client->error;
+            $errorCode = $this->client->connect_errno ?: $this->client->errno;
+
+            throw new ConnectionException($message, $errorCode);
+        }
 
         return $this;
     }
 
-    private function getOptions($dsn, $username, $password, $driverOptions)
+    protected function getOptions($dsn, $username, $password, $driverOptions)
     {
         $dsn = explode(':', $dsn);
         $driver = ucwords(array_shift($dsn));
@@ -175,7 +189,8 @@ class PDO extends BasePDO
             $stmtObj->bindKeyMap = $bindKeyMap ?? [];
             return new PDOStatement($this, $stmtObj, $driverOptions);
         } else {
-            return false;
+            $statementException = new StatementException($this->client->error, $this->client->errno);
+            throw new QueryException($statement, [], $statementException);
         }
     }
 

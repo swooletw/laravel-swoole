@@ -2,43 +2,47 @@
 
 namespace SwooleTW\Http\Coroutine\Connectors;
 
+use Exception;
+use Throwable;
+use Illuminate\Support\Str;
 use SwooleTW\Http\Coroutine\PDO as SwoolePDO;
 use Illuminate\Database\Connectors\MySqlConnector as BaseConnector;
 
 class MySqlConnector extends BaseConnector
 {
     /**
-     * Establish a database connection.
+     * Create a new PDO connection instance.
      *
-     * @param  array  $config
+     * @param  string  $dsn
+     * @param  string  $username
+     * @param  string  $password
+     * @param  array  $options
      * @return \PDO
      */
-    public function connect(array $config)
+    protected function createPdoConnection($dsn, $username, $password, $options)
     {
-        list($username, $password) = [
-            $config['username'] ?? null, $config['password'] ?? null,
-        ];
-        $dsn = $this->getDsn($config);
-        $options = $this->getOptions($config);
+        return new SwoolePDO($dsn, $username, $password, $options);
+    }
 
-        // We need to grab the PDO options that should be used while making the brand
-        // new connection instance. The PDO options control various aspects of the
-        // connection's behavior, and some might be specified by the developers.
-        $connection = new SwoolePDO($dsn, $username, $password, $options);
-
-        if (! empty($config['database'])) {
-            $connection->exec("use `{$config['database']}`;");
+    /**
+     * Handle an exception that occurred during connect execution.
+     *
+     * @param  \Throwable  $e
+     * @param  string  $dsn
+     * @param  string  $username
+     * @param  string  $password
+     * @param  array   $options
+     * @return \PDO
+     *
+     * @throws \Exception
+     */
+    protected function tryAgainIfCausedByLostConnection(Throwable $e, $dsn, $username, $password, $options)
+    {
+        // https://github.com/swoole/swoole-src/blob/a414e5e8fec580abb3dbd772d483e12976da708f/swoole_mysql_coro.c#L196
+        if ($this->causedByLostConnection($e) || Str::contains($e->getMessage(), 'is closed')) {
+            return $this->createPdoConnection($dsn, $username, $password, $options);
         }
 
-        $this->configureEncoding($connection, $config);
-
-        // Next, we will check to see if a timezone has been specified in this config
-        // and if it has we will issue a statement to modify the timezone with the
-        // database. Setting this DB timezone is an optional configuration item.
-        $this->configureTimezone($connection, $config);
-
-        $this->setModes($connection, $config);
-
-        return $connection;
+        throw $e;
     }
 }
