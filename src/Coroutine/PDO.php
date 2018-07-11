@@ -9,6 +9,7 @@
 
 namespace SwooleTW\Http\Coroutine;
 
+use Exception;
 use PDO as BasePDO;
 use Illuminate\Database\QueryException;
 use SwooleTW\Http\Coroutine\PDOStatement;
@@ -162,7 +163,14 @@ class PDO extends BasePDO
 
     public function query(string $statement, float $timeout = 1.000)
     {
-        return new PDOStatement($this, $statement, ['timeout' => $timeout]);
+        $result = $this->client->query($statement, $timeout);
+
+        if ($result === false) {
+            $exception = new Exception($this->client->error, $this->client->errno);
+            throw new QueryException($statement, [], $exception);
+        }
+
+        return $result;
     }
 
     private function rewriteToPosition(string $statement)
