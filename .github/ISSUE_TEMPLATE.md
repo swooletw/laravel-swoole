@@ -1,4 +1,4 @@
-Please answer these questions before submitting your issue. Thanks!
+Please answer these questions **in English** before submitting your issue. Thanks!
 
 1. Please provide your PHP and Swoole version. (`php -v` and `php --ri swoole`)
 
