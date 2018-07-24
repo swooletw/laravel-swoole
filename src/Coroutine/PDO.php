@@ -29,7 +29,6 @@ class PDO extends BasePDO
         'password' => '',
         'database' => '',
         'charset' => 'utf8mb4',
-        'timeout' => 1.000,
         'strict_type' => true
     ];
 
@@ -161,7 +160,7 @@ class PDO extends BasePDO
         return $this->client->affected_rows;
     }
 
-    public function query(string $statement, float $timeout = 1.000)
+    public function query(string $statement, float $timeout = -1)
     {
         $result = $this->client->query($statement, $timeout);
 

@@ -16,23 +16,19 @@ use Swoole\Coroutine\MySQL\Statement;
 class PDOStatement extends BaseStatement
 {
     private $parent;
-
     public $statement;
     public $timeout;
-
     public $bindMap = [];
-
     public $cursor = -1;
     public $cursorOrientation = PDO::FETCH_ORI_NEXT;
     public $resultSet = [];
-
-    public static $fetchStyle = PDO::FETCH_BOTH;
+    public $fetchStyle = PDO::FETCH_BOTH;
 
     public function __construct(PDO $parent, Statement $statement, array $driverOptions = [])
     {
         $this->parent = $parent;
         $this->statement = $statement;
-        $this->timeout = $driverOptions['timeout'] ?? 1.000;
+        $this->timeout = $driverOptions['timeout'] ?? -1;
     }
 
     public function errorCode()
@@ -114,7 +110,7 @@ class PDOStatement extends BaseStatement
 
     public function setFetchMode($fetchStyle, $params = null)
     {
-        static::$fetchStyle = $fetchStyle;
+        $this->fetchStyle = $fetchStyle;
     }
 
     private function __executeWhenStringQueryEmpty()
@@ -125,7 +121,7 @@ class PDOStatement extends BaseStatement
         }
     }
 
-    private static function transBoth($rawData)
+    private function transBoth($rawData)
     {
         $temp = [];
         foreach ($rawData as $row) {
@@ -141,7 +137,7 @@ class PDOStatement extends BaseStatement
         return $temp;
     }
 
-    private static function transStyle(
+    private function transStyle(
         $rawData,
         $fetchStyle = null,
         $fetchArgument = null,
@@ -154,17 +150,17 @@ class PDOStatement extends BaseStatement
             return $rawData;
         }
 
-        $fetchStyle = is_null($fetchStyle) ? static::$fetchStyle : $fetchStyle;
+        $fetchStyle = is_null($fetchStyle) ? $this->fetchStyle : $fetchStyle;
         $ctorArgs = is_null($ctorArgs) ? [] : $ctorArgs;
 
         $resultSet = [];
         switch ($fetchStyle) {
             case PDO::FETCH_BOTH:
-                $resultSet = static::transBoth($rawData);
+                $resultSet = $this->transBoth($rawData);
                 break;
             case PDO::FETCH_COLUMN:
                 $resultSet = array_column(
-                    is_numeric($fetchArgument) ? static::transBoth($rawData) : $rawData,
+                    is_numeric($fetchArgument) ? $this->transBoth($rawData) : $rawData,
                     $fetchArgument
                 );
                 break;
@@ -219,7 +215,7 @@ class PDOStatement extends BaseStatement
         if (empty($result)) {
             return $result;
         } else {
-            return static::transStyle([$result], $fetchStyle, $fetchArgument)[0];
+            return $this->transStyle([$result], $fetchStyle, $fetchArgument)[0];
         }
     }
 
@@ -242,7 +238,7 @@ class PDOStatement extends BaseStatement
     public function fetchAll($fetchStyle = null, $fetchArgument = null, $ctorArgs = null)
     {
         $this->__executeWhenStringQueryEmpty();
-        $resultSet = static::transStyle($this->resultSet, $fetchStyle, $fetchArgument, $ctorArgs);
+        $resultSet = $this->transStyle($this->resultSet, $fetchStyle, $fetchArgument, $ctorArgs);
         $this->resultSet = [];
 
         return $resultSet;
