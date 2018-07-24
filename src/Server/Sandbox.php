@@ -9,6 +9,7 @@ use SwooleTW\Http\Server\Application;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Lumen\Application as LumenApplication;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Sandbox
 {
@@ -246,13 +247,17 @@ class Sandbox
                 if (is_null($request)) {
                     return;
                 }
-                $route = $this->routes->match($request);
-                // clear resolved controller
-                if (property_exists($route, 'container')) {
-                    $route->controller = null;
+                try {
+                    $route = $this->routes->match($request);
+                    // clear resolved controller
+                    if (property_exists($route, 'container')) {
+                        $route->controller = null;
+                    }
+                    // rebind matched route's container
+                    $route->setContainer($application);
+                } catch (NotFoundHttpException $e) {
+                    // do nothing
                 }
-                // rebind matched route's container
-                $route->setContainer($application);
             };
 
             $resetRouter = $closure->bindTo($router, $router);
