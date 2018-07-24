@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Tests;
 
 use Mockery as m;
+use SwooleTW\Http\Coroutine\Context;
 use Illuminate\Support\Facades\Facade;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
@@ -14,6 +15,7 @@ class TestCase extends BaseTestCase
             m::getContainer()->mockery_getExpectationCount()
         );
 
+        Context::clear();
         Facade::clearResolvedInstances();
         parent::tearDown();
     }

@@ -10,11 +10,6 @@ use SwooleTW\Http\Coroutine\Context;
 
 class ContextTest extends TestCase
 {
-    public function tearDown()
-    {
-        Context::clear();
-    }
-
     public function testGetCoroutineId()
     {
         $this->assertSame(-1, Context::getCoroutineId());
