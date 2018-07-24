@@ -54,6 +54,14 @@ class Context
     }
 
     /**
+     * Remove data by current coroutine id.
+     */
+    public static function removeData(string $key)
+    {
+        unset(static::$data[static::getCoroutineId()][$key]);
+    }
+
+    /**
      * Get data by current coroutine id.
      */
     public static function getDataKeys()

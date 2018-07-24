@@ -5,6 +5,7 @@ namespace SwooleTW\Http\Server;
 use Swoole\Coroutine;
 use Illuminate\Http\Request;
 use Illuminate\Container\Container;
+use SwooleTW\Http\Coroutine\Context;
 use SwooleTW\Http\Server\Application;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
@@ -22,16 +23,6 @@ class Sandbox
      * @var \Illuminate\Config\Repository
      */
     protected $config;
-
-    /**
-     * @var array
-     */
-    protected $requests = [];
-
-    /**
-     * @var array
-     */
-    protected $snapshots = [];
 
     /**
      * @var array
@@ -78,10 +69,11 @@ class Sandbox
      */
     public function setRequest(Request $request)
     {
-        $this->requests[$this->getCoroutineId()] = $request;
+        Context::setData('_request', $request);
 
         return $this;
     }
+
     /**
      * Set current snapshot.
      *
@@ -89,7 +81,7 @@ class Sandbox
      */
     public function setSnapshot(Application $snapshot)
     {
-        $this->snapshots[$this->getCoroutineId()] = $snapshot;
+        Context::setData('_snapshot', $snapshot);
 
         return $this;
     }
@@ -323,17 +315,7 @@ class Sandbox
      */
     public function disable()
     {
-        $coroutineId = $this->getCoroutineId();
-        if (! array_key_exists($coroutineId, $this->snapshots)) {
-            return;
-        }
-
-        if ($this->getSnapshot() instanceOf Application) {
-            unset($this->snapshots[$coroutineId]);
-        }
-
-        unset($this->requests[$coroutineId]);
-
+        Context::clear();
         $this->setInstance($this->application->getApplication());
     }
 
@@ -350,16 +332,9 @@ class Sandbox
         }
 
         Container::setInstance($application);
+        Context::setApp($application);
         Facade::clearResolvedInstances();
         Facade::setFacadeApplication($application);
-    }
-
-    /**
-     * Get current coroutine id.
-     */
-    public function getCoroutineId()
-    {
-        return Coroutine::getuid();
     }
 
     /**
@@ -367,7 +342,23 @@ class Sandbox
      */
     public function getSnapshot()
     {
-        return $this->snapshots[$this->getCoroutineId()] ?? null;
+        return Context::getData('_snapshot');
+    }
+
+    /**
+     * Remove current snapshot.
+     */
+    protected function removeSnapshot()
+    {
+        return Context::removeData('_snapshot');
+    }
+
+    /**
+     * Remove current request.
+     */
+    protected function removeRequest()
+    {
+        return Context::removeData('_request');
     }
 
     /**
@@ -375,6 +366,6 @@ class Sandbox
      */
     public function getRequest()
     {
-        return $this->requests[$this->getCoroutineId()] ?? null;
+        return Context::getData('_request');
     }
 }

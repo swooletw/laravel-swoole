@@ -39,6 +39,16 @@ class ContextTest extends TestCase
         $this->assertNull(Context::getData('bar'));
     }
 
+    public function testRemoveData()
+    {
+        Context::setData('foo', 'bar');
+        Context::setData('sea', 'food');
+
+        Context::removeData('foo');
+        $this->assertSame('food', Context::getData('sea'));
+        $this->assertNull(Context::getData('foo'));
+    }
+
     public function testGetDataKeys()
     {
         Context::setData('foo', 'bar');

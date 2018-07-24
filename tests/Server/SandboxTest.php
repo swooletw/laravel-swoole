@@ -49,11 +49,6 @@ class SandboxTest extends TestCase
         $this->assertSame($application, $sandbox->getSnapshot());
     }
 
-    public function testGetCoroutineId()
-    {
-        $this->assertSame(-1, $this->getSandbox()->getCoroutineId());
-    }
-
     protected function getSandbox()
     {
         $container = $this->getContainer();
@@ -66,12 +61,6 @@ class SandboxTest extends TestCase
         $property->setValue($application, $container);
 
         $sandbox = new Sandbox($application);
-
-        $reflector = new \ReflectionClass(Sandbox::class);
-
-        $property = $reflector->getProperty('snapshots');
-        $property->setAccessible(true);
-        $property->setValue($sandbox, [ -1 => $application]);
 
         return $sandbox;
     }
