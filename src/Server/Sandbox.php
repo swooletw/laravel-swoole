@@ -6,18 +6,27 @@ use Swoole\Coroutine;
 use Illuminate\Http\Request;
 use Illuminate\Container\Container;
 use SwooleTW\Http\Coroutine\Context;
+use Illuminate\Contracts\Http\Kernel;
 use SwooleTW\Http\Server\Application;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Lumen\Application as LumenApplication;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class Sandbox
 {
     /**
-     * @var \SwooleTW\Http\Server\Application
+     * @var \Illuminate\Container\Container
      */
-    protected $application;
+    protected $app;
+
+    /**
+     * @var string
+     */
+    protected $framework = 'laravel';
 
     /**
      * @var \Illuminate\Config\Repository
@@ -32,32 +41,42 @@ class Sandbox
     /**
      * Make a sandbox instance.
      *
-     * @param \SwooleTW\Http\Server\Application
+     * @param \Illuminate\Container\Container
      * @return \SwooleTW\Http\Server\Sandbox
      */
-    public static function make(Application $application)
+    public static function make(Container $app)
     {
-        return new static($application);
+        return new static($app);
     }
 
     /**
      * Sandbox constructor.
      */
-    public function __construct(Application $application)
+    public function __construct(Container $app)
     {
-        $this->setApplication($application);
+        $this->setBaseApp($app);
         $this->setInitialConfig();
         $this->setInitialProviders();
     }
 
     /**
+     * Set framework type
+     */
+    public function setFramework(string $framework)
+    {
+        $this->framework = $framework;
+
+        return $this;
+    }
+
+    /**
      * Set a base application
      *
-     * @param \SwooleTW\Http\Server\Application
+     * @param \Illuminate\Container\Container
      */
-    public function setApplication(Application $application)
+    public function setBaseApp(Container $app)
     {
-        $this->application = $application;
+        $this->app = $app;
 
         return $this;
     }
@@ -77,11 +96,11 @@ class Sandbox
     /**
      * Set current snapshot.
      *
-     * @param \SwooleTW\Http\Server\Application
+     * @param \Illuminate\Container\Container
      */
-    public function setSnapshot(Application $snapshot)
+    public function setSnapshot(Container $snapshot)
     {
-        Context::setData('_snapshot', $snapshot);
+        Context::setApp($snapshot);
 
         return $this;
     }
@@ -91,7 +110,7 @@ class Sandbox
      */
     protected function setInitialConfig()
     {
-        $this->config = clone $this->application->getApplication()->make('config');
+        $this->config = clone $this->getBaseApp()->make('config');
     }
 
     /**
@@ -99,7 +118,6 @@ class Sandbox
      */
     protected function setInitialProviders()
     {
-        $application = $this->application->getApplication();
         $providers = $this->config->get('swoole_http.providers', []);
 
         foreach ($providers as $provider) {
@@ -111,18 +129,28 @@ class Sandbox
     }
 
     /**
+     * Get base application.
+     *
+     * @return \Illuminate\Container\Container
+     */
+    public function getBaseApp()
+    {
+        return $this->app;
+    }
+
+    /**
      * Get an application snapshot
      *
-     * @return \SwooleTW\Http\Server\Application
+     * @return \Illuminate\Container\Container
      */
     public function getApplication()
     {
         $snapshot = $this->getSnapshot();
-        if ($snapshot instanceOf Application) {
+        if ($snapshot instanceOf Container) {
             return $snapshot;
         }
 
-        $snapshot = clone $this->application;
+        $snapshot = clone $this->getBaseApp();
         $this->setSnapshot($snapshot);
 
         return $snapshot;
@@ -131,52 +159,53 @@ class Sandbox
     /**
      * Reset Laravel/Lumen Application.
      */
-    protected function resetLaravelApp($application)
+    protected function resetApp($app)
     {
-        $this->resetConfigInstance($application);
-        $this->resetSession($application);
-        $this->resetCookie($application);
-        $this->clearInstances($application);
-        $this->bindRequest($application);
-        $this->rebindRouterContainer($application);
-        $this->rebindViewContainer($application);
-        $this->resetProviders($application);
+        $this->resetConfigInstance($app);
+        $this->resetSession($app);
+        $this->resetCookie($app);
+        $this->clearInstances($app);
+        $this->bindRequest($app);
+        $this->rebindKernelContainer($app);
+        $this->rebindRouterContainer($app);
+        $this->rebindViewContainer($app);
+        $this->resetProviders($app);
     }
 
     /**
      * Clear resolved instances.
      */
-    protected function clearInstances($application)
+    protected function clearInstances($app)
     {
         $instances = $this->config->get('swoole_http.instances', []);
         foreach ($instances as $instance) {
-            $application->forgetInstance($instance);
+            $app->forgetInstance($instance);
         }
     }
 
     /**
      * Bind illuminate request to laravel/lumen application.
      */
-    protected function bindRequest($application)
+    protected function bindRequest($app)
     {
         $request = $this->getRequest();
         if ($request instanceof Request) {
-            $application->instance('request', $request);
+            $app->instance('request', $request);
         }
     }
 
     /**
      * Re-register and reboot service providers.
      */
-    protected function resetProviders($application)
+    protected function resetProviders($app)
     {
         foreach ($this->providers as $provider) {
-            $this->rebindProviderContainer($provider, $application);
+            $this->rebindProviderContainer($provider, $app);
             if (method_exists($provider, 'register')) {
                 $provider->register();
             }
             if (method_exists($provider, 'boot')) {
-                $application->call([$provider, 'boot']);
+                $app->call([$provider, 'boot']);
             }
         }
     }
@@ -184,10 +213,10 @@ class Sandbox
     /**
      * Rebind service provider's container.
      */
-    protected function rebindProviderContainer($provider, $application)
+    protected function rebindProviderContainer($provider, $app)
     {
-        $closure = function () use ($application) {
-            $this->app = $application;
+        $closure = function () use ($app) {
+            $this->app = $app;
         };
 
         $resetProvider = $closure->bindTo($provider, $provider);
@@ -197,18 +226,18 @@ class Sandbox
     /**
      * Reset laravel/lumen's config to initial values.
      */
-    protected function resetConfigInstance($application)
+    protected function resetConfigInstance($app)
     {
-        $application->instance('config', clone $this->config);
+        $app->instance('config', clone $this->config);
     }
 
     /**
      * Reset laravel's session data.
      */
-    protected function resetSession($application)
+    protected function resetSession($app)
     {
-        if (isset($application['session'])) {
-            $session = $application->make('session');
+        if (isset($app['session'])) {
+            $session = $app->make('session');
             $session->flush();
         }
     }
@@ -216,10 +245,10 @@ class Sandbox
     /**
      * Reset laravel's cookie.
      */
-    protected function resetCookie($application)
+    protected function resetCookie($app)
     {
-        if (isset($application['cookie'])) {
-            $cookies = $application->make('cookie');
+        if (isset($app['cookie'])) {
+            $cookies = $app->make('cookie');
             foreach ($cookies->getQueuedCookies() as $key => $value) {
                 $cookies->unqueue($key);
             }
@@ -229,13 +258,13 @@ class Sandbox
     /**
      * Rebind laravel's container in router.
      */
-    protected function rebindRouterContainer($application)
+    protected function rebindRouterContainer($app)
     {
-        if ($this->isFramework('laravel')) {
-            $router = $application->make('router');
+        if ($this->framework === 'laravel') {
+            $router = $app->make('router');
             $request = $this->getRequest();
-            $closure = function () use ($application, $request) {
-                $this->container = $application;
+            $closure = function () use ($app, $request) {
+                $this->container = $app;
                 if (is_null($request)) {
                     return;
                 }
@@ -246,7 +275,7 @@ class Sandbox
                         $route->controller = null;
                     }
                     // rebind matched route's container
-                    $route->setContainer($application);
+                    $route->setContainer($app);
                 } catch (NotFoundHttpException $e) {
                     // do nothing
                 }
@@ -254,10 +283,10 @@ class Sandbox
 
             $resetRouter = $closure->bindTo($router, $router);
             $resetRouter();
-        } elseif ($this->isFramework('lumen')) {
+        } elseif ($this->framework === 'lumen') {
             // lumen router only exists after lumen 5.5
-            if (property_exists($application, 'router')) {
-                $application->router->app = $application;
+            if (property_exists($app, 'router')) {
+                $app->router->app = $app;
             }
         }
     }
@@ -265,13 +294,13 @@ class Sandbox
     /**
      * Rebind laravel/lumen's container in view.
      */
-    protected function rebindViewContainer($application)
+    protected function rebindViewContainer($app)
     {
-        $view = $application->make('view');
+        $view = $app->make('view');
 
-        $closure = function () use ($application) {
-            $this->container = $application;
-            $this->shared['app'] = $application;
+        $closure = function () use ($app) {
+            $this->container = $app;
+            $this->shared['app'] = $app;
         };
 
         $resetView = $closure->bindTo($view, $view);
@@ -279,26 +308,147 @@ class Sandbox
     }
 
     /**
-     * Get application's framework.
+     * Rebind laravel's container in kernel.
      */
-    protected function isFramework(string $name)
+    protected function rebindKernelContainer($app)
     {
-        return $this->application->getFramework() === $name;
+        if ($this->framework === 'laravel') {
+            $kernel = $app->make(Kernel::class);
+
+            $closure = function () use ($app) {
+                $this->app = $app;
+            };
+
+            $resetKernel = $closure->bindTo($kernel, $kernel);
+            $resetKernel();
+        }
     }
 
     /**
-     * Get a laravel snapshot
+     * Run framework.
      *
-     * @return \Illuminate\Container\Container
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
      */
-    public function getLaravelApp()
+    public function run(Request $request)
     {
-        $snapshot = $this->getSnapshot();
-        if ($snapshot instanceOf Application) {
-            return $snapshot->getApplication();
+        $shouldUseOb = $this->config->get('swoole_http.ob_output', true);
+
+        if ($shouldUseOb) {
+            ob_start();
         }
 
-        return $this->getApplication()->getApplication();
+        // handle request with laravel or lumen
+        $method = sprintf('run%s', ucfirst($this->framework));
+        $response = $this->$method($request);
+
+        // prepare content for ob
+        $content = '';
+        if ($shouldUseOb) {
+            if ($response instanceof BinaryFileResponse) {
+                $shouldUseOb = false;
+                ob_end_clean();
+            } elseif ($isStream = $response instanceof StreamedResponse) {
+                $response->sendContent();
+            } elseif ($response instanceof SymfonyResponse) {
+                $content = $response->getContent();
+            } else {
+                $content = (string) $response;
+            }
+        }
+
+        // process terminating logics
+        $this->terminate($request, $response);
+
+        // set ob content to response
+        if ($shouldUseOb && strlen($content) === 0 && ob_get_length() > 0) {
+            if ($isStream) {
+                $response->output = ob_get_contents();
+            } else {
+                $response->setContent(ob_get_contents());
+            }
+        }
+
+        if ($shouldUseOb) {
+            ob_end_clean();
+        }
+
+        return $response;
+    }
+
+    /**
+     * Run Laravel framework.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    protected function runLaravel(Request $request)
+    {
+        return $this->getKernel()->handle($request);
+    }
+
+    /**
+     * Run lumen framework.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return mixed
+     */
+    protected function runLumen(Request $request)
+    {
+        return $this->getApplication()->dispatch($request);
+    }
+
+    /**
+     * Get Laravel kernel.
+     */
+    protected function getKernel()
+    {
+        return $this->getApplication()->make(Kernel::class);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\Response $response
+     */
+    public function terminate(Request $request, $response)
+    {
+        $method = sprintf('terminate%s', ucfirst($this->framework));
+
+        $this->$method($request, $response);
+    }
+
+    /**
+     * Terminate Laravel framework.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\Response $response
+     */
+    protected function terminateLaravel(Request $request, $response)
+    {
+        $this->getKernel()->terminate($request, $response);
+    }
+
+    /**
+     * Terminate Lumen framework.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\Response $response
+     */
+    protected function terminateLumen(Request $request, $response)
+    {
+        $app = $this->getApplication();
+
+        $reflection = new \ReflectionObject($app);
+
+        $middleware = $reflection->getProperty('middleware');
+        $middleware->setAccessible(true);
+
+        $callTerminableMiddleware = $reflection->getMethod('callTerminableMiddleware');
+        $callTerminableMiddleware->setAccessible(true);
+
+        if (count($middleware->getValue($app)) > 0) {
+            $callTerminableMiddleware->invoke($app, $response);
+        }
     }
 
     /**
@@ -306,8 +456,8 @@ class Sandbox
      */
     public function enable()
     {
-        $this->setInstance($app = $this->getLaravelApp());
-        $this->resetLaravelApp($app);
+        $this->setInstance($app = $this->getApplication());
+        $this->resetApp($app);
     }
 
     /**
@@ -316,25 +466,25 @@ class Sandbox
     public function disable()
     {
         Context::clear();
-        $this->setInstance($this->application->getApplication());
+        $this->setInstance($this->getBaseApp());
     }
 
     /**
      * Replace app's self bindings.
      */
-    public function setInstance(Container $application)
+    public function setInstance(Container $app)
     {
-        $application->instance('app', $application);
-        $application->instance(Container::class, $application);
+        $app->instance('app', $app);
+        $app->instance(Container::class, $app);
 
-        if ($this->isFramework('lumen')) {
-            $application->instance(LumenApplication::class, $application);
+        if ($framework === 'lumen') {
+            $app->instance(LumenApplication::class, $app);
         }
 
-        Container::setInstance($application);
-        Context::setApp($application);
+        Container::setInstance($app);
+        Context::setApp($app);
         Facade::clearResolvedInstances();
-        Facade::setFacadeApplication($application);
+        Facade::setFacadeApplication($app);
     }
 
     /**
@@ -342,15 +492,7 @@ class Sandbox
      */
     public function getSnapshot()
     {
-        return Context::getData('_snapshot');
-    }
-
-    /**
-     * Remove current snapshot.
-     */
-    protected function removeSnapshot()
-    {
-        return Context::removeData('_snapshot');
+        return Context::getApp();
     }
 
     /**

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Table\CanSwooleTable;
 use SwooleTW\Http\Transformers\Request;
+use SwooleTW\Http\Server\CanApplication;
 use SwooleTW\Http\Transformers\Response;
 use SwooleTW\Http\Websocket\CanWebsocket;
 use Illuminate\Contracts\Container\Container;
@@ -18,9 +19,9 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 
 class Manager
 {
-    use CanWebsocket, CanSwooleTable;
-
-    const MAC_OSX = 'Darwin';
+    use CanWebsocket,
+        CanSwooleTable,
+        CanApplication;
 
     /**
      * @var \Swoole\Http\Server | \Swoole\Websocket\Server
@@ -33,18 +34,6 @@ class Manager
      * @var \Illuminate\Contracts\Container\Container
      */
     protected $container;
-
-    /**
-     * @var \SwooleTW\Http\Server\Application
-     */
-    protected $application;
-
-    /**
-     * Laravel|Lumen Application.
-     *
-     * @var \Illuminate\Container\Container
-     */
-    protected $app;
 
     /**
      * @var string
@@ -82,9 +71,8 @@ class Manager
     public function __construct(Container $container, $framework, $basePath = null)
     {
         $this->container = $container;
-        $this->framework = $framework;
-        $this->basePath = $basePath;
-
+        $this->setFramework($framework);
+        $this->setBasepath($basePath);
         $this->initialize();
     }
 
@@ -116,22 +104,6 @@ class Manager
         $this->createSwooleServer();
         $this->configureSwooleServer();
         $this->setSwooleServerListeners();
-    }
-
-    /**
-     * Prepare settings if websocket is enabled.
-     */
-    protected function prepareWebsocket()
-    {
-        $isWebsocket = $this->container['config']->get('swoole_http.websocket.enabled');
-        $parser = $this->container['config']->get('swoole_websocket.parser');
-
-        if ($isWebsocket) {
-            array_push($this->events, ...$this->wsEvents);
-            $this->isWebsocket = true;
-            $this->setParser(new $parser);
-            $this->setWebsocketRoom();
-        }
     }
 
     /**
@@ -213,15 +185,11 @@ class Manager
         // clear events instance in case of repeated listeners in worker process
         Facade::clearResolvedInstance('events');
 
-        // initialize laravel app
-        $this->createApplication();
-        $this->setLaravelApp();
+        // set application to sandbox environment
+        $this->sandbox = Sandbox::make($this->getApplication())->setFramework($this->framework);
 
         // bind after setting laravel app
         $this->bindToLaravelApp();
-
-        // set application to sandbox environment
-        $this->sandbox = Sandbox::make($this->getApplication());
 
         // load websocket handlers after binding websocket to laravel app
         if ($this->isWebsocket) {
@@ -255,13 +223,11 @@ class Manager
 
             // set current request to sandbox
             $this->sandbox->setRequest($illuminateRequest);
-
             // enable sandbox
             $this->sandbox->enable();
-            $application = $this->sandbox->getApplication();
 
             // handle request via laravel/lumen's dispatcher
-            $illuminateResponse = $application->run($illuminateRequest);
+            $illuminateResponse = $this->sandbox->run($illuminateRequest);
             $response = Response::make($illuminateResponse, $swooleResponse);
             $response->send();
         } catch (Exception $e) {
@@ -361,28 +327,6 @@ class Manager
     }
 
     /**
-     * Create application.
-     */
-    protected function createApplication()
-    {
-        return $this->application = Application::make($this->framework, $this->basePath);
-    }
-
-    /**
-     * Get application.
-     *
-     * @return \SwooleTW\Http\Server\Application
-     */
-    protected function getApplication()
-    {
-        if (! $this->application instanceof Application) {
-            $this->createApplication();
-        }
-
-        return $this->application;
-    }
-
-    /**
      * Set bindings to Laravel app.
      */
     protected function bindToLaravelApp()
@@ -402,14 +346,6 @@ class Manager
     protected function setIsSandbox()
     {
         $this->isSandbox = $this->container['config']->get('swoole_http.sandbox_mode', false);
-    }
-
-    /**
-     * Set Laravel app.
-     */
-    protected function setLaravelApp()
-    {
-        $this->app = $this->getApplication()->getApplication();
     }
 
     /**
@@ -476,7 +412,7 @@ class Manager
      */
     protected function setProcessName($process)
     {
-        if (PHP_OS === static::MAC_OSX) {
+        if (PHP_OS === 'Darwin') {
             return;
         }
         $serverName = 'swoole_http_server';

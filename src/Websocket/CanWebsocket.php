@@ -63,7 +63,6 @@ trait CanWebsocket
             $this->sandbox->setRequest($illuminateRequest);
             // enable sandbox
             $this->sandbox->enable();
-            $application = $this->sandbox->getLaravelApp();
             // check if socket.io connection established
             if (! $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
                 return;
@@ -200,6 +199,22 @@ trait CanWebsocket
     public function getParser()
     {
         return $this->parser;
+    }
+
+    /**
+     * Prepare settings if websocket is enabled.
+     */
+    protected function prepareWebsocket()
+    {
+        $isWebsocket = $this->container['config']->get('swoole_http.websocket.enabled');
+        $parser = $this->container['config']->get('swoole_websocket.parser');
+
+        if ($isWebsocket) {
+            array_push($this->events, ...$this->wsEvents);
+            $this->isWebsocket = true;
+            $this->setParser(new $parser);
+            $this->setWebsocketRoom();
+        }
     }
 
     /**

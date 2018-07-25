@@ -22,14 +22,14 @@ class SandboxTest extends TestCase
 
     public function testMakeSandbox()
     {
-        $sandbox = Sandbox::make($this->getApplication());
+        $sandbox = Sandbox::make($this->getContainer());
 
         $this->assertTrue($sandbox instanceof Sandbox);
     }
 
     public function testGetApplication()
     {
-        $this->assertTrue($this->getSandbox()->getApplication() instanceof Application);
+        $this->assertTrue($this->getSandbox()->getApplication() instanceof Container);
     }
 
     public function testSetRequest()
@@ -42,25 +42,18 @@ class SandboxTest extends TestCase
 
     public function testSetSnapshot()
     {
-        $application = $this->getApplication();
-        $application->foo = 'bar';
-        $sandbox = $this->getSandbox()->setSnapshot($application);
+        $container = $this->getContainer();
+        $sandbox = $this->getSandbox()->setSnapshot($container);
 
-        $this->assertSame($application, $sandbox->getSnapshot());
+        $this->assertSame($container, $sandbox->getSnapshot());
     }
 
     protected function getSandbox()
     {
         $container = $this->getContainer();
-        $application = $this->getApplication();
+        $reflector = new \ReflectionClass($container);
 
-        $reflector = new \ReflectionClass(Application::class);
-
-        $property = $reflector->getProperty('application');
-        $property->setAccessible(true);
-        $property->setValue($application, $container);
-
-        $sandbox = new Sandbox($application);
+        $sandbox = new Sandbox($container);
 
         return $sandbox;
     }
@@ -77,22 +70,5 @@ class SandboxTest extends TestCase
             ->andReturn($config);
 
         return $container;
-    }
-
-    protected function getApplication()
-    {
-        $application = m::mock(Application::class);
-        $application->shouldReceive('getApplication')
-            ->andReturn($this->getContainer());
-        $application->shouldReceive('getFramework')
-            ->andReturn('test');
-
-        $reflector = new \ReflectionClass(Application::class);
-
-        $property = $reflector->getProperty('application');
-        $property->setAccessible(true);
-        $property->setValue($application, $this->getContainer());
-
-        return $application;
     }
 }
