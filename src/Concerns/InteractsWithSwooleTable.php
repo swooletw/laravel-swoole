@@ -1,11 +1,11 @@
 <?php
 
-namespace SwooleTW\Http\Table;
+namespace SwooleTW\Http\Concerns;
 
 use Swoole\Table;
 use SwooleTW\Http\Table\SwooleTable;
 
-trait CanSwooleTable
+trait InteractsWithSwooleTable
 {
     /**
      * @var \SwooleTW\Http\Server\Table

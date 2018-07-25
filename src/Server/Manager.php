@@ -7,21 +7,20 @@ use SwooleTW\Http\Server\Sandbox;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
-use SwooleTW\Http\Table\CanSwooleTable;
 use SwooleTW\Http\Transformers\Request;
-use SwooleTW\Http\Server\CanApplication;
 use SwooleTW\Http\Transformers\Response;
-use SwooleTW\Http\Websocket\CanWebsocket;
+use SwooleTW\Http\Concerns\WithApplication;
 use Illuminate\Contracts\Container\Container;
-use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use Swoole\WebSocket\Server as WebSocketServer;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use SwooleTW\Http\Concerns\InteractsWithWebsocket;
+use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
 
 class Manager
 {
-    use CanWebsocket,
-        CanSwooleTable,
-        CanApplication;
+    use InteractsWithWebsocket,
+        InteractsWithSwooleTable,
+        WithApplication;
 
     /**
      * @var \Swoole\Http\Server | \Swoole\Websocket\Server

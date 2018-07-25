@@ -1,6 +1,6 @@
 <?php
 
-namespace SwooleTW\Http\Websocket;
+namespace SwooleTW\Http\Concerns;
 
 use Exception;
 use Swoole\Websocket\Frame;
@@ -13,7 +13,7 @@ use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Websocket\HandlerContract;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
-trait CanWebsocket
+trait InteractsWithWebsocket
 {
     /**
      * @var boolean

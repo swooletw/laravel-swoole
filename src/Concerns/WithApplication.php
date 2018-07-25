@@ -1,6 +1,6 @@
 <?php
 
-namespace SwooleTW\Http\Server;
+namespace SwooleTW\Http\Concerns;
 
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Http\Kernel;
@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-trait CanApplication
+trait WithApplication
 {
     /**
      * Laravel|Lumen Application.
