@@ -3,12 +3,12 @@
 namespace SwooleTW\Http\Server;
 
 use Illuminate\Http\Request;
+use Illuminate\Container\Container;
 use SwooleTW\Http\Coroutine\Context;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
 use SwooleTW\Http\Concerns\ResetApplication;
-use Illuminate\Contracts\Container\Container;
 use Laravel\Lumen\Application as LumenApplication;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -19,7 +19,7 @@ class Sandbox
     use ResetApplication;
 
     /**
-     * @var \Illuminate\Contracts\Container\Container
+     * @var \Illuminate\Container\Container
      */
     protected $app;
 
@@ -41,7 +41,7 @@ class Sandbox
     /**
      * Make a sandbox instance.
      *
-     * @param \Illuminate\Contracts\Container\Container
+     * @param \Illuminate\Container\Container
      * @return \SwooleTW\Http\Server\Sandbox
      */
     public static function make(Container $app)
@@ -72,7 +72,7 @@ class Sandbox
     /**
      * Set a base application
      *
-     * @param \Illuminate\Contracts\Container\Container
+     * @param \Illuminate\Container\Container
      */
     public function setBaseApp(Container $app)
     {
@@ -96,7 +96,7 @@ class Sandbox
     /**
      * Set current snapshot.
      *
-     * @param \Illuminate\Contracts\Container\Container
+     * @param \Illuminate\Container\Container
      */
     public function setSnapshot(Container $snapshot)
     {
@@ -132,7 +132,7 @@ class Sandbox
     /**
      * Get base application.
      *
-     * @return \Illuminate\Contracts\Container\Container
+     * @return \Illuminate\Container\Container
      */
     public function getBaseApp()
     {
@@ -142,7 +142,7 @@ class Sandbox
     /**
      * Get an application snapshot
      *
-     * @return \Illuminate\Contracts\Container\Container
+     * @return \Illuminate\Container\Container
      */
     public function getApplication()
     {
