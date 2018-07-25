@@ -118,11 +118,12 @@ class Sandbox
      */
     protected function setInitialProviders()
     {
+        $app = $this->getApplication();
         $providers = $this->config->get('swoole_http.providers', []);
 
         foreach ($providers as $provider) {
             if (class_exists($provider)) {
-                $provider = new $provider($application);
+                $provider = new $provider($app);
                 $this->providers[get_class($provider)] = $provider;
             }
         }
@@ -477,7 +478,7 @@ class Sandbox
         $app->instance('app', $app);
         $app->instance(Container::class, $app);
 
-        if ($framework === 'lumen') {
+        if ($this->framework === 'lumen') {
             $app->instance(LumenApplication::class, $app);
         }
 
