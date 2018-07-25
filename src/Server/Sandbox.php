@@ -248,7 +248,7 @@ class Sandbox
             $response->sendContent();
         } elseif ($response instanceof SymfonyResponse) {
             $content = $response->getContent();
-        } elseif (! $response instanceof BinaryFileResponse) {
+        } elseif (! $isFile = $response instanceof BinaryFileResponse) {
             $content = (string) $response;
         }
 
@@ -256,7 +256,7 @@ class Sandbox
         $this->terminate($request, $response);
 
         // append ob content to response
-        if (ob_get_length() > 0) {
+        if (! $isFile && ob_get_length() > 0) {
             if ($isStream) {
                 $response->output = ob_get_contents();
             } else {
