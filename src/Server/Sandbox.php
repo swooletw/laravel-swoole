@@ -118,7 +118,7 @@ class Sandbox
      */
     protected function setInitialProviders()
     {
-        $app = $this->getApplication();
+        $app = $this->getBaseApp();
         $providers = $this->config->get('swoole_http.providers', []);
 
         foreach ($providers as $provider) {
@@ -240,6 +240,7 @@ class Sandbox
         if (isset($app['session'])) {
             $session = $app->make('session');
             $session->flush();
+            $session->regenerate();
         }
     }
 
@@ -336,66 +337,81 @@ class Sandbox
         $shouldUseOb = $this->config->get('swoole_http.ob_output', true);
 
         if ($shouldUseOb) {
-            ob_start();
+            return $this->prepareObResponse($request);
         }
 
+        return $this->prepareResponse($request);
+    }
+
+    /**
+     * Handle request for non-ob case.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    protected function prepareResponse(Request $request)
+    {
         // handle request with laravel or lumen
-        $method = sprintf('run%s', ucfirst($this->framework));
-        $response = $this->$method($request);
-
-        // prepare content for ob
-        $content = '';
-        if ($shouldUseOb) {
-            if ($response instanceof BinaryFileResponse) {
-                $shouldUseOb = false;
-                ob_end_clean();
-            } elseif ($isStream = $response instanceof StreamedResponse) {
-                $response->sendContent();
-            } elseif ($response instanceof SymfonyResponse) {
-                $content = $response->getContent();
-            } else {
-                $content = (string) $response;
-            }
-        }
+        $response = $this->handleRequest($request);
 
         // process terminating logics
         $this->terminate($request, $response);
-
-        // set ob content to response
-        if ($shouldUseOb && strlen($content) === 0 && ob_get_length() > 0) {
-            if ($isStream) {
-                $response->output = ob_get_contents();
-            } else {
-                $response->setContent(ob_get_contents());
-            }
-        }
-
-        if ($shouldUseOb) {
-            ob_end_clean();
-        }
 
         return $response;
     }
 
     /**
-     * Run Laravel framework.
+     * Handle request for ob output.
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    protected function runLaravel(Request $request)
+    protected function prepareObResponse(Request $request)
     {
-        return $this->getKernel()->handle($request);
+        ob_start();
+
+        // handle request with laravel or lumen
+        $response = $this->handleRequest($request);
+
+        // prepare content for ob
+        $content = '';
+        if ($isStream = $response instanceof StreamedResponse) {
+            $response->sendContent();
+        } elseif ($response instanceof SymfonyResponse) {
+            $content = $response->getContent();
+        } elseif (! $response instanceof BinaryFileResponse) {
+            $content = (string) $response;
+        }
+
+        // process terminating logics
+        $this->terminate($request, $response);
+
+        // append ob content to response
+        if (ob_get_length() > 0) {
+            if ($isStream) {
+                $response->output = ob_get_contents();
+            } else {
+                $response->setContent(ob_get_contents() . $content);
+            }
+        }
+
+        ob_end_clean();
+
+        return $response;
     }
 
     /**
-     * Run lumen framework.
+     * Handle request through Laravel or Lumen.
      *
      * @param \Illuminate\Http\Request $request
-     * @return mixed
+     * @return \Illuminate\Http\Response
      */
-    protected function runLumen(Request $request)
+    protected function handleRequest(Request $request)
     {
+        if ($this->isLaravel()) {
+            return $this->getKernel()->handle($request);
+        }
+
         return $this->getApplication()->dispatch($request);
     }
 
@@ -408,47 +424,34 @@ class Sandbox
     }
 
     /**
+     * Return if it's Laravel app.
+     */
+    protected function isLaravel()
+    {
+        return $this->framework === 'laravel';
+    }
+
+    /**
      * @param \Illuminate\Http\Request $request
      * @param \Illuminate\Http\Response $response
      */
     public function terminate(Request $request, $response)
     {
-        $method = sprintf('terminate%s', ucfirst($this->framework));
+        if ($this->isLaravel()) {
+            $this->getKernel()->terminate($request, $response);
+        } else {
+            $app = $this->getApplication();
+            $reflection = new \ReflectionObject($app);
 
-        $this->$method($request, $response);
-    }
+            $middleware = $reflection->getProperty('middleware');
+            $middleware->setAccessible(true);
 
-    /**
-     * Terminate Laravel framework.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \Illuminate\Http\Response $response
-     */
-    protected function terminateLaravel(Request $request, $response)
-    {
-        $this->getKernel()->terminate($request, $response);
-    }
+            $callTerminableMiddleware = $reflection->getMethod('callTerminableMiddleware');
+            $callTerminableMiddleware->setAccessible(true);
 
-    /**
-     * Terminate Lumen framework.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \Illuminate\Http\Response $response
-     */
-    protected function terminateLumen(Request $request, $response)
-    {
-        $app = $this->getApplication();
-
-        $reflection = new \ReflectionObject($app);
-
-        $middleware = $reflection->getProperty('middleware');
-        $middleware->setAccessible(true);
-
-        $callTerminableMiddleware = $reflection->getMethod('callTerminableMiddleware');
-        $callTerminableMiddleware->setAccessible(true);
-
-        if (count($middleware->getValue($app)) > 0) {
-            $callTerminableMiddleware->invoke($app, $response);
+            if (count($middleware->getValue($app)) > 0) {
+                $callTerminableMiddleware->invoke($app, $response);
+            }
         }
     }
 
