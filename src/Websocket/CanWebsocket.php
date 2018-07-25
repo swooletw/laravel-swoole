@@ -6,10 +6,10 @@ use Exception;
 use Swoole\Websocket\Frame;
 use Swoole\Websocket\Server;
 use Illuminate\Pipeline\Pipeline;
-use SwooleTW\Http\Server\Request;
 use SwooleTW\Http\Websocket\Parser;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
+use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Websocket\HandlerContract;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace SwooleTW\Http\Server;
+namespace SwooleTW\Http\Transformers;
 
 use Illuminate\Http\Request as IlluminateRequest;
 use Swoole\Http\Request as SwooleRequest;

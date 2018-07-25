@@ -1,11 +1,11 @@
 <?php
 
-namespace SwooleTW\Http\Tests\Server;
+namespace SwooleTW\Http\Tests\Transformers;
 
-use SwooleTW\Http\Server\Request;
 use SwooleTW\Http\Tests\TestCase;
-use Illuminate\Http\Request as IlluminateRequest;
+use SwooleTW\Http\Transformers\Request;
 use Swoole\Http\Request as SwooleRequest;
+use Illuminate\Http\Request as IlluminateRequest;
 
 class RequestTest extends TestCase
 {
