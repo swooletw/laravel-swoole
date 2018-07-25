@@ -97,8 +97,6 @@ class Manager
      */
     protected function initialize()
     {
-        $this->setProcessName('manager process');
-
         $this->createTables();
         $this->prepareWebsocket();
         $this->createSwooleServer();
@@ -165,6 +163,17 @@ class Manager
         $this->createPidFile();
 
         $this->container['events']->fire('swoole.start', func_get_args());
+    }
+
+    /**
+      * The listener of "managerStart" event.
+      *
+      * @return void
+      */
+    public function onManagerStart()
+    {
+        $this->setProcessName('manager process');
+        $this->container['events']->fire('swoole.managerStart', func_get_args());
     }
 
     /**
@@ -412,7 +421,8 @@ class Manager
      */
     protected function setProcessName($process)
     {
-        if (PHP_OS === 'Darwin') {
+        // MacOS doesn't support modifying process name.
+        if ($this->isMacOS()) {
             return;
         }
         $serverName = 'swoole_http_server';
@@ -421,6 +431,16 @@ class Manager
         $name = sprintf('%s: %s for %s', $serverName, $process, $appName);
 
         swoole_set_process_name($name);
+    }
+
+    /**
+    * Determine whether the process is running in macOS.
+    *
+    * @return bool
+    */
+    protected function isMacOS()
+    {
+        return PHP_OS === 'Darwin';
     }
 
     /**
