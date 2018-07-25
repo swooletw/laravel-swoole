@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use InvalidArgumentException;
 use Illuminate\Pipeline\Pipeline;
 use SwooleTW\Http\Tests\TestCase;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -248,6 +250,10 @@ class WebsocketTest extends TestCase
 
     public function testPipeline()
     {
+        App::shouldReceive('call')
+            ->once()
+            ->andReturnSelf();
+
         $request = m::mock(Request::class);
         $middlewares = ['foo', 'bar'];
         $pipeline = m::mock(Pipeline::class);
@@ -276,6 +282,10 @@ class WebsocketTest extends TestCase
     {
         $room = $room ?: m::mock(RoomContract::class);
         $pipeline = $pipeline ?: m::mock(Pipeline::class);
+
+        Config::shouldReceive('get')
+            ->once()
+            ->andReturn([]);
 
         return new Websocket($room, $pipeline);
     }

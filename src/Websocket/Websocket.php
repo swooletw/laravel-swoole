@@ -4,6 +4,7 @@ namespace SwooleTW\Http\Websocket;
 
 use InvalidArgumentException;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 use SwooleTW\Http\Websocket\Authenticatable;
 use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
@@ -356,7 +357,7 @@ class Websocket
      */
     protected function setDefaultMiddleware()
     {
-        $this->middleware = app('config')->get('swoole_websocket.middleware', []);
+        $this->middleware = Config::get('swoole_websocket.middleware', []);
     }
 
     /**
