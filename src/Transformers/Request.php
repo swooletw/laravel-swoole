@@ -167,7 +167,7 @@ class Request
      * @param \Swoole\Http\Request $swooleRequest
      * @param \Swoole\Http\Response $swooleResponse
      * @param string $path
-     * @return \SwooleTW\Http\Server\Request
+     * @return boolean
      */
     public static function handleStatic(SwooleRequest $swooleRequest, SwooleResponse $swooleResponse, string $publicPath)
     {
