@@ -70,7 +70,7 @@ trait InteractsWithWebsocket
             // trigger 'connect' websocket event
             if ($this->websocket->eventExists('connect')) {
                 // set sandbox container to websocket pipeline
-                $this->websocket->setContainer($application);
+                $this->websocket->setContainer($this->sandbox->getApplication());
                 $this->websocket->call('connect', $illuminateRequest);
             }
         } catch (Exception $e) {
