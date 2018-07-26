@@ -41,6 +41,7 @@ abstract class HttpServiceProvider extends ServiceProvider
             $this->createSwooleServer();
             $this->configureSwooleServer();
         }
+        $this->registerServer();
         $this->registerManager();
         $this->registerCommands();
         $this->registerDatabaseDriver();
@@ -133,6 +134,18 @@ abstract class HttpServiceProvider extends ServiceProvider
         }
 
         static::$server->set($config);
+    }
+
+    /**
+     * Register manager.
+     *
+     * @return void
+     */
+    protected function registerServer()
+    {
+        $this->app->singleton('swoole.server', function () {
+            return static::$server;
+        });
     }
 
     /**

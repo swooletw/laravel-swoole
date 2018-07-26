@@ -18,5 +18,6 @@ class TestCase extends BaseTestCase
         Context::clear();
         Facade::clearResolvedInstances();
         parent::tearDown();
+        m::close();
     }
 }

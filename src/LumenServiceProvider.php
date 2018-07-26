@@ -13,8 +13,8 @@ class LumenServiceProvider extends HttpServiceProvider
      */
     protected function registerManager()
     {
-        $this->app->singleton('swoole.http', function ($app) {
-            return new Manager(static::$server, $app, 'lumen');
+        $this->app->singleton('swoole.manager', function ($app) {
+            return new Manager($app, 'lumen');
         });
     }
 

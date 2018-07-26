@@ -222,7 +222,7 @@ trait InteractsWithWebsocket
      */
     protected function isWebsocket(int $fd)
     {
-        $info = $this->server->connection_info($fd);
+        $info = $this->container['swoole.server']->connection_info($fd);
 
         return array_key_exists('websocket_status', $info) && $info['websocket_status'];
     }

@@ -22,11 +22,6 @@ class Manager
         WithApplication;
 
     /**
-     * @var \Swoole\Http\Server | \Swoole\Websocket\Server
-     */
-    protected $server;
-
-    /**
      * Container.
      *
      * @var \Illuminate\Contracts\Container\Container
@@ -67,9 +62,8 @@ class Manager
      * @param string $framework
      * @param string $basePath
      */
-    public function __construct(Server $server, Container $container, $framework, $basePath = null)
+    public function __construct(Container $container, $framework, $basePath = null)
     {
-        $this->server = $server;
         $this->container = $container;
         $this->setFramework($framework);
         $this->setBasepath($basePath);
@@ -81,7 +75,7 @@ class Manager
      */
     public function run()
     {
-        $this->server->start();
+        $this->container['swoole.server']->start();
     }
 
     /**
@@ -89,7 +83,7 @@ class Manager
      */
     public function stop()
     {
-        $this->server->shutdown();
+        $this->container['swoole.server']->shutdown();
     }
 
     /**
@@ -111,9 +105,9 @@ class Manager
             $listener = 'on' . ucfirst($event);
 
             if (method_exists($this, $listener)) {
-                $this->server->on($event, [$this, $listener]);
+                $this->container['swoole.server']->on($event, [$this, $listener]);
             } else {
-                $this->server->on($event, function () use ($event) {
+                $this->container['swoole.server']->on($event, function () use ($event) {
                     $event = sprintf('swoole.%s', $event);
 
                     $this->container['events']->fire($event, func_get_args());
@@ -147,7 +141,7 @@ class Manager
     /**
      * "onWorkerStart" listener.
      */
-    public function onWorkerStart(HttpServer $server)
+    public function onWorkerStart(Server $server)
     {
         $this->clearCache();
         $this->setProcessName('worker process');
@@ -234,7 +228,7 @@ class Manager
     /**
      * Set onTask listener.
      */
-    public function onTask(HttpServer $server, $taskId, $srcWorkerId, $data)
+    public function onTask(Server $server, $taskId, $srcWorkerId, $data)
     {
         $this->container['events']->fire('swoole.task', func_get_args());
 
@@ -253,7 +247,7 @@ class Manager
     /**
      * Set onFinish listener.
      */
-    public function onFinish(HttpServer $server, $taskId, $data)
+    public function onFinish(Server $server, $taskId, $data)
     {
         // task worker callback
     }
@@ -271,7 +265,7 @@ class Manager
      */
     protected function bindToLaravelApp()
     {
-        $this->bindSwooleServer();
+        $this->bindSandbox();
         $this->bindSwooleTable();
 
         if ($this->isWebsocket) {
@@ -289,12 +283,12 @@ class Manager
     }
 
     /**
-     * Bind swoole server to Laravel app container.
+     * Bind sandbox to Laravel app container.
      */
-    protected function bindSwooleServer()
+    protected function bindSandbox()
     {
-        $this->app->singleton('swoole.server', function () {
-            return $this->server;
+        $this->app->singleton('swoole.sandbox', function () {
+            return $this->sandbox;
         });
     }
 
@@ -314,7 +308,7 @@ class Manager
     protected function createPidFile()
     {
         $pidFile = $this->getPidFile();
-        $pid = $this->server->master_pid;
+        $pid = $this->container['swoole.server']->master_pid;
 
         file_put_contents($pidFile, $pid);
     }

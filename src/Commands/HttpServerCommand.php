@@ -92,7 +92,7 @@ class HttpServerCommand extends Command
                 'swoole_http_server process is running: ps aux|grep "swoole")');
         }
 
-        $this->laravel->make('swoole.http')->run();
+        $this->laravel->make('swoole.manager')->run();
     }
 
     /**
