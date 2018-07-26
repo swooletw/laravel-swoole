@@ -277,7 +277,7 @@ trait InteractsWithWebsocket
     protected function bindWebsocket()
     {
         $this->app->singleton(Websocket::class, function ($app) {
-            return $this->websocket = new Websocket($app['swoole.room'], new Pipeline);
+            return $this->websocket = new Websocket($app['swoole.room'], new Pipeline($app));
         });
         $this->app->alias(Websocket::class, 'swoole.websocket');
     }
