@@ -108,6 +108,14 @@ trait WithApplication
     }
 
     /**
+     * Get framework.
+     */
+    public function getFramework()
+    {
+        return $this->framework;
+    }
+
+    /**
      * Set base path.
      *
      * @param string $basePath
@@ -115,6 +123,14 @@ trait WithApplication
     protected function setBasePath($basePath)
     {
         $this->basePath = is_null($basePath) ? base_path() : $basePath;
+    }
+
+    /**
+     * Get basepath.
+     */
+    public function getBasePath()
+    {
+        return $this->basePath;
     }
 
     /**

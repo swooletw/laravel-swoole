@@ -25,7 +25,8 @@
         "laravel/lumen-framework": "~5.1",
         "phpunit/phpunit": "^6.1",
         "mockery/mockery": "~1.0",
-        "codedungeon/phpunit-result-printer": "^0.14.0"
+        "codedungeon/phpunit-result-printer": "^0.14.0",
+        "php-mock/php-mock": "^2.0"
     },
     "autoload": {
         "files": [

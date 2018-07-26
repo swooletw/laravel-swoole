@@ -7,12 +7,48 @@ use SwooleTW\Http\Server\Manager;
 use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Container\Container;
 use Swoole\Http\Server as HttpServer;
+use SwooleTW\Http\Websocket\Rooms\TableRoom;
+use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
 
 class ManagerTest extends TestCase
 {
     protected $config = [
+        'swoole_http.websocket.enabled' => false,
         'swoole_http.tables' => [],
     ];
+
+    protected $websocketConfig = [
+        'swoole_http.websocket.enabled' => true,
+        'swoole_websocket.parser' => SocketIOParser::class,
+        'swoole_websocket.default' => 'table',
+        'swoole_websocket.settings.table' => [
+            'room_rows' => 10,
+            'room_size' => 10,
+            'client_rows' => 10,
+            'client_size' => 10
+        ],
+        'swoole_websocket.drivers.table' => TableRoom::class,
+        'swoole_http.tables' => [],
+    ];
+
+    public function testGetFramework()
+    {
+        $manager = $this->getManager();
+        $this->assertSame('laravel', $manager->getFramework());
+    }
+
+    public function testGetBasePath()
+    {
+        $manager = $this->getManager();
+        $this->assertSame('/', $manager->getBasePath());
+    }
+
+    public function testGetWebsocketParser()
+    {
+        $manager = $this->getWebsocketManager();
+
+        $this->assertTrue($manager->getParser() instanceof SocketIOParser);
+    }
 
     public function testRun()
     {
@@ -34,9 +70,21 @@ class ManagerTest extends TestCase
         $manager->stop();
     }
 
+    // public function testOnStart()
+    // {
+    //     //
+    // }
+
     protected function getManager($container = null, $framework = 'laravel', $path = '/')
     {
         return new Manager($container ?? $this->getContainer(), $framework, $path);
+    }
+
+    protected function getWebsocketManager()
+    {
+        $container = $this->getContainer($this->getServer(), $this->getConfig(true));
+
+        return $this->getManager($container);
     }
 
     protected function getContainer($server = null, $config = null)
@@ -64,11 +112,12 @@ class ManagerTest extends TestCase
         return $server;
     }
 
-    protected function getConfig()
+    protected function getConfig($websocket = false)
     {
         $config = m::mock('config');
-        $callback = function ($key) {
-            return $this->config[$key] ?? '';
+        $settings = $websocket ? 'websocketConfig' : 'config';
+        $callback = function ($key) use ($settings) {
+            return $this->$settings[$key] ?? '';
         };
 
         $config->shouldReceive('get')

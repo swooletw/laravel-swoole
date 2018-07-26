@@ -347,7 +347,7 @@ class Manager
     protected function setProcessName($process)
     {
         // MacOS doesn't support modifying process name.
-        if ($this->isMacOS()) {
+        if ($this->isMacOS() || $this->isInTesting()) {
             return;
         }
         $serverName = 'swoole_http_server';
@@ -358,14 +358,24 @@ class Manager
         swoole_set_process_name($name);
     }
 
-    /**
-    * Determine whether the process is running in macOS.
+   /**
+    * Indicates if the process is running in macOS.
     *
     * @return bool
     */
     protected function isMacOS()
     {
         return PHP_OS === 'Darwin';
+    }
+
+   /**
+    * Indicates if it's in phpunit environment.
+    *
+    * @return bool
+    */
+    protected function isInTesting()
+    {
+        return defined('IN_PHPUNIT') && IN_PHPUNIT;
     }
 
     /**
