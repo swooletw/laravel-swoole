@@ -73,7 +73,6 @@ class ManagerTest extends TestCase
 
     public function testOnStart()
     {
-        // dd(__NAMESPACE__);
         $filePutContents = false;
         $builder = new MockBuilder();
         $builder->setNamespace('SwooleTW\Http\Server')
