@@ -5,22 +5,31 @@ namespace SwooleTW\Http\Tests\Server;
 use Mockery as m;
 use phpmock\MockBuilder;
 use SwooleTW\Http\Server\Manager;
+use SwooleTW\Http\Server\Sandbox;
 use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Container\Container;
+use SwooleTW\Http\Table\SwooleTable;
 use Swoole\Http\Server as HttpServer;
+use Illuminate\Support\Facades\Config;
+use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\Rooms\TableRoom;
+use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
+use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
+use SwooleTW\Http\Websocket\Facades\Websocket as WebsocketFacade;
 
 class ManagerTest extends TestCase
 {
     protected $config = [
         'swoole_http.websocket.enabled' => false,
         'swoole_http.tables' => [],
+        'swoole_http.providers' => []
     ];
 
     protected $websocketConfig = [
         'swoole_http.websocket.enabled' => true,
         'swoole_websocket.parser' => SocketIOParser::class,
+        'swoole_websocket.handler' => WebsocketHandler::class,
         'swoole_websocket.default' => 'table',
         'swoole_websocket.settings.table' => [
             'room_rows' => 10,
@@ -30,6 +39,7 @@ class ManagerTest extends TestCase
         ],
         'swoole_websocket.drivers.table' => TableRoom::class,
         'swoole_http.tables' => [],
+        'swoole_http.providers' => []
     ];
 
     public function testGetFramework()
@@ -74,26 +84,13 @@ class ManagerTest extends TestCase
     public function testOnStart()
     {
         $filePutContents = false;
-        $builder = new MockBuilder();
-        $builder->setNamespace('SwooleTW\Http\Server')
-                ->setName('file_put_contents')
-                ->setFunction(
-                    function () use (&$filePutContents) {
-                        $filePutContents = true;
-                    }
-                );
+        $this->mockMethod('file_put_contents', function () use (&$filePutContents) {
+            $filePutContents = true;
+        });
 
-        $mock = $builder->build();
-        $mock->enable();
-
-        $event = m::mock('event')
-            ->shouldReceive('fire')
-            ->with('swoole.start', m::any())
-            ->once()
-            ->getMock();
         $container = $this->getContainer();
-        $container->singleton('events', function () use ($event) {
-            return $event;
+        $container->singleton('events', function () {
+            return $this->getEvent('swoole.start');
         });
         $manager = $this->getManager($container);
         $manager->onStart();
@@ -101,16 +98,50 @@ class ManagerTest extends TestCase
         $this->assertTrue($filePutContents);
     }
 
-    protected function getManager($container = null, $framework = 'laravel', $path = '/')
+    public function testOnManagerStart()
     {
-        return new Manager($container ?? $this->getContainer(), $framework, $path);
+        $container = $this->getContainer();
+        $container->singleton('events', function () {
+            return $this->getEvent('swoole.managerStart');
+        });
+        $manager = $this->getManager($container);
+        $manager->onManagerStart();
     }
 
-    protected function getWebsocketManager()
+    public function testOnWorkerStart()
     {
-        $container = $this->getContainer($this->getServer(), $this->getConfig(true));
+        $server = $this->getServer();
+        $manager = $this->getManager();
 
-        return $this->getManager($container);
+        $container = $this->getContainer($this->getServer(), $this->getConfig(true));
+        $container->singleton('events', function () {
+            return $this->getEvent('swoole.workerStart');
+        });
+
+        Config::shouldReceive('get')
+            ->with('swoole_websocket.middleware', [])
+            ->once();
+        WebsocketFacade::shouldReceive('on')->times(3);
+
+        $manager = $this->getWebsocketManager($container);
+        $manager->setApplication($container);
+        $manager->onWorkerStart($server);
+
+        $app = $manager->getApplication();
+        $this->assertTrue($app->make('swoole.sandbox') instanceof Sandbox);
+        $this->assertTrue($app->make('swoole.table') instanceof SwooleTable);
+        $this->assertTrue($app->make('swoole.room') instanceof RoomContract);
+        $this->assertTrue($app->make('swoole.websocket') instanceof Websocket);
+    }
+
+    protected function getManager($container = null, $framework = 'laravel', $path = '/')
+    {
+        return new Manager($container ?: $this->getContainer(), $framework, $path);
+    }
+
+    protected function getWebsocketManager($container = null)
+    {
+        return $this->getManager($container ?: $this->getContainer($this->getServer(), $this->getConfig(true)));
     }
 
     protected function getContainer($server = null, $config = null)
@@ -133,6 +164,7 @@ class ManagerTest extends TestCase
     {
         $server = m::mock('server');
         $server->shouldReceive('on');
+        $server->taskworker = false;
         $server->master_pid = -1;
 
         return $server;
@@ -154,5 +186,25 @@ class ManagerTest extends TestCase
             ->andReturnUsing($callback);
 
         return $config;
+    }
+
+    protected function getEvent($name)
+    {
+        return m::mock('event')
+            ->shouldReceive('fire')
+            ->with($name, m::any())
+            ->once()
+            ->getMock();
+    }
+
+    protected function mockMethod($name, \Closure $function, $namespace = null)
+    {
+        $builder = new MockBuilder();
+        $builder->setNamespace($namespace ?: 'SwooleTW\Http\Server')
+                ->setName($name)
+                ->setFunction($function);
+
+        $mock = $builder->build();
+        $mock->enable();
     }
 }

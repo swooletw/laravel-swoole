@@ -70,6 +70,14 @@ trait WithApplication
     }
 
     /**
+     * Set laravel application.
+     */
+    public function setApplication(Container $app)
+    {
+        $this->app = $app;
+    }
+
+    /**
      * Get bootstrappers.
      *
      * @return array

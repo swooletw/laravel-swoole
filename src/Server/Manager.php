@@ -3,7 +3,6 @@
 namespace SwooleTW\Http\Server;
 
 use Exception;
-use Swoole\Http\Server;
 use SwooleTW\Http\Server\Sandbox;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
@@ -141,7 +140,7 @@ class Manager
     /**
      * "onWorkerStart" listener.
      */
-    public function onWorkerStart(Server $server)
+    public function onWorkerStart($server)
     {
         $this->clearCache();
         $this->setProcessName('worker process');
@@ -228,7 +227,7 @@ class Manager
     /**
      * Set onTask listener.
      */
-    public function onTask(Server $server, $taskId, $srcWorkerId, $data)
+    public function onTask($server, $taskId, $srcWorkerId, $data)
     {
         $this->container['events']->fire('swoole.task', func_get_args());
 
@@ -247,7 +246,7 @@ class Manager
     /**
      * Set onFinish listener.
      */
-    public function onFinish(Server $server, $taskId, $data)
+    public function onFinish($server, $taskId, $data)
     {
         // task worker callback
     }
