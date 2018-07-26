@@ -217,17 +217,16 @@ class Manager
         $this->app['events']->fire('swoole.request');
 
         $this->resetOnRequest();
-
         $handleStatic = $this->container['config']->get('swoole_http.handle_static_files', true);
+        $publicPath = $this->container['config']->get('swoole_http.server.public_path', base_path('public'));
 
         try {
-            // transform swoole request to illuminate request
-            $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
-
             // handle static file request first
-            if ($handleStatic && $this->handleStaticRequest($illuminateRequest, $swooleResponse)) {
+            if ($handleStatic && Request::handleStatic($swooleRequest, $swooleResponse, $publicPath)) {
                 return;
             }
+            // transform swoole request to illuminate request
+            $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
 
             // set current request to sandbox
             $this->sandbox->setRequest($illuminateRequest);
@@ -250,42 +249,6 @@ class Manager
             // disable and recycle sandbox resource
             $this->sandbox->disable();
         }
-    }
-
-    /**
-     * Handle static file request.
-     *
-     * @param \Illuminate\Http\Request $illuminateRequest
-     * @param \Swoole\Http\Response $swooleResponse
-     * @return boolean
-     */
-    protected function handleStaticRequest($illuminateRequest, $swooleResponse)
-    {
-        $uri = $illuminateRequest->getRequestUri();
-        $blackList = ['php', 'htaccess', 'config'];
-        $extension = substr(strrchr($uri, '.'), 1);
-        if ($extension && in_array($extension, $blackList)) {
-            return;
-        }
-
-        $publicPath = $this->container['config']->get('swoole_http.server.public_path', base_path('public'));
-        $filename = $publicPath . $uri;
-
-        if (! is_file($filename) || filesize($filename) === 0) {
-            return;
-        }
-
-        $swooleResponse->status(200);
-        $mime = mime_content_type($filename);
-        if ($extension === 'js') {
-            $mime = 'text/javascript';
-        } elseif ($extension === 'css') {
-            $mime = 'text/css';
-        }
-        $swooleResponse->header('Content-Type', $mime);
-        $swooleResponse->sendfile($filename);
-
-        return true;
     }
 
     /**
