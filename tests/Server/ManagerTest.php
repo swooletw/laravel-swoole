@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Tests\Server;
 
 use Mockery as m;
+use phpmock\MockBuilder;
 use SwooleTW\Http\Server\Manager;
 use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Container\Container;
@@ -70,10 +71,36 @@ class ManagerTest extends TestCase
         $manager->stop();
     }
 
-    // public function testOnStart()
-    // {
-    //     //
-    // }
+    public function testOnStart()
+    {
+        // dd(__NAMESPACE__);
+        $filePutContents = false;
+        $builder = new MockBuilder();
+        $builder->setNamespace('SwooleTW\Http\Server')
+                ->setName('file_put_contents')
+                ->setFunction(
+                    function () use (&$filePutContents) {
+                        $filePutContents = true;
+                    }
+                );
+
+        $mock = $builder->build();
+        $mock->enable();
+
+        $event = m::mock('event')
+            ->shouldReceive('fire')
+            ->with('swoole.start', m::any())
+            ->once()
+            ->getMock();
+        $container = $this->getContainer();
+        $container->singleton('events', function () use ($event) {
+            return $event;
+        });
+        $manager = $this->getManager($container);
+        $manager->onStart();
+
+        $this->assertTrue($filePutContents);
+    }
 
     protected function getManager($container = null, $framework = 'laravel', $path = '/')
     {
