@@ -3,15 +3,14 @@
 namespace SwooleTW\Http\Server;
 
 use Exception;
+use Swoole\Http\Server;
 use SwooleTW\Http\Server\Sandbox;
-use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Transformers\Response;
 use SwooleTW\Http\Concerns\WithApplication;
 use Illuminate\Contracts\Container\Container;
-use Swoole\WebSocket\Server as WebSocketServer;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use SwooleTW\Http\Concerns\InteractsWithWebsocket;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
@@ -63,12 +62,14 @@ class Manager
     /**
      * HTTP server manager constructor.
      *
+     * @param \Swoole\Http\Server $server
      * @param \Illuminate\Contracts\Container\Container $container
      * @param string $framework
      * @param string $basePath
      */
-    public function __construct(Container $container, $framework, $basePath = null)
+    public function __construct(Server $server, Container $container, $framework, $basePath = null)
     {
+        $this->server = $server;
         $this->container = $container;
         $this->setFramework($framework);
         $this->setBasepath($basePath);
@@ -98,39 +99,7 @@ class Manager
     {
         $this->createTables();
         $this->prepareWebsocket();
-        $this->createSwooleServer();
-        $this->configureSwooleServer();
         $this->setSwooleServerListeners();
-    }
-
-    /**
-     * Create swoole server.
-     */
-    protected function createSwooleServer()
-    {
-        $server = $this->isWebsocket ? WebsocketServer::class : HttpServer::class;
-        $host = $this->container['config']->get('swoole_http.server.host');
-        $port = $this->container['config']->get('swoole_http.server.port');
-        $hasCert = $this->container['config']->get('swoole_http.server.options.ssl_cert_file');
-        $hasKey = $this->container['config']->get('swoole_http.server.options.ssl_key_file');
-        $args = $hasCert && $hasKey ? [SWOOLE_PROCESS, SWOOLE_SOCK_TCP | SWOOLE_SSL] : [];
-
-        $this->server = new $server($host, $port, ...$args);
-    }
-
-    /**
-     * Set swoole server configurations.
-     */
-    protected function configureSwooleServer()
-    {
-        $config = $this->container['config']->get('swoole_http.server.options');
-
-        // only enable task worker in websocket mode
-        if (! $this->isWebsocket) {
-            unset($config['task_worker_num']);
-        }
-
-        $this->server->set($config);
     }
 
     /**
