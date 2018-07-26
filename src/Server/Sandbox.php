@@ -244,6 +244,7 @@ class Sandbox
 
         // prepare content for ob
         $content = '';
+        $isFile = false;
         if ($isStream = $response instanceof StreamedResponse) {
             $response->sendContent();
         } elseif ($response instanceof SymfonyResponse) {
