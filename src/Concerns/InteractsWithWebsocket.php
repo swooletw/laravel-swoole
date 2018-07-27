@@ -60,9 +60,9 @@ trait InteractsWithWebsocket
         try {
             $this->websocket->reset(true)->setSender($swooleRequest->fd);
             // set currnt request to sandbox
-            $this->sandbox->setRequest($illuminateRequest);
+            $this->app['swoole.sandbox']->setRequest($illuminateRequest);
             // enable sandbox
-            $this->sandbox->enable();
+            $this->app['swoole.sandbox']->enable();
             // check if socket.io connection established
             if (! $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
                 return;
@@ -70,14 +70,14 @@ trait InteractsWithWebsocket
             // trigger 'connect' websocket event
             if ($this->websocket->eventExists('connect')) {
                 // set sandbox container to websocket pipeline
-                $this->websocket->setContainer($this->sandbox->getApplication());
+                $this->websocket->setContainer($this->app['swoole.sandbox']->getApplication());
                 $this->websocket->call('connect', $illuminateRequest);
             }
         } catch (Exception $e) {
             $this->logServerError($e);
         } finally {
             // disable and recycle sandbox resource
-            $this->sandbox->disable();
+            $this->app['swoole.sandbox']->disable();
         }
     }
 
@@ -103,7 +103,7 @@ trait InteractsWithWebsocket
             $this->websocket->reset(true)->setSender($frame->fd);
 
             // enable sandbox
-            $this->sandbox->enable();
+            $this->app['swoole.sandbox']->enable();
 
             // dispatch message to registered event callback
             if ($this->websocket->eventExists($payload['event'])) {
@@ -115,7 +115,7 @@ trait InteractsWithWebsocket
             $this->logServerError($e);
         } finally {
             // disable and recycle sandbox resource
-            $this->sandbox->disable();
+            $this->app['swoole.sandbox']->disable();
         }
     }
 

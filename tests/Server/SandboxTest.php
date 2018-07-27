@@ -20,13 +20,6 @@ class SandboxTest extends TestCase
         $this->assertTrue($this->getSandbox() instanceof Sandbox);
     }
 
-    public function testMakeSandbox()
-    {
-        $sandbox = Sandbox::make($this->getContainer());
-
-        $this->assertTrue($sandbox instanceof Sandbox);
-    }
-
     public function testGetApplication()
     {
         $this->assertTrue($this->getSandbox()->getApplication() instanceof Container);

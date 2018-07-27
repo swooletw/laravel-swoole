@@ -49,8 +49,9 @@ trait InteractsWithSwooleTable
      */
     protected function bindSwooleTable()
     {
-        $this->app->singleton('swoole.table', function () {
+        $this->app->singleton(SwooleTable::class, function () {
             return $this->table;
         });
+        $this->app->alias(SwooleTable::class, 'swoole.table');
     }
 }

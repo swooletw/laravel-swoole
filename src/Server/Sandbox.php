@@ -9,9 +9,11 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
 use SwooleTW\Http\Concerns\ResetApplication;
+use SwooleTW\Http\Exceptions\SandboxException;
 use Laravel\Lumen\Application as LumenApplication;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Contracts\Config\Repository as ConfigContract;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class Sandbox
@@ -38,25 +40,15 @@ class Sandbox
      */
     protected $providers = [];
 
-    /**
-     * Make a sandbox instance.
-     *
-     * @param \Illuminate\Container\Container
-     * @return \SwooleTW\Http\Server\Sandbox
-     */
-    public static function make(Container $app)
+    public function __construct($app = null, $framework = null)
     {
-        return new static($app);
-    }
+        if (! $app instanceof Container) {
+            return;
+        }
 
-    /**
-     * Sandbox constructor.
-     */
-    public function __construct(Container $app)
-    {
         $this->setBaseApp($app);
-        $this->setInitialConfig();
-        $this->setInitialProviders();
+        $this->setFramework($framework ?: $this->framework);
+        $this->initialize();
     }
 
     /**
@@ -101,6 +93,21 @@ class Sandbox
     public function setSnapshot(Container $snapshot)
     {
         Context::setApp($snapshot);
+
+        return $this;
+    }
+
+    /**
+     * Initialize based on base app.
+     */
+    public function initialize()
+    {
+        if (! $this->app instanceof Container) {
+            throw new SandboxException('A base app has not been set.');
+        }
+
+        $this->setInitialConfig();
+        $this->setInitialProviders();
 
         return $this;
     }
@@ -203,6 +210,10 @@ class Sandbox
      */
     public function run(Request $request)
     {
+        if (! $this->getSnapshot() instanceof Container) {
+            throw new SandboxException('Sandbox is not enabled.');
+        }
+
         $shouldUseOb = $this->config->get('swoole_http.ob_output', true);
 
         if ($shouldUseOb) {
@@ -330,6 +341,10 @@ class Sandbox
      */
     public function enable()
     {
+        if (! $this->config instanceof ConfigContract) {
+            throw new SandboxException('Please initialize after setting base app.');
+        }
+
         $this->setInstance($app = $this->getApplication());
         $this->resetApp($app);
     }

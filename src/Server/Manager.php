@@ -38,11 +38,6 @@ class Manager
     protected $basePath;
 
     /**
-     * @var \SwooleTW\Http\Server\Sandbox
-     */
-    protected $sandbox;
-
-    /**
      * Server events.
      *
      * @var array
@@ -155,8 +150,8 @@ class Manager
         // clear events instance in case of repeated listeners in worker process
         Facade::clearResolvedInstance('events');
 
-        // set application to sandbox environment
-        $this->sandbox = Sandbox::make($this->getApplication())->setFramework($this->framework);
+        // prepare laravel app
+        $this->getApplication();
 
         // bind after setting laravel app
         $this->bindToLaravelApp();
@@ -191,12 +186,12 @@ class Manager
             $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
 
             // set current request to sandbox
-            $this->sandbox->setRequest($illuminateRequest);
+            $this->app['swoole.sandbox']->setRequest($illuminateRequest);
             // enable sandbox
-            $this->sandbox->enable();
+            $this->app['swoole.sandbox']->enable();
 
             // handle request via laravel/lumen's dispatcher
-            $illuminateResponse = $this->sandbox->run($illuminateRequest);
+            $illuminateResponse = $this->app['swoole.sandbox']->run($illuminateRequest);
             $response = Response::make($illuminateResponse, $swooleResponse);
             $response->send();
         } catch (Exception $e) {
@@ -209,7 +204,7 @@ class Manager
             }
         } finally {
             // disable and recycle sandbox resource
-            $this->sandbox->disable();
+            $this->app['swoole.sandbox']->disable();
         }
     }
 
@@ -274,21 +269,14 @@ class Manager
     }
 
     /**
-     * Set isSandbox config.
-     */
-    protected function setIsSandbox()
-    {
-        $this->isSandbox = $this->container['config']->get('swoole_http.sandbox_mode', false);
-    }
-
-    /**
      * Bind sandbox to Laravel app container.
      */
     protected function bindSandbox()
     {
-        $this->app->singleton('swoole.sandbox', function () {
-            return $this->sandbox;
+        $this->app->singleton(Sandbox::class, function ($app) {
+            return new Sandbox($app, $this->framework);
         });
+        $this->app->alias(Sandbox::class, 'swoole.sandbox');
     }
 
     /**
