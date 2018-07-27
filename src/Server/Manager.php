@@ -156,7 +156,7 @@ class Manager
         // bind after setting laravel app
         $this->bindToLaravelApp();
 
-        // load websocket handlers after binding websocket to laravel app
+        // load websocket handler and routes
         if ($this->isWebsocket) {
             $this->setWebsocketHandler();
             $this->loadWebsocketRoutes();
@@ -215,7 +215,7 @@ class Manager
     {
         // Reset websocket data
         if ($this->isWebsocket) {
-            $this->websocket->reset(true);
+            $this->app['swoole.websocket']->reset(true);
         }
     }
 
