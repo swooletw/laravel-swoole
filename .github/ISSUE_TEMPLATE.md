@@ -1,4 +1,5 @@
-Please answer these questions **in English** before submitting your issue. Thanks!
+Make sure you read **Issues Guideline** and answer these questions **in English** before submitting your issue. Thanks!
+(Those issues which violate the guideline will be closed immediately.)
 
 1. Please provide your PHP and Swoole version. (`php -v` and `php --ri swoole`)
 
