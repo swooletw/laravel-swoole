@@ -156,9 +156,9 @@ class Manager
         // bind after setting laravel app
         $this->bindToLaravelApp();
 
-        // load websocket handler and routes
+        // prepare websocket handler and routes
         if ($this->isWebsocket) {
-            $this->setWebsocketHandler();
+            $this->prepareWebsocketHandler();
             $this->loadWebsocketRoutes();
         }
     }

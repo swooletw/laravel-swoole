@@ -43,7 +43,7 @@ trait InteractsWithWebsocket
      * @param \Swoole\Websocket\Server $server
      * @param \Swoole\Http\Request $swooleRequest
      */
-    public function onOpen(Server $server, $swooleRequest)
+    public function onOpen($server, $swooleRequest)
     {
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
 
@@ -77,7 +77,7 @@ trait InteractsWithWebsocket
      * @param \Swoole\Websocket\Server $server
      * @param \Swoole\Websocket\Frame $frame
      */
-    public function onMessage(Server $server, Frame $frame)
+    public function onMessage($server, $frame)
     {
         $data = $frame->data;
 
@@ -116,7 +116,7 @@ trait InteractsWithWebsocket
      * @param int $fd
      * @param int $reactorId
      */
-    public function onClose(Server $server, $fd, $reactorId)
+    public function onClose($server, $fd, $reactorId)
     {
         if (! $this->isWebsocket($fd)) {
             return;
@@ -143,7 +143,7 @@ trait InteractsWithWebsocket
      * @param \Swoole\Websocket\Server $server
      * @param mixed $data
      */
-    public function pushMessage(Server $server, array $data)
+    public function pushMessage($server, array $data)
     {
         [$opcode, $sender, $fds, $broadcast, $assigned, $event, $message] = $this->normalizePushData($data);
         $message = $this->parser->encode($event, $message);
@@ -217,23 +217,35 @@ trait InteractsWithWebsocket
     }
 
     /**
-     * Set websocket handler for onOpen and onClose callback.
+     * Prepare websocket handler for onOpen and onClose callback.
      */
-    protected function setWebsocketHandler()
+    protected function prepareWebsocketHandler()
     {
         $handlerClass = $this->container['config']->get('swoole_websocket.handler');
 
         if (! $handlerClass) {
-            throw new Exception('websocket handler not set in swoole_websocket config');
+            throw new Exception('Websocket handler is not set in swoole_websocket config');
         }
 
-        $handler = $this->app->make($handlerClass);
+        $this->setWebsocketHandler($this->app->make($handlerClass));
+    }
 
-        if (! $handler instanceof HandlerContract) {
-            throw new Exception(sprintf('%s must implement %s', get_class($handler), HandlerContract::class));
-        }
-
+    /**
+     * Set websocket handler.
+     */
+    public function setWebsocketHandler(HandlerContract $handler)
+    {
         $this->websocketHandler = $handler;
+
+        return $this;
+    }
+
+    /**
+     * Get websocket handler.
+     */
+    public function getWebsocketHandler()
+    {
+        return $this->websocketHandler;
     }
 
     /**

@@ -3,17 +3,19 @@
 namespace SwooleTW\Http\Tests\Server;
 
 use Mockery as m;
+use Swoole\Http\Request;
 use phpmock\MockBuilder;
+use Swoole\Http\Response;
 use SwooleTW\Http\Server\Manager;
 use SwooleTW\Http\Server\Sandbox;
 use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Container\Container;
+use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Table\SwooleTable;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Config;
 use SwooleTW\Http\Websocket\Websocket;
-use Swoole\Http\Request;
-use Swoole\Http\Response;
+use SwooleTW\Http\Websocket\HandlerContract;
 use SwooleTW\Http\Websocket\Rooms\TableRoom;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
@@ -192,6 +194,73 @@ class ManagerTest extends TestCase
         $manager->setApplication($container);
         $manager->onRequest($request, $response);
     }
+
+    public function testOnTask()
+    {
+        $container = $this->getContainer();
+        $container->singleton('events', function () {
+            return $this->getEvent('swoole.task');
+        });
+        $manager = $this->getManager($container);
+        $manager->onTask(null, null, null, null);
+    }
+
+    public function testOnShutdown()
+    {
+        $fileExists = false;
+        $this->mockMethod('file_exists', function () use (&$fileExists) {
+            return $fileExists = true;
+        });
+
+        $unlink = false;
+        $this->mockMethod('unlink', function () use (&$unlink) {
+            return $unlink = true;
+        });
+
+        $manager = $this->getManager();
+        $manager->onShutdown();
+
+        $this->assertTrue($fileExists);
+        $this->assertTrue($unlink);
+    }
+
+    public function testSetParser()
+    {
+        $parser = m::mock(Parser::class);
+        $manager = $this->getManager();
+        $manager->setParser($parser);
+
+        $this->assertSame($parser, $manager->getParser());
+    }
+
+    public function testSetWebsocketHandler()
+    {
+        $handler = m::mock(HandlerContract::class);
+        $manager = $this->getManager();
+        $manager->setWebsocketHandler($handler);
+
+        $this->assertSame($handler, $manager->getWebsocketHandler());
+    }
+
+    // public function testOnOpen()
+    // {
+    //     //
+    // }
+
+    // public function testOnMessage()
+    // {
+    //     //
+    // }
+
+    // public function testOnClose()
+    // {
+    //     //
+    // }
+
+    // public function testPushMessage()
+    // {
+    //     //
+    // }
 
     protected function getManager($container = null, $framework = 'laravel', $path = '/')
     {
