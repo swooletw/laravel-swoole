@@ -12,6 +12,8 @@ use SwooleTW\Http\Table\SwooleTable;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Config;
 use SwooleTW\Http\Websocket\Websocket;
+use Swoole\Http\Request;
+use Swoole\Http\Response;
 use SwooleTW\Http\Websocket\Rooms\TableRoom;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
@@ -39,7 +41,8 @@ class ManagerTest extends TestCase
         ],
         'swoole_websocket.drivers.table' => TableRoom::class,
         'swoole_http.tables' => [],
-        'swoole_http.providers' => []
+        'swoole_http.providers' => [],
+        'swoole_http.server.public_path' => '/'
     ];
 
     public function testGetFramework()
@@ -134,6 +137,62 @@ class ManagerTest extends TestCase
         $this->assertTrue($app->make('swoole.websocket') instanceof Websocket);
     }
 
+    public function testOnRequest()
+    {
+        $server = $this->getServer();
+        $manager = $this->getManager();
+
+        $container = $this->getContainer($this->getServer(), $this->getConfig(true));
+        $container->singleton('events', function () {
+            return $this->getEvent('swoole.request', false);
+        });
+        $container->singleton('swoole.websocket', function () {
+            $websocket = m::mock(Websocket::class);
+            $websocket->shouldReceive('reset')
+                ->with(true)
+                ->once();
+            return $websocket;
+        });
+        $container->singleton('swoole.sandbox', function () {
+            $sandbox = m::mock(Sandbox::class);
+            $sandbox->shouldReceive('setRequest')
+                ->with(m::type('Illuminate\Http\Request'))
+                ->once();
+            $sandbox->shouldReceive('enable')
+                ->once();
+            $sandbox->shouldReceive('run')
+                ->with(m::type('Illuminate\Http\Request'))
+                ->once();
+            $sandbox->shouldReceive('disable')
+                ->once();
+            return $sandbox;
+        });
+
+        $this->mockMethod('base_path', function () {
+            return '/';
+        });
+
+        $request = m::mock(Request::class);
+        $request->shouldReceive('rawcontent')
+            ->once()
+            ->andReturn([]);
+
+        $response = m::mock(Response::class);
+        $response->shouldReceive('header')
+            ->twice()
+            ->andReturnSelf();
+        $response->shouldReceive('status')
+            ->once()
+            ->andReturnSelf();
+        $response->shouldReceive('end')
+            ->once()
+            ->andReturnSelf();
+
+        $manager = $this->getWebsocketManager($container);
+        $manager->setApplication($container);
+        $manager->onRequest($request, $response);
+    }
+
     protected function getManager($container = null, $framework = 'laravel', $path = '/')
     {
         return new Manager($container ?: $this->getContainer(), $framework, $path);
@@ -188,13 +247,16 @@ class ManagerTest extends TestCase
         return $config;
     }
 
-    protected function getEvent($name)
+    protected function getEvent($name, $default = true)
     {
-        return m::mock('event')
+        $event = m::mock('event')
             ->shouldReceive('fire')
             ->with($name, m::any())
-            ->once()
-            ->getMock();
+            ->once();
+
+        $event = $default ? $event->with($name, m::any()) : $event->with($name);
+
+        return $event->getMock();
     }
 
     protected function mockMethod($name, \Closure $function, $namespace = null)
