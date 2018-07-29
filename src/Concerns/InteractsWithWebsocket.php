@@ -79,8 +79,6 @@ trait InteractsWithWebsocket
      */
     public function onMessage($server, $frame)
     {
-        $data = $frame->data;
-
         try {
             // execute parser strategies and skip non-message packet
             if ($this->parser->execute($server, $frame)) {
@@ -207,7 +205,7 @@ trait InteractsWithWebsocket
     }
 
     /**
-     * Check if is a websocket fd.
+     * Check if it's a websocket fd.
      */
     protected function isWebsocket(int $fd)
     {
@@ -302,7 +300,7 @@ trait InteractsWithWebsocket
     /**
      * Normalize data for message push.
      */
-    protected function normalizePushData(array $data)
+    public function normalizePushData(array $data)
     {
         $opcode = $data['opcode'] ?? 1;
         $sender = $data['sender'] ?? 0;

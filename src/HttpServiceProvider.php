@@ -4,6 +4,7 @@ namespace SwooleTW\Http;
 
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\ServiceProvider;
+use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Coroutine\MySqlConnection;
 use SwooleTW\Http\Commands\HttpServerCommand;
 use Swoole\Websocket\Server as WebsocketServer;
@@ -143,9 +144,10 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function registerServer()
     {
-        $this->app->singleton('swoole.server', function () {
+        $this->app->singleton(Server::class, function () {
             return static::$server;
         });
+        $this->app->alias(Server::class, 'swoole.server');
     }
 
     /**

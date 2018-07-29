@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket\SocketIO;
 
-use Swoole\Websocket\Frame;
 use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Websocket\SocketIO\Packet;
 use SwooleTW\Http\Websocket\SocketIO\Strategies\HeartbeatStrategy;
@@ -40,7 +39,7 @@ class SocketIOParser extends Parser
      * @param \Swoole\Websocket\Frame $frame
      * @return array
      */
-    public function decode(Frame $frame)
+    public function decode($frame)
     {
         $payload = Packet::getPayload($frame->data);
 

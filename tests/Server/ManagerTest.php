@@ -190,7 +190,7 @@ class ManagerTest extends TestCase
             ->once()
             ->andReturnSelf();
 
-        $manager = $this->getWebsocketManager($container);
+        $manager = $this->getWebsocketManager();
         $manager->setApplication($container);
         $manager->onRequest($request, $response);
     }
@@ -202,7 +202,7 @@ class ManagerTest extends TestCase
             return $this->getEvent('swoole.task');
         });
         $manager = $this->getManager($container);
-        $manager->onTask(null, null, null, null);
+        $manager->onTask('server', 'taskId', 'workerId', 'data');
     }
 
     public function testOnShutdown()
@@ -242,25 +242,211 @@ class ManagerTest extends TestCase
         $this->assertSame($handler, $manager->getWebsocketHandler());
     }
 
-    // public function testOnOpen()
-    // {
-    //     //
-    // }
+    public function testOnOpen()
+    {
+        $request = m::mock(Request::class);
+        $request->shouldReceive('rawcontent')
+            ->once()
+            ->andReturn([]);
+        $request->fd = 1;
 
-    // public function testOnMessage()
-    // {
-    //     //
-    // }
+        $container = $this->getContainer();
+        $container->singleton('swoole.websocket', function () {
+            $websocket = m::mock(Websocket::class);
+            $websocket->shouldReceive('reset')
+                ->with(true)
+                ->once()
+                ->andReturnSelf();
+            $websocket->shouldReceive('setSender')
+                ->with(1)
+                ->once();
+            $websocket->shouldReceive('eventExists')
+                ->with('connect')
+                ->once()
+                ->andReturn(true);
+            $websocket->shouldReceive('setContainer')
+                ->with(m::type(Container::class))
+                ->once();
+             $websocket->shouldReceive('call')
+                ->with('connect', m::type('Illuminate\Http\Request'))
+                ->once();
+            return $websocket;
+        });
+        $container->singleton('swoole.sandbox', function () {
+            $sandbox = m::mock(Sandbox::class);
+            $sandbox->shouldReceive('setRequest')
+                ->with(m::type('Illuminate\Http\Request'))
+                ->once();
+            $sandbox->shouldReceive('enable')
+                ->once();
+            $sandbox->shouldReceive('disable')
+                ->once();
+            $sandbox->shouldReceive('getApplication')
+                ->once()
+                ->andReturn(m::mock(Container::class));
+            return $sandbox;
+        });
 
-    // public function testOnClose()
-    // {
-    //     //
-    // }
+        $handler = m::mock(HandlerContract::class);
+        $handler->shouldReceive('onOpen')
+            ->with(1, m::type('Illuminate\Http\Request'))
+            ->andReturn(true);
 
-    // public function testPushMessage()
-    // {
-    //     //
-    // }
+        $manager = $this->getWebsocketManager();
+        $manager->setApplication($container);
+        $manager->setWebsocketHandler($handler);
+        $manager->onOpen('server', $request);
+    }
+
+    public function testOnMessage()
+    {
+        $frame = m::mock('frame');
+        $frame->fd = 1;
+
+        $parser = m::mock(Parser::class);
+        $parser->shouldReceive('execute')
+            ->with('server', $frame)
+            ->once()
+            ->andReturn(false);
+        $parser->shouldReceive('decode')
+            ->with($frame)
+            ->once()
+            ->andReturn($payload = [
+                'event' => 'event',
+                'data' => 'data'
+            ]);
+
+        $container = $this->getContainer();
+        $container->singleton('swoole.websocket', function () use ($payload) {
+            $websocket = m::mock(Websocket::class);
+            $websocket->shouldReceive('reset')
+                ->with(true)
+                ->once()
+                ->andReturnSelf();
+            $websocket->shouldReceive('setSender')
+                ->with(1)
+                ->once();
+            $websocket->shouldReceive('eventExists')
+                ->with($payload['event'])
+                ->once()
+                ->andReturn(true);
+            $websocket->shouldReceive('call')
+                ->with($payload['event'], $payload['data'])
+                ->once();
+            return $websocket;
+        });
+        $container->singleton('swoole.sandbox', function () {
+            $sandbox = m::mock(Sandbox::class);
+            $sandbox->shouldReceive('enable')
+                ->once();
+            $sandbox->shouldReceive('disable')
+                ->once();
+            return $sandbox;
+        });
+
+        $manager = $this->getWebsocketManager();
+        $manager->setApplication($container);
+        $manager->setParser($parser);
+        $manager->onMessage('server', $frame);
+    }
+
+    public function testOnClose()
+    {
+        $fd = 1;
+        $app = $this->getContainer();
+        $app->singleton('swoole.websocket', function () use ($fd) {
+            $websocket = m::mock(Websocket::class);
+            $websocket->shouldReceive('reset')
+                ->with(true)
+                ->once()
+                ->andReturnSelf();
+            $websocket->shouldReceive('setSender')
+                ->with($fd)
+                ->once();
+            $websocket->shouldReceive('eventExists')
+                ->with('disconnect')
+                ->once()
+                ->andReturn(true);
+            $websocket->shouldReceive('call')
+                ->with('disconnect')
+                ->once();
+            $websocket->shouldReceive('leave')
+                ->once();
+            return $websocket;
+        });
+
+        $server = m::mock('server');
+        $server->shouldReceive('on');
+
+        $container = $this->getContainer($server);
+        $container->singleton('swoole.server', function () use ($fd) {
+            $server = m::mock('server');
+            $server->shouldReceive('on');
+            $server->taskworker = false;
+            $server->master_pid = -1;
+            $server->shouldReceive('connection_info')
+                ->with($fd)
+                ->once()
+                ->andReturn([
+                    'websocket_status' => true
+                ]);
+            return $server;
+        });
+
+        $manager = $this->getWebsocketManager($container);
+        $manager->setApplication($app);
+        $manager->onClose('server', $fd, 'reactorId');
+    }
+
+    public function testNormalizePushMessage()
+    {
+        $data = [
+            'opcode' => 'opcode',
+            'sender' => 'sender',
+            'fds' => 'fds',
+            'broadcast' => 'broadcast',
+            'assigned' => 'assigned',
+            'event' => 'event',
+            'message' => 'message'
+        ];
+
+        $manager = $this->getWebsocketManager();
+        $result = $manager->normalizePushData($data);
+
+        $this->assertSame($data['opcode'], $result[0]);
+        $this->assertSame($data['sender'], $result[1]);
+        $this->assertSame($data['fds'], $result[2]);
+        $this->assertSame($data['broadcast'], $result[3]);
+        $this->assertSame($data['assigned'], $result[4]);
+        $this->assertSame($data['event'], $result[5]);
+        $this->assertSame($data['message'], $result[6]);
+    }
+
+    public function testPushMessage()
+    {
+        $data = [
+            'fds' => [1, 2, 3],
+            'event' => 'event',
+            'message' => 'message'
+        ];
+
+        $parser = m::mock(Parser::class);
+        $parser->shouldReceive('encode')
+            ->with($data['event'], $data['message'])
+            ->once()
+            ->andReturn(false);
+
+        $server = m::mock('server');
+        $server->shouldReceive('exist')
+            ->times(count($data['fds']))
+            ->andReturn(true);
+        $server->shouldReceive('push')
+            ->times(count($data['fds']));
+
+        $manager = $this->getWebsocketManager();
+        $manager->setParser($parser);
+        $manager->pushMessage($server, $data);
+    }
 
     protected function getManager($container = null, $framework = 'laravel', $path = '/')
     {
