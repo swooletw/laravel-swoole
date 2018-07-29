@@ -2,18 +2,41 @@
 
 namespace SwooleTW\Http\Concerns;
 
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 trait ResetApplication
 {
     /**
+     * Clear resolved instances.
+     */
+    public function clearInstances(Container $app)
+    {
+        $instances = $this->config->get('swoole_http.instances', []);
+        foreach ($instances as $instance) {
+            $app->forgetInstance($instance);
+        }
+    }
+
+    /**
+     * Bind illuminate request to laravel/lumen application.
+     */
+    public function bindRequest(Container $app)
+    {
+        $request = $this->getRequest();
+        if ($request instanceof Request) {
+            $app->instance('request', $request);
+        }
+    }
+
+    /**
      * Re-register and reboot service providers.
      */
-    protected function resetProviders($app)
+    public function resetProviders(Container $app)
     {
         foreach ($this->providers as $provider) {
-            $this->rebindProviderContainer($provider, $app);
+            $this->rebindProviderContainer($app, $provider);
             if (method_exists($provider, 'register')) {
                 $provider->register();
             }
@@ -26,7 +49,7 @@ trait ResetApplication
     /**
      * Rebind service provider's container.
      */
-    protected function rebindProviderContainer($provider, $app)
+    protected function rebindProviderContainer($app, $provider)
     {
         $closure = function () use ($app) {
             $this->app = $app;
@@ -39,7 +62,7 @@ trait ResetApplication
     /**
      * Reset laravel/lumen's config to initial values.
      */
-    protected function resetConfigInstance($app)
+    public function resetConfigInstance(Container $app)
     {
         $app->instance('config', clone $this->config);
     }
@@ -47,7 +70,7 @@ trait ResetApplication
     /**
      * Reset laravel's session data.
      */
-    protected function resetSession($app)
+    public function resetSession(Container $app)
     {
         if (isset($app['session'])) {
             $session = $app->make('session');
@@ -59,7 +82,7 @@ trait ResetApplication
     /**
      * Reset laravel's cookie.
      */
-    protected function resetCookie($app)
+    public function resetCookie(Container $app)
     {
         if (isset($app['cookie'])) {
             $cookies = $app->make('cookie');
@@ -72,7 +95,7 @@ trait ResetApplication
     /**
      * Rebind laravel's container in router.
      */
-    protected function rebindRouterContainer($app)
+    public function rebindRouterContainer(Container $app)
     {
         if ($this->isLaravel()) {
             $router = $app->make('router');
@@ -108,7 +131,7 @@ trait ResetApplication
     /**
      * Rebind laravel/lumen's container in view.
      */
-    protected function rebindViewContainer($app)
+    public function rebindViewContainer(Container $app)
     {
         $view = $app->make('view');
 
@@ -124,7 +147,7 @@ trait ResetApplication
     /**
      * Rebind laravel's container in kernel.
      */
-    protected function rebindKernelContainer($app)
+    public function rebindKernelContainer(Container $app)
     {
         if ($this->isLaravel()) {
             $kernel = $app->make(Kernel::class);

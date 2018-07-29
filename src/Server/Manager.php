@@ -122,10 +122,10 @@ class Manager
     }
 
     /**
-      * The listener of "managerStart" event.
-      *
-      * @return void
-      */
+     * The listener of "managerStart" event.
+     *
+     * @return void
+     */
     public function onManagerStart()
     {
         $this->setProcessName('manager process');
@@ -357,21 +357,21 @@ class Manager
         swoole_set_process_name($name);
     }
 
-   /**
-    * Indicates if the process is running in macOS.
-    *
-    * @return bool
-    */
+    /**
+     * Indicates if the process is running in macOS.
+     *
+     * @return bool
+     */
     protected function isMacOS()
     {
         return PHP_OS === 'Darwin';
     }
 
-   /**
-    * Indicates if it's in phpunit environment.
-    *
-    * @return bool
-    */
+    /**
+     * Indicates if it's in phpunit environment.
+     *
+     * @return bool
+     */
     protected function isInTesting()
     {
         return defined('IN_PHPUNIT') && IN_PHPUNIT;

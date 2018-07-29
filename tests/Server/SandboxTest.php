@@ -7,48 +7,95 @@ use RuntimeException;
 use Swoole\Coroutine;
 use ReflectionProperty;
 use Illuminate\Http\Request;
+use Illuminate\Config\Repository;
 use SwooleTW\Http\Server\Sandbox;
 use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Container\Container;
+use SwooleTW\Http\Coroutine\Context;
 use SwooleTW\Http\Server\Application;
 use Illuminate\Support\Facades\Facade;
+use SwooleTW\Http\Exceptions\SandboxException;
 
 class SandboxTest extends TestCase
 {
-    public function testGetSandbox()
+    public function testSetFramework()
     {
-        $this->assertTrue($this->getSandbox() instanceof Sandbox);
+        $sandbox = new Sandbox;
+        $sandbox->setFramework($framework = 'foo');
+
+        $this->assertSame($framework, $sandbox->getFramework());
+    }
+
+    public function testSetBaseApp()
+    {
+        $container = m::mock(Container::class);
+
+        $sandbox = new Sandbox;
+        $sandbox->setBaseApp($container);
+
+        $this->assertSame($container, $sandbox->getBaseApp());
+    }
+
+    public function testAppNotSetException()
+    {
+        $this->expectException(SandboxException::class);
+
+        $sandbox = new Sandbox;
+        $sandbox->initialize();
+    }
+
+    public function testInitialize()
+    {
+        $config = m::mock(Repository::class);
+        $config->shouldReceive('get')
+            ->with('swoole_http.providers', [])
+            ->once()
+            ->andReturn([]);
+
+        $container = m::mock(Container::class);
+        $container->shouldReceive('make')
+            ->with('config')
+            ->once()
+            ->andReturn($config);
+
+        $sandbox = new Sandbox;
+        $sandbox->setBaseApp($container);
+        $sandbox->initialize();
+
+        $this->assertTrue($sandbox->getConfig() instanceof Repository);
     }
 
     public function testGetApplication()
     {
-        $this->assertTrue($this->getSandbox()->getApplication() instanceof Container);
+        $container = m::mock(Container::class);
+
+        $sandbox = new Sandbox;
+        $sandbox->setBaseApp($container);
+        $sandbox->getApplication();
+
+        $this->assertTrue($sandbox->getSnapshot() instanceof Container);
     }
 
     public function testSetRequest()
     {
         $request = m::mock(Request::class);
-        $sandbox = $this->getSandbox()->setRequest($request);
+
+        $sandbox = new Sandbox;
+        $sandbox->setRequest($request);
 
         $this->assertSame($request, $sandbox->getRequest());
+        $this->assertSame($request, Context::getData('_request'));
     }
 
     public function testSetSnapshot()
     {
-        $container = $this->getContainer();
-        $sandbox = $this->getSandbox()->setSnapshot($container);
+        $container = m::mock(Container::class);
+
+        $sandbox = new Sandbox;
+        $sandbox->setSnapshot($container);
 
         $this->assertSame($container, $sandbox->getSnapshot());
-    }
-
-    protected function getSandbox()
-    {
-        $container = $this->getContainer();
-        $reflector = new \ReflectionClass($container);
-
-        $sandbox = new Sandbox($container);
-
-        return $sandbox;
+        $this->assertSame($container, Context::getApp());
     }
 
     protected function getContainer()

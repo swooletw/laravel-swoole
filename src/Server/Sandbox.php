@@ -52,7 +52,7 @@ class Sandbox
     }
 
     /**
-     * Set framework type
+     * Set framework type.
      */
     public function setFramework(string $framework)
     {
@@ -62,7 +62,15 @@ class Sandbox
     }
 
     /**
-     * Set a base application
+     * Get framework type.
+     */
+    public function getFramework()
+    {
+        return $this->framework;
+    }
+
+    /**
+     * Set a base application.
      *
      * @param \Illuminate\Container\Container
      */
@@ -113,11 +121,19 @@ class Sandbox
     }
 
     /**
-     * Set config snapshot.
+     * Set initial config.
      */
     protected function setInitialConfig()
     {
         $this->config = clone $this->getBaseApp()->make('config');
+    }
+
+    /**
+     * Get config snapshot.
+     */
+    public function getConfig()
+    {
+        return $this->config;
     }
 
     /**
@@ -167,7 +183,7 @@ class Sandbox
     /**
      * Reset Laravel/Lumen Application.
      */
-    protected function resetApp($app)
+    public function resetApp(Container $app)
     {
         $this->resetConfigInstance($app);
         $this->resetSession($app);
@@ -178,28 +194,6 @@ class Sandbox
         $this->rebindRouterContainer($app);
         $this->rebindViewContainer($app);
         $this->resetProviders($app);
-    }
-
-    /**
-     * Clear resolved instances.
-     */
-    protected function clearInstances($app)
-    {
-        $instances = $this->config->get('swoole_http.instances', []);
-        foreach ($instances as $instance) {
-            $app->forgetInstance($instance);
-        }
-    }
-
-    /**
-     * Bind illuminate request to laravel/lumen application.
-     */
-    protected function bindRequest($app)
-    {
-        $request = $this->getRequest();
-        if ($request instanceof Request) {
-            $app->instance('request', $request);
-        }
     }
 
     /**
