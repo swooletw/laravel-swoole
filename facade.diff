@@ -1,0 +1,16 @@
+diff --git a/Facades/Facade.php b/Facades/Facade.php
+index 579bd7a..aef53f1 100755
+--- a/Facades/Facade.php
++++ b/Facades/Facade.php
+@@ -22,6 +22,11 @@ abstract class Facade
+      */
+     protected static $resolvedInstance;
+
++    public static function test()
++    {
++        var_dump('test');
++    }
++
+     /**
+      * Convert the facade into a Mockery spy.
+      *
