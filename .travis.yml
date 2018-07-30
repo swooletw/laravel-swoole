@@ -52,4 +52,9 @@ install:
   - composer require "${FRAMEWORK_VERSION}" --no-update -n
   - travis_retry composer install --no-suggest --prefer-dist -n -o
 
-script: vendor/bin/phpunit
+script:
+  - mkdir -p build/logs
+  - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+
+after_success:
+  - vendor/bin/coveralls -v
