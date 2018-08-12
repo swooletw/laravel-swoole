@@ -310,6 +310,7 @@ class Sandbox
         }
 
         if ($this->snapshot instanceOf Application) {
+            $this->snapshot->getApplication()->flush();
             $this->snapshot = null;
         }
 
