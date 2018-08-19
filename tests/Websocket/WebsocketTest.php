@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use InvalidArgumentException;
 use Illuminate\Pipeline\Pipeline;
 use SwooleTW\Http\Tests\TestCase;
+use Illuminate\Container\Container;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use SwooleTW\Http\Websocket\Websocket;
@@ -276,6 +277,29 @@ class WebsocketTest extends TestCase
         });
 
         $websocket->call('connect', $request);
+    }
+
+    public function testSetContainer()
+    {
+        $websocket = $this->getWebsocket();
+        $container = new Container;
+        $websocket->setContainer($container);
+
+        $reflector = new \ReflectionProperty(Pipeline::class, 'container');
+        $reflector->setAccessible(true);
+        $wsContainer = $reflector->getValue($websocket->getPipeline());
+
+        $this->assertSame($container, $wsContainer);
+    }
+
+    public function testSetPipeline()
+    {
+        $websocket = $this->getWebsocket();
+        $pipeline = m::mock(Pipeline::class);
+
+        $websocket->setPipeline($pipeline);
+
+        $this->assertSame($pipeline, $websocket->getPipeline());
     }
 
     protected function getWebsocket(RoomContract $room = null, $pipeline = null)

@@ -76,7 +76,7 @@ class Websocket
     public function __construct(RoomContract $room, PipelineContract $pipeline)
     {
         $this->room = $room;
-        $this->pipeline = $pipeline;
+        $this->setPipeline($pipeline);
         $this->setDefaultMiddleware();
     }
 
@@ -373,6 +373,24 @@ class Websocket
 
         $resetPipeline = $closure->bindTo($pipeline, $pipeline);
         $resetPipeline();
+    }
+
+    /**
+     * Set pipeline.
+     */
+    public function setPipeline(PipelineContract $pipeline)
+    {
+        $this->pipeline = $pipeline;
+
+        return $this;
+    }
+
+    /**
+     * Get pipeline.
+     */
+    public function getPipeline()
+    {
+        return $this->pipeline;
     }
 
     /**
