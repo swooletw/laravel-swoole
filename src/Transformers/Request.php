@@ -169,7 +169,7 @@ class Request
      * @param string $path
      * @return boolean
      */
-    public static function handleStatic(SwooleRequest $swooleRequest, SwooleResponse $swooleResponse, string $publicPath)
+    public static function handleStatic($swooleRequest, $swooleResponse, string $publicPath)
     {
         $uri = $swooleRequest->server['request_uri'] ?? '';
         $extension = substr(strrchr($uri, '.'), 1);
