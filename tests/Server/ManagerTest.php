@@ -18,6 +18,7 @@ use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\HandlerContract;
 use SwooleTW\Http\Websocket\Rooms\TableRoom;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 use SwooleTW\Http\Websocket\Facades\Websocket as WebsocketFacade;
@@ -139,6 +140,21 @@ class ManagerTest extends TestCase
         $this->assertTrue($app->make('swoole.websocket') instanceof Websocket);
     }
 
+    public function testOnTaskWorkerStart()
+    {
+        $server = $this->getServer();
+        $server->taskworker = true;
+
+        $container = $this->getContainer($server);
+        $container->singleton('events', function () {
+            return $this->getEvent('swoole.workerStart');
+        });
+
+        $manager = $this->getManager($container);
+
+        $this->assertNull($manager->onWorkerStart($server));
+    }
+
     public function testOnRequest()
     {
         $server = $this->getServer();
@@ -195,6 +211,51 @@ class ManagerTest extends TestCase
         $manager->onRequest($request, $response);
     }
 
+    public function testOnRequestException()
+    {
+        $server = $this->getServer();
+        $container = $this->getContainer($server);
+        $container->singleton('events', function () {
+            return $this->getEvent('swoole.request', false);
+        });
+        $container->singleton('swoole.sandbox', function () {
+            $sandbox = m::mock(Sandbox::class);
+            $sandbox->shouldReceive('disable')
+                ->once();
+            return $sandbox;
+        });
+        $container->singleton(ExceptionHandler::class, function () {
+            $handler = m::mock(ExceptionHandler::class);
+            $handler->shouldReceive('render')
+                ->once();
+            return $handler;
+        });
+
+        $this->mockMethod('base_path', function () {
+            return '/';
+        });
+
+        $request = m::mock(Request::class);
+        $request->shouldReceive('rawcontent')
+            ->once()
+            ->andReturn([]);
+
+        $response = m::mock(Response::class);
+        $response->shouldReceive('header')
+            ->twice()
+            ->andReturnSelf();
+        $response->shouldReceive('status')
+            ->once()
+            ->andReturnSelf();
+        $response->shouldReceive('end')
+            ->once()
+            ->andReturnSelf();
+
+        $manager = $this->getManager($container);
+        $manager->setApplication($container);
+        $manager->onRequest($request, $response);
+    }
+
     public function testOnTask()
     {
         $container = $this->getContainer();
@@ -240,6 +301,22 @@ class ManagerTest extends TestCase
         $manager->setWebsocketHandler($handler);
 
         $this->assertSame($handler, $manager->getWebsocketHandler());
+    }
+
+    public function testLogServerError()
+    {
+        $exception = new \Exception;
+        $container = $this->getContainer();
+        $container->singleton(ExceptionHandler::class, function () use ($exception) {
+            $handler = m::mock(ExceptionHandler::class);
+            $handler->shouldReceive('report')
+                ->with($exception)
+                ->once();
+            return $handler;
+        });
+        $manager = $this->getManager($container);
+        $manager->setApplication($container);
+        $manager->logServerError($exception);
     }
 
     public function testOnOpen()

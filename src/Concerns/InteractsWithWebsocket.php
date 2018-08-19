@@ -2,7 +2,7 @@
 
 namespace SwooleTW\Http\Concerns;
 
-use Exception;
+use Throwable;
 use Swoole\Websocket\Frame;
 use Swoole\Websocket\Server;
 use Illuminate\Pipeline\Pipeline;
@@ -63,7 +63,7 @@ trait InteractsWithWebsocket
                 $this->app['swoole.websocket']->setContainer($this->app['swoole.sandbox']->getApplication());
                 $this->app['swoole.websocket']->call('connect', $illuminateRequest);
             }
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->logServerError($e);
         } finally {
             // disable and recycle sandbox resource
@@ -99,7 +99,7 @@ trait InteractsWithWebsocket
             } else {
                 $this->websocketHandler->onMessage($frame);
             }
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->logServerError($e);
         } finally {
             // disable and recycle sandbox resource
@@ -130,7 +130,7 @@ trait InteractsWithWebsocket
             }
             // leave all rooms
             $this->app['swoole.websocket']->leave();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->logServerError($e);
         }
     }

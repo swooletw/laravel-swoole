@@ -2,7 +2,8 @@
 
 namespace SwooleTW\Http\Server;
 
-use Exception;
+use Throwable;
+use Swoole\Http\Server;
 use SwooleTW\Http\Server\Sandbox;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
@@ -194,12 +195,12 @@ class Manager
             $illuminateResponse = $this->app['swoole.sandbox']->run($illuminateRequest);
             $response = Response::make($illuminateResponse, $swooleResponse);
             $response->send();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             try {
                 $exceptionResponse = $this->app[ExceptionHandler::class]->render($illuminateRequest, $e);
                 $response = Response::make($exceptionResponse, $swooleResponse);
                 $response->send();
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 $this->logServerError($e);
             }
         } finally {
@@ -233,7 +234,7 @@ class Manager
                 && $data['action'] === Websocket::PUSH_ACTION) {
                 $this->pushMessage($server, $data['data'] ?? []);
             }
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->logServerError($e);
         }
     }
@@ -380,9 +381,9 @@ class Manager
     /**
      * Log server error.
      *
-     * @param Exception
+     * @param Throwable
      */
-    protected function logServerError(Exception $e)
+    public function logServerError(Throwable $e)
     {
         $this->app[ExceptionHandler::class]->report($e);
     }
