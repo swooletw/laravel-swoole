@@ -52,6 +52,18 @@ class WebsocketTest extends TestCase
             ->join($name);
     }
 
+    public function testInAlias()
+    {
+        $room = m::mock(RoomContract::class);
+        $room->shouldReceive('add')
+            ->with($sender = 1, $name = ['room'])
+            ->once();
+
+        $websocket = $this->getWebsocket($room)
+            ->setSender($sender)
+            ->in($name);
+    }
+
     public function testJoinAll()
     {
         $room = m::mock(RoomContract::class);
@@ -300,6 +312,64 @@ class WebsocketTest extends TestCase
         $websocket->setPipeline($pipeline);
 
         $this->assertSame($pipeline, $websocket->getPipeline());
+    }
+
+    public function testEmit()
+    {
+        $sender = 1;
+        $to = [1, 2, 'a', 'b', 'c'];
+        $broadcast = true;
+        $room = m::mock(RoomContract::class);
+        $room->shouldReceive('getClients')
+            ->with(m::type('string'))
+            ->times(3)
+            ->andReturn([3, 4, 5]);
+
+        App::shouldReceive('make')
+            ->with('swoole.server')
+            ->once()
+            ->andReturnSelf();
+
+        App::shouldReceive('task')
+            ->with([
+                'action' => 'push',
+                'data' => [
+                    'sender' => $sender,
+                    'fds' => [1, 2, 3, 4, 5],
+                    'broadcast' => $broadcast,
+                    'assigned' => true,
+                    'event' => $event = 'event',
+                    'message' => $data = 'data'
+                ]
+            ])
+            ->once();
+
+        $websocket = $this->getWebsocket($room);
+        $websocket->setSender($sender)
+            ->to($to)
+            ->broadcast()
+            ->emit($event, $data);
+
+        $this->assertSame([], $websocket->getTo());
+        $this->assertFalse($websocket->getIsBroadcast());
+    }
+
+    public function testClose()
+    {
+        $fd = 1;
+
+        App::shouldReceive('make')
+            ->with('swoole.server')
+            ->once()
+            ->andReturnSelf();
+
+        App::shouldReceive('close')
+            ->with($fd)
+            ->once();
+
+        $websocket = $this->getWebsocket();
+        $websocket->close($fd);
+
     }
 
     protected function getWebsocket(RoomContract $room = null, $pipeline = null)

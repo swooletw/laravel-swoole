@@ -158,7 +158,7 @@ class Websocket
             return false;
         }
 
-        $result = app('swoole.server')->task([
+        $result = App::make('swoole.server')->task([
             'action' => static::PUSH_ACTION,
             'data' => [
                 'sender' => $this->sender,
@@ -255,7 +255,7 @@ class Websocket
      */
     public function close(int $fd = null)
     {
-        return app('swoole.server')->close($fd ?: $this->sender);
+        return App::make('swoole.server')->close($fd ?: $this->sender);
     }
 
     /**
