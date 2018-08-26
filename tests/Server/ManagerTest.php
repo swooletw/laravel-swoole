@@ -4,7 +4,6 @@ namespace SwooleTW\Http\Tests\Server;
 
 use Mockery as m;
 use Swoole\Http\Request;
-use phpmock\MockBuilder;
 use Swoole\Http\Response;
 use SwooleTW\Http\Server\Manager;
 use SwooleTW\Http\Server\Sandbox;
@@ -593,12 +592,6 @@ class ManagerTest extends TestCase
 
     protected function mockMethod($name, \Closure $function, $namespace = null)
     {
-        $builder = new MockBuilder();
-        $builder->setNamespace($namespace ?: 'SwooleTW\Http\Server')
-                ->setName($name)
-                ->setFunction($function);
-
-        $mock = $builder->build();
-        $mock->enable();
+        parent::mockMethod($name, $function, 'SwooleTW\Http\Server');
     }
 }

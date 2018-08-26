@@ -3,7 +3,6 @@
 namespace SwooleTW\Http\Tests\Transformers;
 
 use Mockery as m;
-use phpmock\MockBuilder;
 use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Transformers\Request;
 use Swoole\Http\Request as SwooleRequest;
@@ -85,13 +84,7 @@ class RequestTest extends TestCase
 
     protected function mockMethod($name, \Closure $function, $namespace = null)
     {
-        $builder = new MockBuilder();
-        $builder->setNamespace($namespace ?: 'SwooleTW\Http\Transformers')
-                ->setName($name)
-                ->setFunction($function);
-
-        $mock = $builder->build();
-        $mock->enable();
+        parent::mockMethod($name, $function, 'SwooleTW\Http\Transformers');
     }
 }
 
