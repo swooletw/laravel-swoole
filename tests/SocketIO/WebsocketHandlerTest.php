@@ -3,7 +3,7 @@
 namespace SwooleTW\Http\Tests\SocketIO;
 
 use Mockery as m;
-use phpmock\MockBuilder;
+use Swoole\Websocket\Frame;
 use Illuminate\Http\Request;
 use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Support\Facades\App;
@@ -61,5 +61,17 @@ class WebsocketHandlerTest extends TestCase
 
         $handler = new WebsocketHandler;
         $this->assertFalse($handler->onOpen($fd, $request));
+    }
+
+    public function testOnMessage()
+    {
+        $handler = new WebsocketHandler;
+        $this->assertNull($handler->onMessage(new Frame));
+    }
+
+    public function testOnClose()
+    {
+        $handler = new WebsocketHandler;
+        $this->assertNull($handler->onClose(0, 0));
     }
 }

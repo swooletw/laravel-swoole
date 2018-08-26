@@ -46,7 +46,7 @@ class WebsocketHandler implements HandlerContract
      */
     public function onMessage(Frame $frame)
     {
-        //
+        return;
     }
 
     /**
@@ -57,6 +57,6 @@ class WebsocketHandler implements HandlerContract
      */
     public function onClose($fd, $reactorId)
     {
-        //
+        return;
     }
 }
