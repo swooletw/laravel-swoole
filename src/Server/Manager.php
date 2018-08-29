@@ -342,6 +342,7 @@ class Manager
     /**
      * Set process name.
      *
+     * @codeCoverageIgnore
      * @param $process
      */
     protected function setProcessName($process)
