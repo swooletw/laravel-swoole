@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Tests\Server;
 
 use Mockery as m;
+use Swoole\Table;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use SwooleTW\Http\Server\Manager;
@@ -26,7 +27,14 @@ class ManagerTest extends TestCase
 {
     protected $config = [
         'swoole_http.websocket.enabled' => false,
-        'swoole_http.tables' => [],
+        'swoole_http.tables' => [
+            'table_name' => [
+                'size' => 1024,
+                'columns' => [
+                    ['name' => 'column_name', 'type' => Table::TYPE_STRING, 'size' => 1024]
+                ]
+            ]
+        ],
         'swoole_http.providers' => []
     ];
 
