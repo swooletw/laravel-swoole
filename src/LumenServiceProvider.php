@@ -4,6 +4,9 @@ namespace SwooleTW\Http;
 
 use SwooleTW\Http\Server\Manager;
 
+/**
+ * @codeCoverageIgnore
+ */
 class LumenServiceProvider extends HttpServiceProvider
 {
     /**

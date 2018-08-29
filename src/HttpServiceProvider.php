@@ -10,6 +10,9 @@ use SwooleTW\Http\Commands\HttpServerCommand;
 use Swoole\Websocket\Server as WebsocketServer;
 use SwooleTW\Http\Coroutine\Connectors\MySqlConnector;
 
+/**
+ * @codeCoverageIgnore
+ */
 abstract class HttpServiceProvider extends ServiceProvider
 {
     /**

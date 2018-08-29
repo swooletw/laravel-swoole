@@ -5,6 +5,9 @@ namespace SwooleTW\Http\Commands;
 use Illuminate\Console\Command;
 use Swoole\Process;
 
+/**
+ * @codeCoverageIgnore
+ */
 class HttpServerCommand extends Command
 {
     /**
