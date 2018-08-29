@@ -145,11 +145,19 @@ class Sandbox
         $providers = $this->config->get('swoole_http.providers', []);
 
         foreach ($providers as $provider) {
-            if (class_exists($provider)) {
-                $provider = new $provider($app);
-                $this->providers[get_class($provider)] = $provider;
+            if (class_exists($provider) && ! in_array($provider, $this->providers)) {
+                $providerClass = new $provider($app);
+                $this->providers[$provider] = $providerClass;
             }
         }
+    }
+
+    /**
+     * Get Initialized providers.
+     */
+    public function getProviders()
+    {
+        return $this->providers;
     }
 
     /**

@@ -46,11 +46,14 @@ class SandboxTest extends TestCase
 
     public function testInitialize()
     {
+        $provider = m::mock('provider');
+        $providerName = get_class($provider);
+
         $config = m::mock(Repository::class);
         $config->shouldReceive('get')
             ->with('swoole_http.providers', [])
             ->once()
-            ->andReturn([]);
+            ->andReturn([$providerName]);
 
         $container = m::mock(Container::class);
         $container->shouldReceive('make')
@@ -62,7 +65,10 @@ class SandboxTest extends TestCase
         $sandbox->setBaseApp($container);
         $sandbox->initialize();
 
+        $sandboxProvider = $sandbox->getProviders()[$providerName];
+
         $this->assertTrue($sandbox->getConfig() instanceof Repository);
+        $this->assertSame($providerName, get_class($sandboxProvider));
     }
 
     public function testGetApplication()
