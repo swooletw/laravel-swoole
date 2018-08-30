@@ -13,7 +13,7 @@ trait CanSwooleTable
     protected $table;
 
     /**
-     * Register customized swoole talbes.
+     * Register customized swoole tables.
      */
     protected function createTables()
     {
