@@ -15,13 +15,6 @@ class SwooleTask
     protected $server;
 
     /**
-     * Registered swoole tasks.
-     *
-     * @var array
-     */
-    protected $tasks = [];
-
-    /**
      * Task constructor
      */
     public function __construct($server)
