@@ -19,7 +19,8 @@
         "illuminate/contracts": "~5.1",
         "illuminate/http": "~5.1",
         "illuminate/support": "~5.1",
-        "predis/predis": "^1.1"
+        "predis/predis": "^1.1",
+        "jeremeamia/superclosure": "~2.4"
     },
     "require-dev": {
         "laravel/lumen-framework": "~5.1",
