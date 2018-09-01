@@ -8,6 +8,7 @@ use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Table\CanSwooleTable;
+use SwooleTW\Http\AsyncTask\AsyncTaskJob;
 use SwooleTW\Http\Websocket\CanWebsocket;
 use Illuminate\Contracts\Container\Container;
 use Swoole\WebSocket\Server as WebSocketServer;
