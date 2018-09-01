@@ -10,14 +10,14 @@ class AsyncTaskConnector implements ConnectorInterface
     /**
      * Swoole Server Instance
      *
-     * @var object
+     * @var \Swoole\Http\Server
      */
     protected $swoole;
 
      /**
      * Create a new Swoole Async task connector instance.
      *
-     * @param  object $swoole
+     * @param  \Swoole\Http\Server $swoole
      * @return void
      */
     public function __construct($swoole)

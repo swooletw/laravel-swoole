@@ -6,11 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
+use Laravel\Lumen\Application as LumenApplication;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-use Laravel\Lumen\Application as LumenApplication;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class Application
 {
