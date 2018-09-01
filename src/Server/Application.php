@@ -94,22 +94,12 @@ class Application
     }
 
     /**
-     * Load application.
-     *
-     * @return \Illuminate\Contracts\Foundation\Application
-     */
-    protected function loadApplication()
-    {
-        return require $this->basePath . '/bootstrap/app.php';
-    }
-
-    /**
      * @return \Illuminate\Container\Container
      */
     public function getApplication()
     {
         if (! $this->application instanceof Container) {
-            $this->application = $this->loadApplication();
+            $this->application = Container::getInstance();
         }
 
         return $this->application;
