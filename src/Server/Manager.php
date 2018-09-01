@@ -10,8 +10,8 @@ use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Table\CanSwooleTable;
 use SwooleTW\Http\Websocket\CanWebsocket;
 use Illuminate\Contracts\Container\Container;
-use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use Swoole\WebSocket\Server as WebSocketServer;
+use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 
 class Manager
@@ -331,11 +331,15 @@ class Manager
         $this->container['events']->fire('swoole.task', func_get_args());
 
         try {
-            // push websocket message
-            if ($this->isWebsocket
-                && array_key_exists('action', $data)
-                && $data['action'] === Websocket::PUSH_ACTION) {
-                $this->pushMessage($server, $data['data'] ?? []);
+            if (is_array($data)) {
+                // push websocket message
+                if ($this->isWebsocket
+                    && array_key_exists('action', $data)
+                    && $data['action'] === Websocket::PUSH_ACTION) {
+                    $this->pushMessage($server, $data['data'] ?? []);
+                }
+            } else {
+                (new AsyncTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
             }
         } catch (Exception $e) {
             $this->logServerError($e);
@@ -493,5 +497,15 @@ class Manager
     protected function logServerError(Exception $e)
     {
         $this->app[ExceptionHandler::class]->report($e);
+    }
+
+    /**
+     * Get the server instance.
+     *
+     * @return Swoole\Http\Server
+     */
+    public function getServer()
+    {
+        return $this->server;
     }
 }
