@@ -234,8 +234,6 @@ class ResettersTest extends TestCase
 }
 
 class TestProvider extends ServiceProvider {
-    public function boot()
-    {
-        //
-    }
+    public function register() {}
+    public function boot() {}
 }
