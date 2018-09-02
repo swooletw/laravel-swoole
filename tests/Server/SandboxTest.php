@@ -15,6 +15,8 @@ use SwooleTW\Http\Coroutine\Context;
 use SwooleTW\Http\Server\Application;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Exceptions\SandboxException;
+use SwooleTW\Http\Server\Resetters\ResetterContract;
+use Illuminate\Contracts\Container\Container as ContainerContract;
 
 class SandboxTest extends TestCase
 {
@@ -49,26 +51,41 @@ class SandboxTest extends TestCase
         $provider = m::mock('provider');
         $providerName = get_class($provider);
 
+        $resetter = new TestResetter;
+        $resetterName = get_class($resetter);
+
         $config = m::mock(Repository::class);
         $config->shouldReceive('get')
             ->with('swoole_http.providers', [])
             ->once()
             ->andReturn([$providerName]);
+        $config->shouldReceive('get')
+            ->with('swoole_http.resetters', [])
+            ->once()
+            ->andReturn([$resetterName]);
 
         $container = m::mock(Container::class);
         $container->shouldReceive('make')
             ->with('config')
             ->once()
             ->andReturn($config);
+        $container->shouldReceive('make')
+            ->with($resetterName)
+            ->once()
+            ->andReturn($resetter);
 
         $sandbox = new Sandbox;
         $sandbox->setBaseApp($container);
         $sandbox->initialize();
 
         $sandboxProvider = $sandbox->getProviders()[$providerName];
+        $sandboxResetter = $sandbox->getResetters()[$resetterName];
 
         $this->assertTrue($sandbox->getConfig() instanceof Repository);
         $this->assertSame($providerName, get_class($sandboxProvider));
+
+        $this->assertTrue($resetter instanceof ResetterContract);
+        $this->assertSame($resetter, $sandboxResetter);
     }
 
     public function testGetApplication()
@@ -116,5 +133,12 @@ class SandboxTest extends TestCase
             ->andReturn($config);
 
         return $container;
+    }
+}
+
+class TestResetter implements ResetterContract {
+    public function handle(ContainerContract $app, Sandbox $sandbox)
+    {
+        return 'foo';
     }
 }
