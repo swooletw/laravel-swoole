@@ -4,7 +4,6 @@ namespace SwooleTW\Http\Tests\SocketIO;
 
 use Mockery as m;
 use Swoole\Websocket\Frame;
-use Swoole\Websocket\Server;
 use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Support\Facades\App;
 use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
@@ -54,12 +53,11 @@ class ParserTest extends TestCase
     public function testExecute()
     {
         $frame = m::mock(Frame::class);
-        $server = $this->getServer();
 
         $app = App::shouldReceive('call')->once();
 
         $parser = new SocketIOParser;
-        $skip = $parser->execute($server, $frame);
+        $skip = $parser->execute('server', $frame);
     }
 
     public function testHeartbeatStrategy()
@@ -70,11 +68,8 @@ class ParserTest extends TestCase
         $frame->data = $payload;
         $frame->fd = 1;
 
-        // will lead to mockery bug
-        // $server = m::mock(Server::class);
-        // $server->shouldReceive('push')->once();
-
-        $server = $this->getServer();
+        $server = m::mock('server');
+        $server->shouldReceive('push')->once();
 
         $strategy = new HeartbeatStrategy;
         $this->assertFalse($strategy->handle($server, $frame));
@@ -82,17 +77,7 @@ class ParserTest extends TestCase
         $frame->data = '3';
         $this->assertTrue($strategy->handle($server, $frame));
 
-        // // will lead segmentation fault
-        // $frame->data = '2probe';
-        // $this->assertTrue($strategy->handle($server, $frame));
-    }
-
-    protected function getServer()
-    {
-        if (static::$server) {
-            return static::$server;
-        }
-
-        return static::$server = new Server('0.0.0.0');
+        $frame->data = '2probe';
+        $this->assertTrue($strategy->handle($server, $frame));
     }
 }

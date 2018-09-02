@@ -4,6 +4,7 @@ namespace SwooleTW\Http\Websocket;
 
 use InvalidArgumentException;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 use SwooleTW\Http\Websocket\Authenticatable;
 use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
@@ -75,7 +76,7 @@ class Websocket
     public function __construct(RoomContract $room, PipelineContract $pipeline)
     {
         $this->room = $room;
-        $this->pipeline = $pipeline;
+        $this->setPipeline($pipeline);
         $this->setDefaultMiddleware();
     }
 
@@ -157,7 +158,7 @@ class Websocket
             return false;
         }
 
-        $result = app('swoole.server')->task([
+        $result = App::make('swoole.server')->task([
             'action' => static::PUSH_ACTION,
             'data' => [
                 'sender' => $this->sender,
@@ -254,7 +255,7 @@ class Websocket
      */
     public function close(int $fd = null)
     {
-        return app('swoole.server')->close($fd ?: $this->sender);
+        return App::make('swoole.server')->close($fd ?: $this->sender);
     }
 
     /**
@@ -356,7 +357,7 @@ class Websocket
      */
     protected function setDefaultMiddleware()
     {
-        $this->middleware = app('config')->get('swoole_websocket.middleware', []);
+        $this->middleware = Config::get('swoole_websocket.middleware', []);
     }
 
     /**
@@ -372,6 +373,24 @@ class Websocket
 
         $resetPipeline = $closure->bindTo($pipeline, $pipeline);
         $resetPipeline();
+    }
+
+    /**
+     * Set pipeline.
+     */
+    public function setPipeline(PipelineContract $pipeline)
+    {
+        $this->pipeline = $pipeline;
+
+        return $this;
+    }
+
+    /**
+     * Get pipeline.
+     */
+    public function getPipeline()
+    {
+        return $this->pipeline;
     }
 
     /**

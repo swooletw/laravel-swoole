@@ -4,6 +4,7 @@ namespace SwooleTW\Http\Websocket\SocketIO;
 
 use Swoole\Websocket\Frame;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use SwooleTW\Http\Websocket\HandlerContract;
 use SwooleTW\Http\Websocket\SocketIO\Packet;
@@ -28,8 +29,8 @@ class WebsocketHandler implements HandlerContract
             $initPayload = Packet::OPEN . $payload;
             $connectPayload = Packet::MESSAGE . Packet::CONNECT;
 
-            app('swoole.server')->push($fd, $initPayload);
-            app('swoole.server')->push($fd, $connectPayload);
+            App::make('swoole.server')->push($fd, $initPayload);
+            App::make('swoole.server')->push($fd, $connectPayload);
 
             return true;
         }
@@ -45,7 +46,7 @@ class WebsocketHandler implements HandlerContract
      */
     public function onMessage(Frame $frame)
     {
-        //
+        return;
     }
 
     /**
@@ -56,6 +57,6 @@ class WebsocketHandler implements HandlerContract
      */
     public function onClose($fd, $reactorId)
     {
-        //
+        return;
     }
 }

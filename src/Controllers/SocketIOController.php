@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 
 class SocketIOController
 {
@@ -24,8 +25,8 @@ class SocketIOController
         $payload = json_encode([
             'sid' => base64_encode(uniqid()),
             'upgrades' => ['websocket'],
-            'pingInterval' => config('swoole_websocket.ping_interval'),
-            'pingTimeout' => config('swoole_websocket.ping_timeout')
+            'pingInterval' => Config::get('swoole_websocket.ping_interval'),
+            'pingTimeout' => Config::get('swoole_websocket.ping_timeout')
         ]);
 
         return '97:0' . $payload . '2:40';

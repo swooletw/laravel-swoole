@@ -25,4 +25,7 @@
             <directory suffix=".php">./src</directory>
         </whitelist>
     </filter>
+    <php>
+        <const name="IN_PHPUNIT" value="true"/>
+    </php>
 </phpunit>

@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket;
 
-use Swoole\Websocket\Frame;
 use Swoole\Websocket\Server;
 use SwooleTW\Http\Websocket\Parser;
 
@@ -35,7 +34,7 @@ class SimpleParser extends Parser
      * @param \Swoole\Websocket\Frame $frame
      * @return array
      */
-    public function decode(Frame $frame)
+    public function decode($frame)
     {
         $data = json_decode($frame->data, true);
 

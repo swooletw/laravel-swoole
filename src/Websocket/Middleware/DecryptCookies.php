@@ -25,6 +25,14 @@ class DecryptCookies
     protected $except = [];
 
     /**
+     * Indicates if cookies should be serialized.
+     * Serialization is disabled after Laravel 5.6.3
+     *
+     * @var bool
+     */
+    protected static $serialize = false;
+
+    /**
      * Create a new CookieGuard instance.
      *
      * @param  \Illuminate\Contracts\Encryption\Encrypter  $encrypter
@@ -51,7 +59,7 @@ class DecryptCookies
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
-     * @return mixed
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function handle($request, Closure $next)
     {
@@ -72,7 +80,7 @@ class DecryptCookies
             }
 
             try {
-                $request->cookies->set($key, $this->decryptCookie($cookie));
+                $request->cookies->set($key, $this->decryptCookie($key, $cookie));
             } catch (DecryptException $e) {
                 $request->cookies->set($key, null);
             }
@@ -84,14 +92,15 @@ class DecryptCookies
     /**
      * Decrypt the given cookie and return the value.
      *
+     * @param  string  $name
      * @param  string|array  $cookie
      * @return string|array
      */
-    protected function decryptCookie($cookie)
+    protected function decryptCookie($name, $cookie)
     {
         return is_array($cookie)
                         ? $this->decryptArray($cookie)
-                        : $this->encrypter->decrypt($cookie);
+                        : $this->encrypter->decrypt($cookie, static::serialized($name));
     }
 
     /**
@@ -106,7 +115,7 @@ class DecryptCookies
 
         foreach ($cookie as $key => $value) {
             if (is_string($value)) {
-                $decrypted[$key] = $this->encrypter->decrypt($value);
+                $decrypted[$key] = $this->encrypter->decrypt($value, static::serialized($key));
             }
         }
 
@@ -122,5 +131,16 @@ class DecryptCookies
     public function isDisabled($name)
     {
         return in_array($name, $this->except);
+    }
+
+    /**
+     * Determine if the cookie contents should be serialized.
+     *
+     * @param  string  $name
+     * @return bool
+     */
+    public static function serialized($name)
+    {
+        return static::$serialize;
     }
 }
