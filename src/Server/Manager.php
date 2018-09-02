@@ -255,6 +255,7 @@ class Manager
     public function onFinish($server, $taskId, $data)
     {
         // task worker callback
+        return;
     }
 
     /**

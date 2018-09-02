@@ -121,6 +121,13 @@ class SandboxTest extends TestCase
         $this->assertSame($container, Context::getApp());
     }
 
+    public function testIsLaravel()
+    {
+        $sandbox = new Sandbox;
+
+        $this->assertTrue($sandbox->isLaravel());
+    }
+
     protected function getContainer()
     {
         $config = m::mock(Illuminate\Config\Repository::class);
