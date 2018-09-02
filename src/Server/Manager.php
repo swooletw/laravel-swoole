@@ -239,7 +239,7 @@ class Manager
             } elseif (is_string($data)) {
                 $decoded= json_decode($data, true);
 
-                if (JSON_ERROR_NONE === json_last_error() && $decoded['type'] === 'queue') {
+                if (JSON_ERROR_NONE === json_last_error() && isset($decoded['job'])) {
                     (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
                 }
             }

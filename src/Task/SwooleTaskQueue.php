@@ -68,28 +68,7 @@ class SwooleTaskQueue extends Queue implements QueueContract
         });
     }
 
-     /**
-     * Create a payload for an object-based queue handler.
-     *
-     * @param  mixed  $job
-     * @return array
-     */
-    protected function createObjectPayload($job)
-    {
-        return [
-            'type' => 'queue',
-            'maxTries' => $job->tries ?? null,
-            'job' => 'Illuminate\Queue\CallQueuedHandler@call',
-            'timeout' => $job->timeout ?? null,
-            'timeoutAt' => "", // not used
-            'data' => [
-                'commandName' => get_class($job),
-                'command' => serialize(clone $job)
-            ]
-        ];
-    }
-
-     /**
+    /**
      * Create a typical, string based queue payload array.
      *
      * @param  string  $job
