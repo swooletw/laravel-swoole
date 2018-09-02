@@ -94,4 +94,14 @@ class SwooleTaskJob extends Job implements JobContract
     {
         return $this->taskId;
     }
+
+    /**
+     * Get the service container instance.
+     *
+     * @return \Illuminate\Container\Container
+     */
+    public function getContainer()
+    {
+        return $this->container;
+    }
 }

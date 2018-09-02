@@ -102,14 +102,4 @@ class SwooleTaskQueue extends Queue implements QueueContract
     {
         return null;
     }
-
-    /**
-     * Get the service container instance.
-     *
-     * @return \Illuminate\Container\Container
-     */
-    public function getContainer()
-    {
-        return $this->container;
-    }
 }
