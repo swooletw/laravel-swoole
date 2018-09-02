@@ -42,7 +42,6 @@ class SwooleTaskJob extends Job implements JobContract
      * @param  \Illuminate\Container\Container  $container
      * @param  \Swoole\Http\Server  $swoole
      * @param  string  $job
-     *
      * @return void
      */
     public function __construct(Container $container, $swoole, $job, $taskId, $srcWrokerId)
@@ -56,7 +55,6 @@ class SwooleTaskJob extends Job implements JobContract
 
     /**
      * Get the number of times the job has been attempted.
-     *
      * @return int
      */
     public function attempts()
@@ -66,7 +64,6 @@ class SwooleTaskJob extends Job implements JobContract
 
     /**
      * Get the raw body string for the job.
-     *
      * @return string
      */
     public function getRawBody()
@@ -77,7 +74,6 @@ class SwooleTaskJob extends Job implements JobContract
 
     /**
      * Get the job identifier.
-     *
      * @return string
      */
     public function getJobId()
