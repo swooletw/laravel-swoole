@@ -4,9 +4,10 @@ namespace SwooleTW\Http\Server\Resetters;
 
 use SwooleTW\Http\Server\Sandbox;
 use Illuminate\Contracts\Container\Container;
+use SwooleTW\Http\Server\Resetters\ResetterContract;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class RebindRouterContainer
+class RebindRouterContainer implements ResetterContract
 {
     /**
      * "handle" function for resetting app.
