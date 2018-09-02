@@ -7,7 +7,6 @@ use Illuminate\Container\Container;
 use SwooleTW\Http\Coroutine\Context;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
-use Illuminate\Support\ServiceProvider;
 use SwooleTW\Http\Concerns\ResetApplication;
 use SwooleTW\Http\Exceptions\SandboxException;
 use Laravel\Lumen\Application as LumenApplication;
@@ -31,15 +30,8 @@ class Sandbox
     protected $framework = 'laravel';
 
     /**
-     * @var \Illuminate\Config\Repository
+     * Constructor
      */
-    protected $config;
-
-    /**
-     * @var array
-     */
-    protected $providers = [];
-
     public function __construct($app = null, $framework = null)
     {
         if (! $app instanceof Container) {
@@ -116,48 +108,9 @@ class Sandbox
 
         $this->setInitialConfig();
         $this->setInitialProviders();
+        $this->setInitialResetters();
 
         return $this;
-    }
-
-    /**
-     * Set initial config.
-     */
-    protected function setInitialConfig()
-    {
-        $this->config = clone $this->getBaseApp()->make('config');
-    }
-
-    /**
-     * Get config snapshot.
-     */
-    public function getConfig()
-    {
-        return $this->config;
-    }
-
-    /**
-     * Initialize customized service providers.
-     */
-    protected function setInitialProviders()
-    {
-        $app = $this->getBaseApp();
-        $providers = $this->config->get('swoole_http.providers', []);
-
-        foreach ($providers as $provider) {
-            if (class_exists($provider) && ! in_array($provider, $this->providers)) {
-                $providerClass = new $provider($app);
-                $this->providers[$provider] = $providerClass;
-            }
-        }
-    }
-
-    /**
-     * Get Initialized providers.
-     */
-    public function getProviders()
-    {
-        return $this->providers;
     }
 
     /**
@@ -186,22 +139,6 @@ class Sandbox
         $this->setSnapshot($snapshot);
 
         return $snapshot;
-    }
-
-    /**
-     * Reset Laravel/Lumen Application.
-     */
-    public function resetApp(Container $app)
-    {
-        $this->resetConfigInstance($app);
-        $this->resetSession($app);
-        $this->resetCookie($app);
-        $this->clearInstances($app);
-        $this->bindRequest($app);
-        $this->rebindKernelContainer($app);
-        $this->rebindRouterContainer($app);
-        $this->rebindViewContainer($app);
-        $this->resetProviders($app);
     }
 
     /**
@@ -309,7 +246,7 @@ class Sandbox
     /**
      * Return if it's Laravel app.
      */
-    protected function isLaravel()
+    public function isLaravel()
     {
         return $this->framework === 'laravel';
     }

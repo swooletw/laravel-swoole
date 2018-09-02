@@ -2,162 +2,99 @@
 
 namespace SwooleTW\Http\Concerns;
 
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Http\Kernel;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Contracts\Container\Container;
+use SwooleTW\Http\Exceptions\SandboxException;
+use SwooleTW\Http\Server\Resetters\ResetterContract;
 
 trait ResetApplication
 {
     /**
-     * Clear resolved instances.
+     * @var \Illuminate\Config\Repository
      */
-    public function clearInstances(Container $app)
+    protected $config;
+
+    /**
+     * @var array
+     */
+    protected $providers = [];
+
+    /**
+     * @var array
+     */
+    protected $resetters = [];
+
+    /**
+     * Set initial config.
+     */
+    protected function setInitialConfig()
     {
-        $instances = $this->config->get('swoole_http.instances', []);
-        foreach ($instances as $instance) {
-            $app->forgetInstance($instance);
-        }
+        $this->config = clone $this->getBaseApp()->make('config');
     }
 
     /**
-     * Bind illuminate request to laravel/lumen application.
+     * Get config snapshot.
      */
-    public function bindRequest(Container $app)
+    public function getConfig()
     {
-        $request = $this->getRequest();
-        if ($request instanceof Request) {
-            $app->instance('request', $request);
-        }
+        return $this->config;
     }
 
     /**
-     * Re-register and reboot service providers.
+     * Initialize customized service providers.
      */
-    public function resetProviders(Container $app)
+    protected function setInitialProviders()
     {
-        foreach ($this->providers as $provider) {
-            $this->rebindProviderContainer($app, $provider);
-            if (method_exists($provider, 'register')) {
-                $provider->register();
-            }
-            if (method_exists($provider, 'boot')) {
-                $app->call([$provider, 'boot']);
-            }
-        }
-    }
+        $app = $this->getBaseApp();
+        $providers = $this->config->get('swoole_http.providers', []);
 
-    /**
-     * Rebind service provider's container.
-     */
-    protected function rebindProviderContainer($app, $provider)
-    {
-        $closure = function () use ($app) {
-            $this->app = $app;
-        };
-
-        $resetProvider = $closure->bindTo($provider, $provider);
-        $resetProvider();
-    }
-
-    /**
-     * Reset laravel/lumen's config to initial values.
-     */
-    public function resetConfigInstance(Container $app)
-    {
-        $app->instance('config', clone $this->config);
-    }
-
-    /**
-     * Reset laravel's session data.
-     */
-    public function resetSession(Container $app)
-    {
-        if (isset($app['session'])) {
-            $session = $app->make('session');
-            $session->flush();
-            $session->regenerate();
-        }
-    }
-
-    /**
-     * Reset laravel's cookie.
-     */
-    public function resetCookie(Container $app)
-    {
-        if (isset($app['cookie'])) {
-            $cookies = $app->make('cookie');
-            foreach ($cookies->getQueuedCookies() as $key => $value) {
-                $cookies->unqueue($key);
+        foreach ($providers as $provider) {
+            if (class_exists($provider) && ! in_array($provider, $this->providers)) {
+                $providerClass = new $provider($app);
+                $this->providers[$provider] = $providerClass;
             }
         }
     }
 
     /**
-     * Rebind laravel's container in router.
+     * Get Initialized providers.
      */
-    public function rebindRouterContainer(Container $app)
+    public function getProviders()
     {
-        if ($this->isLaravel()) {
-            $router = $app->make('router');
-            $request = $this->getRequest();
-            $closure = function () use ($app, $request) {
-                $this->container = $app;
-                if (is_null($request)) {
-                    return;
-                }
-                try {
-                    $route = $this->routes->match($request);
-                    // clear resolved controller
-                    if (property_exists($route, 'container')) {
-                        $route->controller = null;
-                    }
-                    // rebind matched route's container
-                    $route->setContainer($app);
-                } catch (NotFoundHttpException $e) {
-                    // do nothing
-                }
-            };
+        return $this->providers;
+    }
 
-            $resetRouter = $closure->bindTo($router, $router);
-            $resetRouter();
-        } else {
-            // lumen router only exists after lumen 5.5
-            if (property_exists($app, 'router')) {
-                $app->router->app = $app;
+    /**
+     * Initialize resetters.
+     */
+    protected function setInitialResetters()
+    {
+        $app = $this->getBaseApp();
+        $resetters = $this->config->get('swoole_http.resetters', []);
+
+        foreach ($resetters as $resetter) {
+            $resetterClass = $app->make($resetter);
+            if (! $resetterClass instanceof ResetterContract) {
+                throw new SandboxException("{$resetter} must implement " . ResetterContract::class);
             }
+            $this->resetters[$resetter] = $resetterClass;
         }
     }
 
     /**
-     * Rebind laravel/lumen's container in view.
+     * Get Initialized resetters.
      */
-    public function rebindViewContainer(Container $app)
+    public function getResetters()
     {
-        $view = $app->make('view');
-
-        $closure = function () use ($app) {
-            $this->container = $app;
-            $this->shared['app'] = $app;
-        };
-
-        $resetView = $closure->bindTo($view, $view);
-        $resetView();
+        return $this->resetters;
     }
 
     /**
-     * Rebind laravel's container in kernel.
+     * Reset Laravel/Lumen Application.
      */
-    public function rebindKernelContainer(Container $app)
+    public function resetApp(Container $app)
     {
-        if ($this->isLaravel()) {
-            $kernel = $app->make(Kernel::class);
-
-            $closure = function () use ($app) {
-                $this->app = $app;
-            };
-
-            $resetKernel = $closure->bindTo($kernel, $kernel);
-            $resetKernel();
+        foreach ($this->resetters as $resetter) {
+            $resetter->handle($app, $this);
         }
     }
 }

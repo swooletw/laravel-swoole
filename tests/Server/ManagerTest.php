@@ -35,7 +35,8 @@ class ManagerTest extends TestCase
                 ]
             ]
         ],
-        'swoole_http.providers' => []
+        'swoole_http.providers' => [],
+        'swoole_http.resetters' => []
     ];
 
     protected $websocketConfig = [
@@ -52,6 +53,7 @@ class ManagerTest extends TestCase
         'swoole_websocket.drivers.table' => TableRoom::class,
         'swoole_http.tables' => [],
         'swoole_http.providers' => [],
+        'swoole_http.resetters' => [],
         'swoole_http.server.public_path' => '/'
     ];
 
