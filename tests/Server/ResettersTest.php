@@ -9,7 +9,11 @@ use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use SwooleTW\Http\Server\Resetters\BindRequest;
+use SwooleTW\Http\Server\Resetters\ResetConfig;
+use SwooleTW\Http\Server\Resetters\ResetCookie;
+use SwooleTW\Http\Server\Resetters\ResetSession;
 use SwooleTW\Http\Server\Resetters\ClearInstances;
+use SwooleTW\Http\Server\Resetters\RebindViewContainer;
 use SwooleTW\Http\Server\Resetters\RebindKernelContainer;
 use SwooleTW\Http\Server\Resetters\RebindRouterContainer;
 
@@ -123,7 +127,7 @@ class ResettersTest extends TestCase
             ->andReturn($router);
         $container->router = $router;
 
-        parent::mockMethod('property_exists', function () {
+        $this->mockMethod('property_exists', function () {
             return true;
         }, 'SwooleTW\Http\Server\Resetters');
 
@@ -131,5 +135,71 @@ class ResettersTest extends TestCase
         $app = $resetter->handle($container, $sandbox);
 
         $this->assertSame($app, $app->router->app);
+    }
+
+    public function testRebindViewContainer()
+    {
+        $sandbox = m::mock(Sandbox::class);
+        $view = m::mock('view');
+
+        $container = new Container;
+        $container->instance('view', $view);
+
+        $resetter = new RebindViewContainer;
+        $app = $resetter->handle($container, $sandbox);
+
+        $this->assertSame($app, $app->make('view')->container);
+        $this->assertSame($app, $app->make('view')->shared['app']);
+    }
+
+    public function testResetConfig()
+    {
+        $config = m::mock('config');
+        $sandbox = m::mock(Sandbox::class);
+        $sandbox->shouldReceive('getConfig')
+            ->once()
+            ->andReturn($config);
+
+        $container = new Container;
+        $resetter = new ResetConfig;
+        $app = $resetter->handle($container, $sandbox);
+
+        $this->assertSame(get_class($config), get_class($app->make('config')));
+    }
+
+    public function testResetCookie()
+    {
+        $cookies = m::mock('cookies');
+        $cookies->shouldReceive('getQueuedCookies')
+            ->once()
+            ->andReturn(['foo']);
+        $cookies->shouldReceive('unqueue')
+            ->once()
+            ->with('foo');
+
+        $sandbox = m::mock(Sandbox::class);
+
+        $container = new Container;
+        $container->instance('cookie', $cookies);
+
+        $resetter = new ResetCookie;
+        $app = $resetter->handle($container, $sandbox);
+    }
+
+    public function testResetSession()
+    {
+        $session = m::mock('session');
+        $session->shouldReceive('flush')
+            ->once();
+        $session->shouldReceive('regenerate')
+            ->once();
+
+        $sandbox = m::mock(Sandbox::class);
+
+        $container = new Container;
+        $container->instance('session', $session);
+
+        $resetter = new ResetSession;
+        $app = $resetter->handle($container, $sandbox);
     }
 }
