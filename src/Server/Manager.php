@@ -93,50 +93,6 @@ class Manager
     }
 
     /**
-<<<<<<< HEAD
-     * Prepare settings if websocket is enabled.
-     */
-    protected function prepareWebsocket()
-    {
-        $isWebsocket = $this->container['config']->get('swoole_http.websocket.enabled');
-        $parser = $this->container['config']->get('swoole_websocket.parser');
-
-        if ($isWebsocket) {
-            array_push($this->events, ...$this->wsEvents);
-            $this->isWebsocket = true;
-            $this->setParser(new $parser);
-            $this->setWebsocketRoom();
-        }
-    }
-
-    /**
-     * Create swoole server.
-     */
-    protected function createSwooleServer()
-    {
-        $server = $this->isWebsocket ? WebsocketServer::class : HttpServer::class;
-        $host = $this->container['config']->get('swoole_http.server.host');
-        $port = $this->container['config']->get('swoole_http.server.port');
-        $hasCert = $this->container['config']->get('swoole_http.server.options.ssl_cert_file');
-        $hasKey = $this->container['config']->get('swoole_http.server.options.ssl_key_file');
-        $args = $hasCert && $hasKey ? [SWOOLE_PROCESS, SWOOLE_SOCK_TCP | SWOOLE_SSL] : [];
-
-        $this->server = new $server($host, $port, ...$args);
-    }
-
-    /**
-     * Set swoole server configurations.
-     */
-    protected function configureSwooleServer()
-    {
-        $config = $this->container['config']->get('swoole_http.server.options');
-
-        $this->server->set($config);
-    }
-
-    /**
-=======
->>>>>>> feature/coroutine_feature
      * Set swoole server listeners.
      */
     protected function setSwooleServerListeners()
