@@ -81,7 +81,7 @@ class SwooleTaskQueue extends Queue implements QueueContract
             'maxTries' => $job->tries ?? null,
             'job' => 'Illuminate\Queue\CallQueuedHandler@call',
             'timeout' => $job->timeout ?? null,
-            'timeoutAt' => $this->getJobExpiration($job),
+            'timeoutAt' => "", // not used
             'data' => [
                 'commandName' => get_class($job),
                 'command' => serialize(clone $job)
