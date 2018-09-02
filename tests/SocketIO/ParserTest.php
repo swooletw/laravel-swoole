@@ -11,6 +11,8 @@ use SwooleTW\Http\Websocket\SocketIO\Strategies\HeartbeatStrategy;
 
 class ParserTest extends TestCase
 {
+    protected static $server;
+
     public function testEncode()
     {
         $event = 'foo';
@@ -51,6 +53,7 @@ class ParserTest extends TestCase
     public function testExecute()
     {
         $frame = m::mock(Frame::class);
+
         $app = App::shouldReceive('call')->once();
 
         $parser = new SocketIOParser;

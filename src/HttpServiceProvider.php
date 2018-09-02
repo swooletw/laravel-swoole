@@ -9,6 +9,7 @@ use SwooleTW\Http\Coroutine\MySqlConnection;
 use SwooleTW\Http\Commands\HttpServerCommand;
 use Swoole\Websocket\Server as WebsocketServer;
 use SwooleTW\Http\Coroutine\Connectors\MySqlConnector;
+use SwooleTW\Http\Task\Connectors\SwooleTaskConnector;
 
 /**
  * @codeCoverageIgnore
@@ -45,6 +46,7 @@ abstract class HttpServiceProvider extends ServiceProvider
         $this->registerManager();
         $this->registerCommands();
         $this->registerDatabaseDriver();
+        $this->registerSwooleQueueDriver();
     }
 
     /**
@@ -129,7 +131,7 @@ abstract class HttpServiceProvider extends ServiceProvider
         $config = $this->app['config']->get('swoole_http.server.options');
 
         // only enable task worker in websocket mode
-        if (! $this->isWebsocket) {
+        if (env('QUEUE_DRIVER') !== 'swoole' && ! $this->isWebsocket) {
             unset($config['task_worker_num']);
         }
 
@@ -171,6 +173,18 @@ abstract class HttpServiceProvider extends ServiceProvider
                     $config['prefix'],
                     $config
                 );
+            });
+        });
+    }
+
+    /**
+     * Register queue driver for swoole async task.
+     */
+    protected function registerSwooleQueueDriver()
+    {
+        $this->app->afterResolving('queue', function ($manager) {
+            $manager->addConnector('swoole', function () {
+                return new SwooleTaskConnector(static::$server);
             });
         });
     }
