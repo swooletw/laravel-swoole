@@ -63,7 +63,7 @@ class SwooleTaskQueue extends Queue implements QueueContract
      */
     public function later($delay, $job, $data = '', $queue = null)
     {
-        return swoole_timer_after($this->secondsUntil($delay), function () use ($job, $data, $queue) {
+        return swoole_timer_after($this->secondsUntil($delay) * 1000, function () use ($job, $data, $queue) {
             return $this->push($job, $data, $queue);
         });
     }
