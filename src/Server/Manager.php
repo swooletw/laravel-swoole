@@ -236,10 +236,15 @@ class Manager
                     && $data['action'] === Websocket::PUSH_ACTION) {
                     $this->pushMessage($server, $data['data'] ?? []);
                 }
-            } else {
-                (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
+            } elseif (is_string($data)) {
+                $decoded= json_decode($data, true);
+
+                if (JSON_ERROR_NONE === json_last_error() && $decoded['type'] === 'queue') {
+                    (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
+                }
             }
         } catch (Throwable $e) {
+            dump($e);
             $this->logServerError($e);
         }
     }

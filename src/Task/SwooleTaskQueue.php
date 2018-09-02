@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Task;
 
+use Exception;
 use Illuminate\Queue\Queue;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
 
@@ -48,7 +49,7 @@ class SwooleTaskQueue extends Queue implements QueueContract
      */
     public function pushRaw($payload, $queue = null, array $options = [])
     {
-        return $this->swoole->task($payload, $queue);
+        return $this->swoole->task($payload, ! is_numeric($queue) ? 1 : (int) $queue);
     }
 
     /**
@@ -76,6 +77,7 @@ class SwooleTaskQueue extends Queue implements QueueContract
     protected function createObjectPayload($job)
     {
         return [
+            'type' => 'queue',
             'maxTries' => $job->tries ?? null,
             'job' => 'Illuminate\Queue\CallQueuedHandler@call',
             'timeout' => $job->timeout ?? null,
