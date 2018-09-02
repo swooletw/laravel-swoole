@@ -229,22 +229,22 @@ class Manager
         $this->container['events']->fire('swoole.task', func_get_args());
 
         try {
+            // push websocket message
             if (is_array($data)) {
-                // push websocket message
                 if ($this->isWebsocket
                     && array_key_exists('action', $data)
                     && $data['action'] === Websocket::PUSH_ACTION) {
                     $this->pushMessage($server, $data['data'] ?? []);
                 }
+            // push async task to queue
             } elseif (is_string($data)) {
-                $decoded= json_decode($data, true);
+                $decoded = json_decode($data, true);
 
                 if (JSON_ERROR_NONE === json_last_error() && isset($decoded['job'])) {
                     (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
                 }
             }
         } catch (Throwable $e) {
-            dump($e);
             $this->logServerError($e);
         }
     }

@@ -128,14 +128,15 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function configureSwooleServer()
     {
-        $config = $this->app['config']->get('swoole_http.server.options');
+        $config = $this->app['config'];
+        $options = $config->get('swoole_http.server.options');
 
-        // only enable task worker in websocket mode
-        if (env('QUEUE_DRIVER') !== 'swoole' && ! $this->isWebsocket) {
+        // only enable task worker in websocket mode and for queue driver
+        if ($config->get('queue.default') !== 'swoole' && ! $this->isWebsocket) {
             unset($config['task_worker_num']);
         }
 
-        static::$server->set($config);
+        static::$server->set($options);
     }
 
     /**

@@ -13,7 +13,7 @@ class SwooleQueueTest extends TestCase
         $server = $this->getServer();
 
         $queue = new SwooleTaskQueue($server);
-        $server->shouldReceive('task');
+        $server->shouldReceive('task')->once();
         $queue->push(new FakeJob);
     }
 

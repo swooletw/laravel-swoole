@@ -25,7 +25,6 @@ class SwooleTaskQueue extends Queue implements QueueContract
         $this->swoole = $swoole;
     }
 
-
     /**
      * Push a new job onto the queue.
      *
