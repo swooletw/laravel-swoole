@@ -5,11 +5,11 @@ namespace SwooleTW\Http\Server;
 use Throwable;
 use Swoole\Http\Server;
 use SwooleTW\Http\Server\Sandbox;
+use SwooleTW\Http\Task\SwooleTaskJob;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Transformers\Response;
-use SwooleTW\Http\AsyncTask\AsyncTaskJob;
 use SwooleTW\Http\Concerns\WithApplication;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -237,7 +237,7 @@ class Manager
                     $this->pushMessage($server, $data['data'] ?? []);
                 }
             } else {
-                (new AsyncTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
+                (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
             }
         } catch (Throwable $e) {
             $this->logServerError($e);
@@ -392,15 +392,5 @@ class Manager
     public function logServerError(Throwable $e)
     {
         $this->app[ExceptionHandler::class]->report($e);
-    }
-
-    /**
-     * Get the server instance.
-     *
-     * @return Swoole\Http\Server
-     */
-    public function getServer()
-    {
-        return $this->server;
     }
 }

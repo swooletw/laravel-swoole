@@ -1,11 +1,11 @@
 <?php
 
-namespace SwooleTW\Http\AsyncTask;
+namespace SwooleTW\Http\Task;
 
 use Illuminate\Queue\Queue;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
 
-class AsyncTaskQueue extends Queue implements QueueContract
+class SwooleTaskQueue extends Queue implements QueueContract
 {
     /**
      * Swoole Connector

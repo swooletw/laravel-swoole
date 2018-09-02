@@ -1,11 +1,11 @@
 <?php
 
-namespace SwooleTW\Http\AsyncTask\Connectors;
+namespace SwooleTW\Http\Task\Connectors;
 
-use SwooleTW\Http\AsyncTask\AsyncTaskQueue;
+use SwooleTW\Http\Task\SwooleTaskQueue;
 use Illuminate\Queue\Connectors\ConnectorInterface;
 
-class AsyncTaskConnector implements ConnectorInterface
+class SwooleTaskConnector implements ConnectorInterface
 {
     /**
      * Swoole Server Instance
@@ -33,6 +33,6 @@ class AsyncTaskConnector implements ConnectorInterface
      */
     public function connect(array $config)
     {
-        return new AsyncTaskQueue($this->swoole);
+        return new SwooleTaskQueue($this->swoole);
     }
 }

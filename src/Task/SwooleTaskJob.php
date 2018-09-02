@@ -1,12 +1,12 @@
 <?php
 
-namespace SwooleTW\Http\AsyncTask;
+namespace SwooleTW\Http\Task;
 
 use Illuminate\Queue\Jobs\Job;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Queue\Job as JobContract;
 
-class AsyncTaskJob extends Job implements JobContract
+class SwooleTaskJob extends Job implements JobContract
 {
     /**
      * The Swoole Server instance.
