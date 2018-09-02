@@ -26,5 +26,7 @@ class RebindKernelContainer
             $resetKernel = $closure->bindTo($kernel, $kernel);
             $resetKernel();
         }
+
+        return $app;
     }
 }

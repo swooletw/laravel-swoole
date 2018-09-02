@@ -20,5 +20,7 @@ class ClearInstances
         foreach ($instances as $instance) {
             $app->forgetInstance($instance);
         }
+
+        return $app;
     }
 }

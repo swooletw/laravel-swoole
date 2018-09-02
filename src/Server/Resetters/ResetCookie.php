@@ -21,5 +21,7 @@ class ResetCookie
                 $cookies->unqueue($key);
             }
         }
+
+        return $app;
     }
 }

@@ -21,5 +21,7 @@ class BindRequest
         if ($request instanceof Request) {
             $app->instance('request', $request);
         }
+
+        return $app;
     }
 }

@@ -20,5 +20,7 @@ class ResetSession
             $session->flush();
             $session->regenerate();
         }
+
+        return $app;
     }
 }

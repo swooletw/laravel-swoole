@@ -45,5 +45,7 @@ class RebindRouterContainer
                 $app->router->app = $app;
             }
         }
+
+        return $app;
     }
 }

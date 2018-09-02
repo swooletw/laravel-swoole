@@ -16,5 +16,7 @@ class ResetConfig
     public function handle(Container $app, Sandbox $sandbox)
     {
         $app->instance('config', clone $sandbox->getConfig());
+
+        return $app;
     }
 }

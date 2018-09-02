@@ -24,6 +24,8 @@ class ResetProviders
                 $app->call([$provider, 'boot']);
             }
         }
+
+        return $app;
     }
 
     /**

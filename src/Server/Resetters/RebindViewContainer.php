@@ -24,5 +24,7 @@ class RebindViewContainer
 
         $resetView = $closure->bindTo($view, $view);
         $resetView();
+
+        return $app;
     }
 }
