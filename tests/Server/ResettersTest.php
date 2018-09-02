@@ -8,11 +8,13 @@ use SwooleTW\Http\Server\Sandbox;
 use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Support\ServiceProvider;
 use SwooleTW\Http\Server\Resetters\BindRequest;
 use SwooleTW\Http\Server\Resetters\ResetConfig;
 use SwooleTW\Http\Server\Resetters\ResetCookie;
 use SwooleTW\Http\Server\Resetters\ResetSession;
 use SwooleTW\Http\Server\Resetters\ClearInstances;
+use SwooleTW\Http\Server\Resetters\ResetProviders;
 use SwooleTW\Http\Server\Resetters\RebindViewContainer;
 use SwooleTW\Http\Server\Resetters\RebindKernelContainer;
 use SwooleTW\Http\Server\Resetters\RebindRouterContainer;
@@ -201,5 +203,39 @@ class ResettersTest extends TestCase
 
         $resetter = new ResetSession;
         $app = $resetter->handle($container, $sandbox);
+    }
+
+    public function testResetProviders()
+    {
+        $provider = m::mock(TestProvider::class);
+        $provider->shouldReceive('register')
+            ->once();
+        $provider->shouldReceive('boot')
+            ->once();
+
+        $sandbox = m::mock(Sandbox::class);
+        $sandbox->shouldReceive('getProviders')
+            ->once()
+            ->andReturn([$provider]);
+
+        $this->mockMethod('method_exists', function () {
+            return true;
+        }, 'SwooleTW\Http\Server\Resetters');
+
+        $container = new Container;
+        $resetter = new ResetProviders;
+        $app = $resetter->handle($container, $sandbox);
+
+        $reflector = new \ReflectionProperty(TestProvider::class, 'app');
+        $reflector->setAccessible(true);
+
+        $this->assertSame($app, $reflector->getValue($provider));
+    }
+}
+
+class TestProvider extends ServiceProvider {
+    public function boot()
+    {
+        //
     }
 }
