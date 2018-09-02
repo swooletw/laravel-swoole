@@ -41,10 +41,6 @@ abstract class HttpServiceProvider extends ServiceProvider
     {
         $this->mergeConfigs();
         $this->setIsWebsocket();
-        if (is_null(static::$server)) {
-            $this->createSwooleServer();
-            $this->configureSwooleServer();
-        }
         $this->registerServer();
         $this->registerManager();
         $this->registerCommands();
@@ -148,6 +144,10 @@ abstract class HttpServiceProvider extends ServiceProvider
     protected function registerServer()
     {
         $this->app->singleton(Server::class, function () {
+            if (is_null(static::$server)) {
+                $this->createSwooleServer();
+                $this->configureSwooleServer();
+            }
             return static::$server;
         });
         $this->app->alias(Server::class, 'swoole.server');

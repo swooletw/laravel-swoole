@@ -2,8 +2,9 @@
 
 namespace SwooleTW\Http\Commands;
 
-use Illuminate\Console\Command;
+use Throwable;
 use Swoole\Process;
+use Illuminate\Console\Command;
 
 /**
  * @codeCoverageIgnore
@@ -232,9 +233,11 @@ class HttpServerCommand extends Command
             return false;
         }
 
-        Process::kill($pid, 0);
-
-        return ! swoole_errno();
+        try {
+            return Process::kill($pid, 0);
+        } catch (Throwable $e) {
+            return false;
+        }
     }
 
     /**
