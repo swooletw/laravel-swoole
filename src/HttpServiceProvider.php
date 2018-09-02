@@ -185,7 +185,7 @@ abstract class HttpServiceProvider extends ServiceProvider
     {
         $this->app->afterResolving('queue', function ($manager) {
             $manager->addConnector('swoole', function () {
-                return new SwooleTaskConnector(static::$server);
+                return new SwooleTaskConnector($this->app->make(Server::class));
             });
         });
     }

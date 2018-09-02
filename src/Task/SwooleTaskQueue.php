@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Task;
 
 use Exception;
+use Swoole\Timer;
 use Illuminate\Queue\Queue;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
 
@@ -62,7 +63,7 @@ class SwooleTaskQueue extends Queue implements QueueContract
      */
     public function later($delay, $job, $data = '', $queue = null)
     {
-        return swoole_timer_after($this->secondsUntil($delay) * 1000, function () use ($job, $data, $queue) {
+        return Timer::after($this->secondsUntil($delay) * 1000, function () use ($job, $data, $queue) {
             return $this->push($job, $data, $queue);
         });
     }
@@ -77,7 +78,7 @@ class SwooleTaskQueue extends Queue implements QueueContract
      */
     protected function createStringPayload($job, $data)
     {
-        throw new Exception("Unsupported empty data");
+        throw new Exception('Unsupported empty data');
     }
 
     /**
