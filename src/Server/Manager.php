@@ -397,6 +397,6 @@ class Manager
      */
     public function logServerError(Throwable $e)
     {
-        $this->app[ExceptionHandler::class]->report($e);
+        $this->container[ExceptionHandler::class]->report($e);
     }
 }
