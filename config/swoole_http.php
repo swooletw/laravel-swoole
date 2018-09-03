@@ -59,6 +59,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Pre-resolved instances here will be resolved when sandbox created.
+    |--------------------------------------------------------------------------
+    */
+    'pre_resolved' => [
+        'view', 'files', 'session', 'session.store', 'routes',
+        'db', 'db.factory', 'cache', 'cache.store', 'config', 'cookie',
+        'encrypter', 'hash', 'router', 'translator', 'url', 'log',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Instances here will be cleared on every request.
     |--------------------------------------------------------------------------
     */
