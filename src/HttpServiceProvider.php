@@ -116,11 +116,9 @@ abstract class HttpServiceProvider extends ServiceProvider
         $server = $this->isWebsocket ? WebsocketServer::class : HttpServer::class;
         $host = $this->app['config']->get('swoole_http.server.host');
         $port = $this->app['config']->get('swoole_http.server.port');
-        $hasCert = $this->app['config']->get('swoole_http.server.options.ssl_cert_file');
-        $hasKey = $this->app['config']->get('swoole_http.server.options.ssl_key_file');
-        $args = $hasCert && $hasKey ? [SWOOLE_PROCESS, SWOOLE_SOCK_TCP | SWOOLE_SSL] : [];
+        $socketType = $this->app['config']->get('swoole_http.server.socket_type', SWOOLE_SOCK_TCP);
 
-        static::$server = new $server($host, $port, ...$args);
+        static::$server = new $server($host, $port, SWOOLE_PROCESS, $socketType);
     }
 
     /**
