@@ -127,7 +127,7 @@ class RedisRoom implements RoomContract
     protected function checkTable(string $table)
     {
         if (! in_array($table, ['rooms', 'fds'])) {
-            throw new \InvalidArgumentException('invalid table name.');
+            throw new \InvalidArgumentException('Invalid table name.');
         }
     }
 

@@ -2,8 +2,6 @@
 
 namespace SwooleTW\Http\Websocket;
 
-use Swoole\Websocket\Frame;
-use Swoole\Websocket\Server;
 use Illuminate\Support\Facades\App;
 
 abstract class Parser
@@ -19,7 +17,7 @@ abstract class Parser
      *
      * @return boolean
      */
-    public function execute(Server $server, Frame $frame)
+    public function execute($server, $frame)
     {
         $skip = false;
 
@@ -53,5 +51,5 @@ abstract class Parser
      * @param \Swoole\Websocket\Frame $frame
      * @return array
      */
-    abstract public function decode(Frame $frame);
+    abstract public function decode($frame);
 }

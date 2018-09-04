@@ -17,6 +17,9 @@ return [
         'public_path' => base_path('public'),
         // Determine if to use swoole to respond request for static files
         'handle_static_files' => env('SWOOLE_HANDLE_STATIC', true),
+        // You must add --enable-openssl while compiling Swoole
+        // Put `SWOOLE_SOCK_TCP | SWOOLE_SSL` if you want to enable SSL
+        'socket_type' => SWOOLE_SOCK_TCP,
         'options' => [
             'pid_file' => env('SWOOLE_HTTP_PID_FILE', base_path('storage/logs/swoole_http.pid')),
             'log_file' => env('SWOOLE_HTTP_LOG_FILE', base_path('storage/logs/swoole_http.log')),
@@ -31,7 +34,7 @@ return [
             'buffer_output_size' => 10 * 1024 * 1024,
             // Max buffer size for socket connections
             'socket_buffer_size' => 128 * 1024 * 1024,
-            // Worker will restart after processing this number of request
+            // Worker will restart after processing this number of requests
             'max_request' => 3000,
             // Enable coroutine send
             'send_yield' => true,
@@ -59,6 +62,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Pre-resolved instances here will be resolved when sandbox created.
+    |--------------------------------------------------------------------------
+    */
+    'pre_resolved' => [
+        'view', 'files', 'session', 'session.store', 'routes',
+        'db', 'db.factory', 'cache', 'cache.store', 'config', 'cookie',
+        'encrypter', 'hash', 'router', 'translator', 'url', 'log',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Instances here will be cleared on every request.
     |--------------------------------------------------------------------------
     */
@@ -73,6 +87,23 @@ return [
     */
     'providers' => [
         Illuminate\Pagination\PaginationServiceProvider::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resetters for sandbox app.
+    |--------------------------------------------------------------------------
+    */
+    'resetters' => [
+        SwooleTW\Http\Server\Resetters\ResetConfig::class,
+        SwooleTW\Http\Server\Resetters\ResetSession::class,
+        SwooleTW\Http\Server\Resetters\ResetCookie::class,
+        SwooleTW\Http\Server\Resetters\ClearInstances::class,
+        SwooleTW\Http\Server\Resetters\BindRequest::class,
+        SwooleTW\Http\Server\Resetters\RebindKernelContainer::class,
+        SwooleTW\Http\Server\Resetters\RebindRouterContainer::class,
+        SwooleTW\Http\Server\Resetters\RebindViewContainer::class,
+        SwooleTW\Http\Server\Resetters\ResetProviders::class,
     ],
 
     /*

@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use InvalidArgumentException;
 use Illuminate\Pipeline\Pipeline;
 use SwooleTW\Http\Tests\TestCase;
+use Illuminate\Container\Container;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -47,6 +50,18 @@ class WebsocketTest extends TestCase
         $websocket = $this->getWebsocket($room)
             ->setSender($sender)
             ->join($name);
+    }
+
+    public function testInAlias()
+    {
+        $room = m::mock(RoomContract::class);
+        $room->shouldReceive('add')
+            ->with($sender = 1, $name = ['room'])
+            ->once();
+
+        $websocket = $this->getWebsocket($room)
+            ->setSender($sender)
+            ->in($name);
     }
 
     public function testJoinAll()
@@ -248,6 +263,10 @@ class WebsocketTest extends TestCase
 
     public function testPipeline()
     {
+        App::shouldReceive('call')
+            ->once()
+            ->andReturnSelf();
+
         $request = m::mock(Request::class);
         $middlewares = ['foo', 'bar'];
         $pipeline = m::mock(Pipeline::class);
@@ -272,10 +291,95 @@ class WebsocketTest extends TestCase
         $websocket->call('connect', $request);
     }
 
+    public function testSetContainer()
+    {
+        $websocket = $this->getWebsocket();
+        $container = new Container;
+        $websocket->setContainer($container);
+
+        $reflector = new \ReflectionProperty(Pipeline::class, 'container');
+        $reflector->setAccessible(true);
+        $wsContainer = $reflector->getValue($websocket->getPipeline());
+
+        $this->assertSame($container, $wsContainer);
+    }
+
+    public function testSetPipeline()
+    {
+        $websocket = $this->getWebsocket();
+        $pipeline = m::mock(Pipeline::class);
+
+        $websocket->setPipeline($pipeline);
+
+        $this->assertSame($pipeline, $websocket->getPipeline());
+    }
+
+    public function testEmit()
+    {
+        $sender = 1;
+        $to = [1, 2, 'a', 'b', 'c'];
+        $broadcast = true;
+        $room = m::mock(RoomContract::class);
+        $room->shouldReceive('getClients')
+            ->with(m::type('string'))
+            ->times(3)
+            ->andReturn([3, 4, 5]);
+
+        App::shouldReceive('make')
+            ->with('swoole.server')
+            ->once()
+            ->andReturnSelf();
+
+        App::shouldReceive('task')
+            ->with([
+                'action' => 'push',
+                'data' => [
+                    'sender' => $sender,
+                    'fds' => [1, 2, 3, 4, 5],
+                    'broadcast' => $broadcast,
+                    'assigned' => true,
+                    'event' => $event = 'event',
+                    'message' => $data = 'data'
+                ]
+            ])
+            ->once();
+
+        $websocket = $this->getWebsocket($room);
+        $websocket->setSender($sender)
+            ->to($to)
+            ->broadcast()
+            ->emit($event, $data);
+
+        $this->assertSame([], $websocket->getTo());
+        $this->assertFalse($websocket->getIsBroadcast());
+    }
+
+    public function testClose()
+    {
+        $fd = 1;
+
+        App::shouldReceive('make')
+            ->with('swoole.server')
+            ->once()
+            ->andReturnSelf();
+
+        App::shouldReceive('close')
+            ->with($fd)
+            ->once();
+
+        $websocket = $this->getWebsocket();
+        $websocket->close($fd);
+
+    }
+
     protected function getWebsocket(RoomContract $room = null, $pipeline = null)
     {
         $room = $room ?: m::mock(RoomContract::class);
         $pipeline = $pipeline ?: m::mock(Pipeline::class);
+
+        Config::shouldReceive('get')
+            ->once()
+            ->andReturn([]);
 
         return new Websocket($room, $pipeline);
     }

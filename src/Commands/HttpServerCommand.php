@@ -2,9 +2,13 @@
 
 namespace SwooleTW\Http\Commands;
 
-use Illuminate\Console\Command;
+use Throwable;
 use Swoole\Process;
+use Illuminate\Console\Command;
 
+/**
+ * @codeCoverageIgnore
+ */
 class HttpServerCommand extends Command
 {
     /**
@@ -92,7 +96,7 @@ class HttpServerCommand extends Command
                 'swoole_http_server process is running: ps aux|grep "swoole")');
         }
 
-        $this->laravel->make('swoole.http')->run();
+        $this->laravel->make('swoole.manager')->run();
     }
 
     /**
@@ -229,9 +233,11 @@ class HttpServerCommand extends Command
             return false;
         }
 
-        Process::kill($pid, 0);
-
-        return ! swoole_errno();
+        try {
+            return Process::kill($pid, 0);
+        } catch (Throwable $e) {
+            return false;
+        }
     }
 
     /**
@@ -322,9 +328,14 @@ class HttpServerCommand extends Command
     protected function checkEnvironment()
     {
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            throw new \RuntimeException("Swoole extension doesn't support Windows OS yet.");
+            $this->error("Swoole extension doesn't support Windows OS yet.");
+            exit;
         } elseif (! extension_loaded('swoole')) {
-            throw new \RuntimeException("Can't detect Swoole extension installed.");
+            $this->error("Can't detect Swoole extension installed.");
+            exit;
+        } elseif (! version_compare(swoole_version(), '4.0.0', 'ge')) {
+            $this->error("Your Swoole version must be higher than 4.0 to use coroutine.");
+            exit;
         }
     }
 }

@@ -4,26 +4,6 @@ sudo: false
 
 matrix:
   include:
-    - php: 7.1
-      env: FRAMEWORK_VERSION=laravel/framework:5.1.*
-    - php: 7.1
-      env: FRAMEWORK_VERSION=laravel/framework:5.2.*
-    - php: 7.1
-      env: FRAMEWORK_VERSION=laravel/framework:5.3.*
-    - php: 7.1
-      env: FRAMEWORK_VERSION=laravel/framework:5.4.*
-    - php: 7.1
-      env: FRAMEWORK_VERSION=laravel/framework:5.5.*
-    - php: 7.1
-      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.1.*
-    - php: 7.1
-      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.2.*
-    - php: 7.1
-      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.3.*
-    - php: 7.1
-      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.4.*
-    - php: 7.1
-      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.5.*
     - php: 7.2
       env: FRAMEWORK_VERSION=laravel/framework:5.1.*
     - php: 7.2
@@ -52,4 +32,9 @@ install:
   - composer require "${FRAMEWORK_VERSION}" --no-update -n
   - travis_retry composer install --no-suggest --prefer-dist -n -o
 
-script: vendor/bin/phpunit
+script:
+  - mkdir -p build/logs
+  - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+
+after_success:
+  - vendor/bin/coveralls -v

@@ -1,6 +1,6 @@
 <?php
 
-namespace SwooleTW\Http\Server;
+namespace SwooleTW\Http\Transformers;
 
 use Illuminate\Http\Response as IlluminateResponse;
 use Swoole\Http\Response as SwooleResponse;
