@@ -4,8 +4,9 @@ namespace SwooleTW\Http\Server\Resetters;
 
 use SwooleTW\Http\Server\Sandbox;
 use Illuminate\Contracts\Container\Container;
+use SwooleTW\Http\Server\Resetters\ResetterContract;
 
-class ClearInstances
+class ClearInstances implements ResetterContract
 {
     /**
      * "handle" function for resetting app.

@@ -123,7 +123,7 @@ class TableRoom implements RoomContract
     protected function checkTable(string $table)
     {
         if (! property_exists($this, $table) || ! $this->$table instanceof Table) {
-            throw new \InvalidArgumentException('invalid table name.');
+            throw new \InvalidArgumentException('Invalid table name.');
         }
     }
 }

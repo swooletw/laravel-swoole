@@ -5,8 +5,9 @@ namespace SwooleTW\Http\Server\Resetters;
 use SwooleTW\Http\Server\Sandbox;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Contracts\Container\Container;
+use SwooleTW\Http\Server\Resetters\ResetterContract;
 
-class RebindKernelContainer
+class RebindKernelContainer implements ResetterContract
 {
     /**
      * "handle" function for resetting app.

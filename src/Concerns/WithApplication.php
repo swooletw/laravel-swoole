@@ -21,17 +21,6 @@ trait WithApplication
     protected $app;
 
     /**
-     * Aliases for pre-resolving.
-     *
-     * @var array
-     */
-    protected $resolves = [
-        'view', 'files', 'session', 'session.store', 'routes',
-        'db', 'db.factory', 'cache', 'cache.store', 'config', 'cookie',
-        'encrypter', 'hash', 'router', 'translator', 'url', 'log'
-    ];
-
-    /**
      * Bootstrap framework.
      */
     protected function bootstrap()
@@ -146,7 +135,9 @@ trait WithApplication
      */
     protected function preResolveInstances()
     {
-        foreach ($this->resolves as $abstract) {
+        $resolves = $this->container['config']->get('swoole_http.pre_resolved', []);
+
+        foreach ($resolves as $abstract) {
             if ($this->getApplication()->offsetExists($abstract)) {
                 $this->getApplication()->make($abstract);
             }

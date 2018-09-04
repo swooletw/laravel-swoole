@@ -255,6 +255,7 @@ class Manager
     public function onFinish($server, $taskId, $data)
     {
         // task worker callback
+        return;
     }
 
     /**
@@ -271,24 +272,12 @@ class Manager
     protected function bindToLaravelApp()
     {
         $this->bindSandbox();
-        $this->bindSwooleServer();
         $this->bindSwooleTable();
 
         if ($this->isWebsocket) {
             $this->bindRoom();
             $this->bindWebsocket();
         }
-    }
-
-    /**
-     * Bind swoole server to Laravel app container.
-     */
-    protected function bindSwooleServer()
-    {
-        $this->app->singleton(Server::class, function ($app) {
-            return $this->container['swoole.server'];
-        });
-        $this->app->alias(Server::class, 'swoole.server');
     }
 
     /**
@@ -396,6 +385,6 @@ class Manager
      */
     public function logServerError(Throwable $e)
     {
-        $this->app[ExceptionHandler::class]->report($e);
+        $this->container[ExceptionHandler::class]->report($e);
     }
 }

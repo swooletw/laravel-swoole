@@ -36,7 +36,8 @@ class ManagerTest extends TestCase
             ]
         ],
         'swoole_http.providers' => [],
-        'swoole_http.resetters' => []
+        'swoole_http.resetters' => [],
+        'swoole_http.pre_resolved' => ['foo']
     ];
 
     protected $websocketConfig = [
@@ -147,6 +148,23 @@ class ManagerTest extends TestCase
         $this->assertTrue($app->make('swoole.table') instanceof SwooleTable);
         $this->assertTrue($app->make('swoole.room') instanceof RoomContract);
         $this->assertTrue($app->make('swoole.websocket') instanceof Websocket);
+    }
+
+    public function testLoadApplication()
+    {
+        $server = $this->getServer();
+        $manager = $this->getManager();
+
+        $container = $this->getContainer($this->getServer(), $this->getConfig());
+        $container->singleton('events', function () {
+            return $this->getEvent('swoole.workerStart');
+        });
+
+        $path = __DIR__ . '/../fixtures';
+        $manager = $this->getManager($container, $framework = 'laravel', $path);
+        $manager->onWorkerStart($server);
+
+        $app = $manager->getApplication();
     }
 
     public function testOnTaskWorkerStart()

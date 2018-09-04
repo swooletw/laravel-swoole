@@ -42,6 +42,8 @@ class SwooleTaskJob extends Job implements JobContract
      * @param  \Illuminate\Container\Container  $container
      * @param  \Swoole\Http\Server  $swoole
      * @param  string  $job
+     * @param  int  $taskId
+     * @param  int  $srcWorkerId
      * @return void
      */
     public function __construct(Container $container, $swoole, $job, $taskId, $srcWrokerId)

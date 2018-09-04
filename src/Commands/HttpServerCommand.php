@@ -328,13 +328,14 @@ class HttpServerCommand extends Command
     protected function checkEnvironment()
     {
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            throw new \RuntimeException("Swoole extension doesn't support Windows OS yet.");
+            $this->error("Swoole extension doesn't support Windows OS yet.");
+            exit;
         } elseif (! extension_loaded('swoole')) {
-            throw new \RuntimeException("Can't detect Swoole extension installed.");
-        }
-
-        if (! version_compare(swoole_version(), '4.0.0-alpha', 'ge')) {
-            throw new \RuntimeException("Your Swoole version must be higher than 4.0 to use coroutine.");
+            $this->error("Can't detect Swoole extension installed.");
+            exit;
+        } elseif (! version_compare(swoole_version(), '4.0.0', 'ge')) {
+            $this->error("Your Swoole version must be higher than 4.0 to use coroutine.");
+            exit;
         }
     }
 }

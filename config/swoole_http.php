@@ -17,6 +17,9 @@ return [
         'public_path' => base_path('public'),
         // Determine if to use swoole to respond request for static files
         'handle_static_files' => env('SWOOLE_HANDLE_STATIC', true),
+        // You must add --enable-openssl while compiling Swoole
+        // Put `SWOOLE_SOCK_TCP | SWOOLE_SSL` if you want to enable SSL
+        'socket_type' => SWOOLE_SOCK_TCP,
         'options' => [
             'pid_file' => env('SWOOLE_HTTP_PID_FILE', base_path('storage/logs/swoole_http.pid')),
             'log_file' => env('SWOOLE_HTTP_LOG_FILE', base_path('storage/logs/swoole_http.log')),
@@ -56,6 +59,17 @@ return [
     |--------------------------------------------------------------------------
     */
     'ob_output' => env('SWOOLE_OB_OUTPUT', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pre-resolved instances here will be resolved when sandbox created.
+    |--------------------------------------------------------------------------
+    */
+    'pre_resolved' => [
+        'view', 'files', 'session', 'session.store', 'routes',
+        'db', 'db.factory', 'cache', 'cache.store', 'config', 'cookie',
+        'encrypter', 'hash', 'router', 'translator', 'url', 'log',
+    ],
 
     /*
     |--------------------------------------------------------------------------
