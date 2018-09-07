@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Tests\Server;
 
+use Exception;
 use Mockery as m;
 use Swoole\Table;
 use Swoole\Http\Request;
@@ -574,6 +575,9 @@ class ManagerTest extends TestCase
         $container->singleton('swoole.server', function () use ($server) {
             return $server;
         });
+        $container->singleton(ExceptionHandler::class, function () {
+            return new DummyExceptionHandler;
+        });
 
         return $container;
     }
@@ -621,5 +625,29 @@ class ManagerTest extends TestCase
     protected function mockMethod($name, \Closure $function, $namespace = null)
     {
         parent::mockMethod($name, $function, 'SwooleTW\Http\Server');
+    }
+}
+
+class DummyExceptionHandler implements ExceptionHandler {
+    public function report(Exception $e)
+    {
+        $this->dump($e);
+    }
+
+    public function render($request, Exception $e)
+    {
+        $this->dump($e);
+    }
+
+    public function renderForConsole($output, Exception $e)
+    {
+        $this->dump($e);
+    }
+
+    protected function dump($e)
+    {
+        echo "\n Server Error: ";
+        echo $e->getMessage();
+        die;
     }
 }

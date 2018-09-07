@@ -136,6 +136,23 @@ trait InteractsWithWebsocket
     }
 
     /**
+     * Indicates if a packet is websocket push action.
+     *
+     * @param mixed
+     */
+    protected function isWebsocketPushPacket($packet)
+    {
+        if ( !is_array($packet)) {
+            return false;
+        }
+
+        return $this->isWebsocket
+            && array_key_exists('action', $packet)
+            && $packet['action'] === Websocket::PUSH_ACTION;
+    }
+
+
+    /**
      * Push websocket message to clients.
      *
      * @param \Swoole\Websocket\Server $server

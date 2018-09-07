@@ -230,12 +230,8 @@ class Manager
 
         try {
             // push websocket message
-            if (is_array($data)) {
-                if ($this->isWebsocket
-                    && array_key_exists('action', $data)
-                    && $data['action'] === Websocket::PUSH_ACTION) {
-                    $this->pushMessage($server, $data['data'] ?? []);
-                }
+            if ($this->isWebsocketPushPacket($data)) {
+                $this->pushMessage($server, $data['data'] ?? []);
             // push async task to queue
             } elseif (is_string($data)) {
                 $decoded = json_decode($data, true);
