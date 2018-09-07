@@ -14,12 +14,14 @@ use SwooleTW\Http\Concerns\WithApplication;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use SwooleTW\Http\Concerns\InteractsWithWebsocket;
+use SwooleTW\Http\Concerns\InteractsWithSwooleQueue;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
 
 class Manager
 {
     use InteractsWithWebsocket,
         InteractsWithSwooleTable,
+        InteractsWithSwooleQueue,
         WithApplication;
 
     /**
@@ -233,12 +235,8 @@ class Manager
             if ($this->isWebsocketPushPacket($data)) {
                 $this->pushMessage($server, $data['data'] ?? []);
             // push async task to queue
-            } elseif (is_string($data)) {
-                $decoded = json_decode($data, true);
-
-                if (JSON_ERROR_NONE === json_last_error() && isset($decoded['job'])) {
-                    (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
-                }
+            } elseif ($this->isSwooleQueuePacket($data)) {
+                (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
             }
         } catch (Throwable $e) {
             $this->logServerError($e);
