@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Server;
 
+use Exception;
 use Throwable;
 use Swoole\Http\Server;
 use SwooleTW\Http\Server\Sandbox;
@@ -15,6 +16,7 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use SwooleTW\Http\Concerns\InteractsWithWebsocket;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
+use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 class Manager
 {
@@ -385,6 +387,10 @@ class Manager
      */
     public function logServerError(Throwable $e)
     {
+        if (! $e instanceof Exception) {
+            $e = new FatalThrowableError($e);
+        }
+
         $this->container[ExceptionHandler::class]->report($e);
     }
 }
