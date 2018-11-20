@@ -156,23 +156,42 @@ abstract class HttpServiceProvider extends ServiceProvider
 
     /**
      * Register database driver for coroutine mysql.
+     *
+     * I use resolving extend db connector, but it won't be success when i use DB::connection('mysql-coroutine')
+     * or Model::on('mysql-coroutine'), So I change it by extend, And also make it support separate read and write
+     * when using DB::connection('mysql-coroutine::write') or DB::connection('mysql-coroutine')->useWritePdo()
      */
     protected function registerDatabaseDriver()
     {
-        $this->app->resolving('db', function ($db) {
+        $this->app->extend('db', function ($db) {
             $db->extend('mysql-coroutine', function ($config, $name) {
                 $config['name'] = $name;
+
+                if (isset($config['read'])) {
+                    $config = array_merge($config, $config['read']);
+                }
+
+                $connectionRead = function () use ($config) {
+                    return (new MySqlConnector())->connect($config);
+                };
+
+                if (isset($config['write'])) {
+                    $config = array_merge($config, $config['write']);
+                }
+
                 $connection = function () use ($config) {
                     return (new MySqlConnector())->connect($config);
                 };
 
-                return new MySqlConnection(
+                return (new MySqlConnection(
                     $connection,
                     $config['database'],
                     $config['prefix'],
                     $config
-                );
+                ))->setReadPdo($connectionRead);
             });
+
+            return $db;
         });
     }
 
