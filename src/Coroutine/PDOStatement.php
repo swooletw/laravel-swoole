@@ -95,7 +95,9 @@ class PDOStatement extends BaseStatement
         $inputParameters = [];
         if (! empty($this->statement->bindKeyMap)) {
             foreach ($this->statement->bindKeyMap as $nameKey => $numKey) {
-                $inputParameters[$numKey] = $this->bindMap[$nameKey];
+                if (isset($this->bindMap[$nameKey])) {
+                    $inputParameters[$numKey] = $this->bindMap[$nameKey];
+                }
             }
         } else {
             $inputParameters = $this->bindMap;
