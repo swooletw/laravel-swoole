@@ -45,19 +45,4 @@ class MySqlConnector extends BaseConnector
 
         throw $e;
     }
-
-    /**
-     * @param $connection
-     * @param array $config
-     * if database set timezone, the laravel/lumen frame will exec
-     * $connection->prepare('set time_zone="'.$config['timezone'].'"')->execute();
-     * this will occur to ERROR in "Coroutine\MySQL", Maybe swoole co::mysql's 'execute()' params
-     * mustn't be empty array. My lumen is v5.5.2
-     */
-    protected function configureTimezone($connection, array $config)
-    {
-        if (isset($config['timezone'])) {
-            $connection->prepare('set time_zone=?')->execute([$config['timezone']]);
-        }
-    }
 }
