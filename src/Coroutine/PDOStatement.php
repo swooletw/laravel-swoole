@@ -107,10 +107,7 @@ class PDOStatement extends BaseStatement
         $this->resultSet = ($ok = $result !== false) ? $result : [];
         $this->afterExecute();
 
-        //if not, the DB::connection('mysql-coroutine')->transaction(func,times) won't be work well,
-        //and if one sql occur error, others will be execute success, it doesn't rollback,
-        //also please confirm it, Thank you
-        if($result === false){
+        if ($result === false){
             throw new \PDOException($this->errorInfo(), $this->errorCode());
         }
 

@@ -147,7 +147,7 @@ class Manager
 
         // don't init laravel app in task workers
         if ($server->taskworker) {
-            $this->setProcessName('task process');//mark task process
+            $this->setProcessName('task process');
             return;
         }
         $this->setProcessName('worker process');
@@ -247,7 +247,6 @@ class Manager
                     (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
                 }
             }
-            $server->finish("$taskId finished");//if not ,don't call onFinish
         } catch (Throwable $e) {
             $this->logServerError($e);
         }

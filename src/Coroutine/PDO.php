@@ -126,7 +126,7 @@ class PDO extends BasePDO
     public function commit()
     {
         $this->client->commit();
-        $this->inTransaction = false;//TODO I think it's sample to rollback, please confirm it
+        $this->inTransaction = true;
     }
 
     public function inTransaction()

@@ -156,43 +156,48 @@ abstract class HttpServiceProvider extends ServiceProvider
 
     /**
      * Register database driver for coroutine mysql.
-     *
-     * I use resolving extend db connector, but it won't be success when i use DB::connection('mysql-coroutine')
-     * or Model::on('mysql-coroutine'), So I change it by extend, And also make it support separate read and write
-     * when using DB::connection('mysql-coroutine::write') or DB::connection('mysql-coroutine')->useWritePdo()
      */
     protected function registerDatabaseDriver()
     {
         $this->app->extend('db', function ($db) {
             $db->extend('mysql-coroutine', function ($config, $name) {
-                $config['name'] = $name;
+                $config = $this->getMergedDatabaseConfig($config, $name);
 
-                if (isset($config['read'])) {
-                    $config = array_merge($config, $config['read']);
-                }
-
-                $connectionRead = function () use ($config) {
-                    return (new MySqlConnector())->connect($config);
-                };
-
-                if (isset($config['write'])) {
-                    $config = array_merge($config, $config['write']);
-                }
-
-                $connection = function () use ($config) {
-                    return (new MySqlConnector())->connect($config);
-                };
-
-                return (new MySqlConnection(
-                    $connection,
+                $connection = new MySqlConnection(
+                    $this->getNewMySqlConnection($config),
                     $config['database'],
                     $config['prefix'],
                     $config
-                ))->setReadPdo($connectionRead);
+                );
+
+                if (isset($config['read'])) {
+                    $connection->setReadPdo($this->getNewMySqlConnection($config));
+                }
+
+                return $connection;
             });
 
             return $db;
         });
+    }
+
+    protected function getMergedDatabaseConfig(array $config, string $name)
+    {
+        $config['name'] = $name;
+
+        if (isset($config['read'])) {
+            $config = array_merge($config, $config['read']);
+        }
+        if (isset($config['write'])) {
+            $config = array_merge($config, $config['write']);
+        }
+
+        return $config;
+    }
+
+    protected function getNewMySqlConnection(array $config)
+    {
+        return (new MySqlConnector())->connect($config);
     }
 
     /**
