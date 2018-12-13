@@ -142,14 +142,15 @@ class Manager
     public function onWorkerStart($server)
     {
         $this->clearCache();
-        $this->setProcessName('worker process');
 
         $this->container['events']->fire('swoole.workerStart', func_get_args());
 
         // don't init laravel app in task workers
         if ($server->taskworker) {
+            $this->setProcessName('task process');//mark task process
             return;
         }
+        $this->setProcessName('worker process');
 
         // clear events instance in case of repeated listeners in worker process
         Facade::clearResolvedInstance('events');
@@ -246,6 +247,7 @@ class Manager
                     (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
                 }
             }
+            $server->finish("$taskId finished");//if not ,don't call onFinish
         } catch (Throwable $e) {
             $this->logServerError($e);
         }
@@ -257,6 +259,7 @@ class Manager
     public function onFinish($server, $taskId, $data)
     {
         // task worker callback
+        $this->container['events']->fire('swoole.finish', func_get_args());
         return;
     }
 

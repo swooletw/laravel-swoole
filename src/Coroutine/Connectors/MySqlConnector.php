@@ -20,6 +20,7 @@ class MySqlConnector extends BaseConnector
      */
     protected function createPdoConnection($dsn, $username, $password, $options)
     {
+        //TODO I'm thinking make it out by MysqlPool
         return new SwoolePDO($dsn, $username, $password, $options);
     }
 

@@ -95,7 +95,9 @@ class PDOStatement extends BaseStatement
         $inputParameters = [];
         if (! empty($this->statement->bindKeyMap)) {
             foreach ($this->statement->bindKeyMap as $nameKey => $numKey) {
-                $inputParameters[$numKey] = $this->bindMap[$nameKey];
+                if (isset($this->bindMap[$nameKey])) {
+                    $inputParameters[$numKey] = $this->bindMap[$nameKey];
+                }
             }
         } else {
             $inputParameters = $this->bindMap;
@@ -104,6 +106,13 @@ class PDOStatement extends BaseStatement
         $result = $this->statement->execute($inputParameters, $this->timeout);
         $this->resultSet = ($ok = $result !== false) ? $result : [];
         $this->afterExecute();
+
+        //if not, the DB::connection('mysql-coroutine')->transaction(func,times) won't be work well,
+        //and if one sql occur error, others will be execute success, it doesn't rollback,
+        //also please confirm it, Thank you
+        if($result === false){
+            throw new \PDOException($this->errorInfo(), $this->errorCode());
+        }
 
         return $ok;
     }

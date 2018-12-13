@@ -126,7 +126,7 @@ class PDO extends BasePDO
     public function commit()
     {
         $this->client->commit();
-        $this->inTransaction = true;
+        $this->inTransaction = false;//TODO I think it's sample to rollback, please confirm it
     }
 
     public function inTransaction()
@@ -184,7 +184,7 @@ class PDO extends BasePDO
             $i = 0;
             $bindKeyMap = [];
             $statement = preg_replace_callback(
-                '/:(\w+)\b/',
+                '/:([a-zA-Z_]\w*?)\b/',
                 function ($matches) use (&$i, &$bindKeyMap) {
                     $bindKeyMap[$matches[1]] = $i++;
 
