@@ -181,6 +181,9 @@ abstract class HttpServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Get mereged config for coroutine mysql.
+     */
     protected function getMergedDatabaseConfig(array $config, string $name)
     {
         $config['name'] = $name;
@@ -195,6 +198,9 @@ abstract class HttpServiceProvider extends ServiceProvider
         return $config;
     }
 
+    /**
+     * Get a new mysql connection.
+     */
     protected function getNewMySqlConnection(array $config)
     {
         return (new MySqlConnector())->connect($config);

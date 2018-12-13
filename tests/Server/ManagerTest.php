@@ -12,6 +12,7 @@ use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Container\Container;
 use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Table\SwooleTable;
+use Laravel\Lumen\Exceptions\Handler;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\Facades\Config;
 use SwooleTW\Http\Websocket\Websocket;
@@ -574,6 +575,7 @@ class ManagerTest extends TestCase
         $container->singleton('swoole.server', function () use ($server) {
             return $server;
         });
+        $container->singleton(ExceptionHandler::class, Handler::class);
 
         return $container;
     }
