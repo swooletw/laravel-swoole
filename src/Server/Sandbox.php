@@ -326,7 +326,7 @@ class Sandbox
     /**
      * Remove current request.
      */
-    protected function removeRequest()
+    public function removeRequest()
     {
         return Context::removeData('_request');
     }

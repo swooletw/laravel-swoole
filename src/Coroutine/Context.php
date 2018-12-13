@@ -62,7 +62,7 @@ class Context
     }
 
     /**
-     * Get data by current coroutine id.
+     * Get data keys by current coroutine id.
      */
     public static function getDataKeys()
     {
@@ -70,7 +70,7 @@ class Context
     }
 
     /**
-     * Get data by current coroutine id.
+     * Clear data by current coroutine id.
      */
     public static function clear()
     {
