@@ -15,15 +15,15 @@
     ],
     "require": {
         "php": "^7.1",
-        "illuminate/console": "~5.1",
-        "illuminate/contracts": "~5.1",
-        "illuminate/http": "~5.1",
-        "illuminate/support": "~5.1",
+        "illuminate/console": "~5.6",
+        "illuminate/contracts": "~5.6",
+        "illuminate/http": "~5.6",
+        "illuminate/support": "~5.6",
         "predis/predis": "^1.1",
         "ext-fileinfo": "*"
     },
     "require-dev": {
-        "laravel/lumen-framework": "~5.1",
+        "laravel/lumen-framework": "~5.6",
         "phpunit/phpunit": "^6.1",
         "phpunit/php-code-coverage": "^5.2",
         "satooshi/php-coveralls": "^1.0",
