@@ -134,7 +134,7 @@ class Manager
     /**
      * "onWorkerStart" listener.
      *
-     * @param \Swoole\Http\Server $server
+     * @param \Swoole\Http\Server|mixed $server
      */
     public function onWorkerStart($server)
     {
@@ -222,6 +222,11 @@ class Manager
 
     /**
      * Set onTask listener.
+     *
+     * @param mixed $server
+     * @param string $taskId
+     * @param string $srcWorkerId
+     * @param mixed $data
      */
     public function onTask($server, $taskId, $srcWorkerId, $data)
     {
@@ -332,7 +337,7 @@ class Manager
             apc_clear_cache();
         }
 
-        if (extension_loaded('opcache')) {
+        if (extension_loaded('Zend OPcache')) {
             opcache_reset();
         }
     }

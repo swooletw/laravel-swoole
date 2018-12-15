@@ -127,7 +127,7 @@ class ManagerTest extends TestCase
     public function testOnWorkerStart()
     {
         $server = $this->getServer();
-        $manager = $this->getManager();
+        $this->getManager();
 
         $container = $this->getContainer($this->getServer(), $this->getConfig(true));
         $container->singleton('events', function () {
@@ -153,7 +153,7 @@ class ManagerTest extends TestCase
     public function testLoadApplication()
     {
         $server = $this->getServer();
-        $manager = $this->getManager();
+        $this->getManager();
 
         $container = $this->getContainer($this->getServer(), $this->getConfig());
         $container->singleton('events', function () {
@@ -164,7 +164,7 @@ class ManagerTest extends TestCase
         $manager = $this->getManager($container, $framework = 'laravel', $path);
         $manager->onWorkerStart($server);
 
-        $app = $manager->getApplication();
+        $manager->getApplication();
     }
 
     public function testOnTaskWorkerStart()
@@ -184,8 +184,8 @@ class ManagerTest extends TestCase
 
     public function testOnRequest()
     {
-        $server = $this->getServer();
-        $manager = $this->getManager();
+        $this->getServer();
+        $this->getManager();
 
         $container = $this->getContainer($this->getServer(), $this->getConfig(true));
         $container->singleton('events', function () {
