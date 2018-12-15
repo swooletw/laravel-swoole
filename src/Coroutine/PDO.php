@@ -195,9 +195,9 @@ class PDO extends BasePDO
      *
      * @return bool|\PDOStatement|\SwooleTW\Http\Coroutine\PDOStatement
      */
-    public function prepare($statement, array $options = [])
+    public function prepare($statement, $options = null)
     {
-        $options = count($options) <= 0 ? [] : $options;
+        $options = is_null($options) ? [] : $options;
         if (strpos($statement, ':') !== false) {
             $i = 0;
             $bindKeyMap = [];
