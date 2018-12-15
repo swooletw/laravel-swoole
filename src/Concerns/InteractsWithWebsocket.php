@@ -10,6 +10,7 @@ use Illuminate\Support\Arr;
 use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Websocket\HandlerContract;
 use SwooleTW\Http\Websocket\Parser;
+use SwooleTW\Http\Websocket\Push;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use SwooleTW\Http\Websocket\Websocket;
 use Throwable;
@@ -100,14 +101,11 @@ trait InteractsWithWebsocket
             // enable sandbox
             $this->app->make('swoole.sandbox')->enable();
 
-            $event = Arr::get($payload, 'event');
-            $data = Arr::get($payload, 'data');
+            ['event' => $event, 'data' => $data] = $payload;
             // dispatch message to registered event callback
-            if ($this->app->make('swoole.websocket')->eventExists($event)) {
-                $this->app->make('swoole.websocket')->call($event, $data);
-            } else {
-                $this->websocketHandler->onMessage($frame);
-            }
+            $this->app->make('swoole.websocket')->eventExists($event)
+                ? $this->app->make('swoole.websocket')->call($event, $data)
+                : $this->websocketHandler->onMessage($frame);
         } catch (Throwable $e) {
             $this->logServerError($e);
         } finally {
@@ -152,29 +150,24 @@ trait InteractsWithWebsocket
      */
     public function pushMessage($server, array $data)
     {
-        [$opcode, $sender, $fds, $broadcast, $assigned, $event, $message] = $this->normalizePushData($data);
-        $message = $this->parser->encode($event, $message);
+        $push = Push::new($data);
+        $payload = $this->parser->encode($push->getEvent(), $push->getMessage());
 
         // attach sender if not broadcast
-        if (!$broadcast && $sender && !in_array($sender, $fds)) {
-            $fds[] = $sender;
+        if (!$push->isBroadcast() && $push->getSender() && !$push->hasOwnDescriptor()) {
+            $push->addDescriptor($push->getSender());
         }
 
         // check if to broadcast all clients
-        if ($broadcast && empty($fds) && !$assigned) {
-            foreach ($server->connections as $fd) {
-                if ($this->isWebsocket($fd)) {
-                    $fds[] = $fd;
-                }
-            }
+        if ($push->isBroadcastToAllDescriptors()) {
+            $push->mergeDescriptor($this->filterWebsocket($server->connections));
         }
 
         // push message to designated fds
-        foreach ($fds as $fd) {
-            if (($broadcast && $sender === (integer)$fd) || !$server->exist($fd)) {
-                continue;
+        foreach ($push->getDescriptors() as $descriptor) {
+            if ($server->exist($descriptor) || !$push->isBroadcastToDescriptor((int) $descriptor)) {
+                $server->push($descriptor, $payload, $push->getOpcode());
             }
-            $server->push($fd, $message, $opcode);
         }
     }
 
@@ -227,6 +220,22 @@ trait InteractsWithWebsocket
         $info = $this->container->make('swoole.server')->connection_info($fd);
 
         return Arr::has($info, 'websocket_status') && Arr::get($info, 'websocket_status');
+    }
+
+    /**
+     * Returns all descriptors that are websocket
+     *
+     * @param array $descriptors
+     *
+     * @return array
+     */
+    protected function filterWebsocket(array $descriptors): array
+    {
+        $callback = function ($descriptor) {
+            return $this->isWebsocket($descriptor);
+        };
+
+        return collect($descriptors)->filter($callback)->toArray();
     }
 
     /**

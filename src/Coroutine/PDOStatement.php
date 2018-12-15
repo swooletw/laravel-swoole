@@ -159,7 +159,8 @@ class PDOStatement extends BaseStatement
         }
 
         $fetchStyle = is_null($fetchStyle) ? $this->fetchStyle : $fetchStyle;
-        $ctorArgs = is_null($ctorArgs) ? [] : $ctorArgs;
+        // TODO Use it if needed
+        #$ctorArgs = is_null($ctorArgs) ? [] : $ctorArgs;
 
         $resultSet = [];
         switch ($fetchStyle) {

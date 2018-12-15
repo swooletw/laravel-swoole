@@ -202,7 +202,7 @@ class Manager
             $response->send();
         } catch (Throwable $e) {
             try {
-                $exceptionResponse = $this->app->make(ExceptionHandler::class)->render($illuminateRequest, $e);
+                $exceptionResponse = $this->app->make(ExceptionHandler::class)->render(null, $e);
                 $response = Response::make($exceptionResponse, $swooleResponse);
                 $response->send();
             } catch (Throwable $e) {
@@ -221,7 +221,7 @@ class Manager
     {
         // Reset websocket data
         if ($this->isWebsocket) {
-            $this->app['swoole.websocket']->reset(true);
+            $this->app->make('swoole.websocket')->reset(true);
         }
     }
 
@@ -247,9 +247,9 @@ class Manager
                 }
                 // push async task to queue
             } else if (is_string($data)) {
-                $decoded = json_decode($data, true);
+                $decoded = \json_decode($data, true);
 
-                if (JSON_ERROR_NONE === json_last_error() && isset($decoded['job'])) {
+                if (JSON_ERROR_NONE === \json_last_error() && isset($decoded['job'])) {
                     (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
                 }
             }
@@ -267,6 +267,7 @@ class Manager
      */
     public function onFinish($server, $taskId, $data)
     {
+        // TODO Implement this method
         // task worker callback
         return;
     }

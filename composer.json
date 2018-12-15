@@ -22,7 +22,8 @@
         "predis/predis": "^1.1",
         "ext-fileinfo": "*",
         "ext-pdo": "*",
-        "ext-pcntl": "*"
+        "ext-pcntl": "*",
+        "ext-json": "*"
     },
     "require-dev": {
         "laravel/lumen-framework": "~5.6",
@@ -32,6 +33,10 @@
         "mockery/mockery": "~1.0",
         "codedungeon/phpunit-result-printer": "^0.14.0",
         "php-mock/php-mock": "^2.0"
+    },
+    "provide": {
+        "ext-apc": "To clear apc cache.",
+        "ext-opcache": "To clear opcache cache."
     },
     "autoload": {
         "files": [

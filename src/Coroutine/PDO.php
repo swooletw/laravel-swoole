@@ -20,7 +20,7 @@ class PDO extends BasePDO
         'dbname' => 'database',
     ];
 
-    private static $defaultOptions = [
+    private static $options = [
         'host' => '',
         'port' => 3306,
         'user' => '',
@@ -119,7 +119,7 @@ class PDO extends BasePDO
             }
         }
 
-        return $options + static::$defaultOptions;
+        return $options + static::$options;
     }
 
     /**
@@ -287,7 +287,9 @@ class PDO extends BasePDO
             case \PDO::ATTR_PERSISTENT:
             case \PDO::ATTR_PREFETCH:
             case \PDO::ATTR_SERVER_INFO:
-                return $this->serverInfo['timeout'] ?? static::$defaultOptions['timeout'];
+                // TODO Maybe dead code
+//                return $this->serverInfo['timeout'] ?? self::$options['timeout'];
+                return self::$options['timeout'];
             case \PDO::ATTR_SERVER_VERSION:
                 return 'Swoole Mysql';
             case \PDO::ATTR_TIMEOUT:
