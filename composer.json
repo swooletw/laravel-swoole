@@ -20,7 +20,8 @@
         "illuminate/http": "~5.6",
         "illuminate/support": "~5.6",
         "predis/predis": "^1.1",
-        "ext-fileinfo": "*"
+        "ext-fileinfo": "*",
+        "ext-pdo": "*"
     },
     "require-dev": {
         "laravel/lumen-framework": "~5.6",

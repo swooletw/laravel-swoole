@@ -35,22 +35,34 @@ class PDO extends BasePDO
 
     public $inTransaction = false;
 
-    public function __construct(
-        string $dsn,
-        string $username = '',
-        string $password = '',
-        array $driverOptions = []
-    )
+    /**
+     * PDO constructor.
+     *
+     * @param string $dsn
+     * @param string $username
+     * @param string $password
+     * @param array $options
+     *
+     * @throws \SwooleTW\Http\Coroutine\ConnectionException
+     */
+    public function __construct(string $dsn, string $username = '', string $password = '', array $options = [])
     {
+        parent::__construct($dsn, $username, $password, $options);
         $this->setClient();
         $this->connect($this->getOptions(...func_get_args()));
     }
 
-    protected function setClient($client = null)
+    protected function setClient($client = null, $type = null)
     {
-        $this->client = $client ?: new \Swoole\Coroutine\Mysql();
+        $this->client = $client ?: new \Swoole\Coroutine\Mysql($type);
     }
 
+    /**
+     * @param array $options
+     *
+     * @return $this
+     * @throws \SwooleTW\Http\Coroutine\ConnectionException
+     */
     protected function connect(array $options = [])
     {
         $this->client->connect($options);
@@ -159,6 +171,12 @@ class PDO extends BasePDO
         return $this->client->affected_rows;
     }
 
+    /**
+     * @param string $statement
+     * @param float $timeout
+     *
+     * @return array|bool|false|\PDOStatement
+     */
     public function query(string $statement, float $timeout = -1)
     {
         $result = $this->client->query($statement, $timeout);
@@ -171,26 +189,23 @@ class PDO extends BasePDO
         return $result;
     }
 
-    private function rewriteToPosition(string $statement)
+    /**
+     * @param string $statement
+     * @param array $options
+     *
+     * @return bool|\PDOStatement|\SwooleTW\Http\Coroutine\PDOStatement
+     */
+    public function prepare($statement, array $options = [])
     {
-        //
-    }
-
-    public function prepare($statement, $driverOptions = null)
-    {
-        $driverOptions = is_null($driverOptions) ? [] : $driverOptions;
+        $options = count($options) <= 0 ? [] : $options;
         if (strpos($statement, ':') !== false) {
             $i = 0;
             $bindKeyMap = [];
-            $statement = preg_replace_callback(
-                '/:(\w+)\b/',
-                function ($matches) use (&$i, &$bindKeyMap) {
-                    $bindKeyMap[$matches[1]] = $i++;
+            $statement = preg_replace_callback('/:(\w+)\b/', function ($matches) use (&$i, &$bindKeyMap) {
+                $bindKeyMap[$matches[1]] = $i++;
 
-                    return '?';
-                },
-                $statement
-            );
+                return '?';
+            }, $statement);
         }
 
         $stmtObj = $this->client->prepare($statement);
@@ -198,7 +213,7 @@ class PDO extends BasePDO
         if ($stmtObj) {
             $stmtObj->bindKeyMap = $bindKeyMap ?? [];
 
-            return new PDOStatement($this, $stmtObj, $driverOptions);
+            return new PDOStatement($this, $stmtObj, $options);
         } else {
             $statementException = new StatementException($this->client->error, $this->client->errno);
             throw new QueryException($statement, [], $statementException);
