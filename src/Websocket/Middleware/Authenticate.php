@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Websocket\Middleware;
 
+
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Factory as Auth;
@@ -18,7 +19,8 @@ class Authenticate
     /**
      * Create a new middleware instance.
      *
-     * @param  \Illuminate\Contracts\Auth\Factory  $auth
+     * @param  \Illuminate\Contracts\Auth\Factory $auth
+     *
      * @return void
      */
     public function __construct(Auth $auth)
@@ -29,8 +31,9 @@ class Authenticate
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param  \Illuminate\Http\Request $request
+     * @param  \Closure $next
+     *
      * @return mixed
      *
      * @throws \Illuminate\Auth\AuthenticationException

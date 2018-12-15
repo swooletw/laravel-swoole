@@ -2,20 +2,22 @@
 
 namespace SwooleTW\Http\Coroutine\Connectors;
 
+
 use Exception;
+use Illuminate\Database\Connectors\MySqlConnector as BaseConnector;
 use Illuminate\Support\Str;
 use SwooleTW\Http\Coroutine\PDO as SwoolePDO;
-use Illuminate\Database\Connectors\MySqlConnector as BaseConnector;
 
 class MySqlConnector extends BaseConnector
 {
     /**
      * Create a new PDO connection instance.
      *
-     * @param  string  $dsn
-     * @param  string  $username
-     * @param  string  $password
-     * @param  array  $options
+     * @param  string $dsn
+     * @param  string $username
+     * @param  string $password
+     * @param  array $options
+     *
      * @return \PDO
      */
     protected function createPdoConnection($dsn, $username, $password, $options)
@@ -26,11 +28,12 @@ class MySqlConnector extends BaseConnector
     /**
      * Handle an exception that occurred during connect execution.
      *
-     * @param  \Exception  $e
-     * @param  string  $dsn
-     * @param  string  $username
-     * @param  string  $password
-     * @param  array   $options
+     * @param  \Exception $e
+     * @param  string $dsn
+     * @param  string $username
+     * @param  string $password
+     * @param  array $options
+     *
      * @return \PDO
      *
      * @throws \Exception

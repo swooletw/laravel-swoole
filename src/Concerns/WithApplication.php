@@ -2,14 +2,10 @@
 
 namespace SwooleTW\Http\Concerns;
 
-use Illuminate\Http\Request;
+
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
-use Illuminate\Contracts\Container\Container;
-use Laravel\Lumen\Application as LumenApplication;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 trait WithApplication
 {
@@ -28,7 +24,7 @@ trait WithApplication
         if ($this->framework === 'laravel') {
             $bootstrappers = $this->getBootstrappers();
             $this->app->bootstrapWith($bootstrappers);
-        } elseif (is_null(Facade::getFacadeApplication())) {
+        } else if (is_null(Facade::getFacadeApplication())) {
             $this->app->withFacades();
         }
 
@@ -50,7 +46,7 @@ trait WithApplication
      */
     public function getApplication()
     {
-        if (! $this->app instanceof Container) {
+        if (!$this->app instanceof Container) {
             $this->app = $this->loadApplication();
             $this->bootstrap();
         }
@@ -91,13 +87,14 @@ trait WithApplication
      * Set framework.
      *
      * @param string $framework
+     *
      * @throws \Exception
      */
     protected function setFramework($framework)
     {
         $framework = strtolower($framework);
 
-        if (! in_array($framework, ['laravel', 'lumen'])) {
+        if (!in_array($framework, ['laravel', 'lumen'])) {
             throw new \Exception(sprintf('Not support framework "%s".', $framework));
         }
 

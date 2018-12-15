@@ -2,18 +2,19 @@
 
 namespace SwooleTW\Http\Server;
 
-use Illuminate\Http\Request;
+
 use Illuminate\Container\Container;
-use SwooleTW\Http\Coroutine\Context;
-use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Support\Facades\Facade;
-use SwooleTW\Http\Concerns\ResetApplication;
-use SwooleTW\Http\Exceptions\SandboxException;
-use Laravel\Lumen\Application as LumenApplication;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Contracts\Config\Repository as ConfigContract;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Facade;
+use Laravel\Lumen\Application as LumenApplication;
+use SwooleTW\Http\Concerns\ResetApplication;
+use SwooleTW\Http\Coroutine\Context;
+use SwooleTW\Http\Exceptions\SandboxException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Sandbox
 {
@@ -34,7 +35,7 @@ class Sandbox
      */
     public function __construct($app = null, $framework = null)
     {
-        if (! $app instanceof Container) {
+        if (!$app instanceof Container) {
             return;
         }
 
@@ -102,7 +103,7 @@ class Sandbox
      */
     public function initialize()
     {
-        if (! $this->app instanceof Container) {
+        if (!$this->app instanceof Container) {
             throw new SandboxException('A base app has not been set.');
         }
 
@@ -145,11 +146,12 @@ class Sandbox
      * Run framework.
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     public function run(Request $request)
     {
-        if (! $this->getSnapshot() instanceof Container) {
+        if (!$this->getSnapshot() instanceof Container) {
             throw new SandboxException('Sandbox is not enabled.');
         }
 
@@ -166,6 +168,7 @@ class Sandbox
      * Handle request for non-ob case.
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     protected function prepareResponse(Request $request)
@@ -183,6 +186,7 @@ class Sandbox
      * Handle request for ob output.
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     protected function prepareObResponse(Request $request)
@@ -197,17 +201,17 @@ class Sandbox
         $isFile = false;
         if ($isStream = $response instanceof StreamedResponse) {
             $response->sendContent();
-        } elseif ($response instanceof SymfonyResponse) {
+        } else if ($response instanceof SymfonyResponse) {
             $content = $response->getContent();
-        } elseif (! $isFile = $response instanceof BinaryFileResponse) {
-            $content = (string) $response;
+        } else if (!$isFile = $response instanceof BinaryFileResponse) {
+            $content = (string)$response;
         }
 
         // process terminating logics
         $this->terminate($request, $response);
 
         // append ob content to response
-        if (! $isFile && ob_get_length() > 0) {
+        if (!$isFile && ob_get_length() > 0) {
             if ($isStream) {
                 $response->output = ob_get_contents();
             } else {
@@ -224,6 +228,7 @@ class Sandbox
      * Handle request through Laravel or Lumen.
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     protected function handleRequest(Request $request)
@@ -280,7 +285,7 @@ class Sandbox
      */
     public function enable()
     {
-        if (! $this->config instanceof ConfigContract) {
+        if (!$this->config instanceof ConfigContract) {
             throw new SandboxException('Please initialize after setting base app.');
         }
 

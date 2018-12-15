@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Websocket\SocketIO;
 
+
 class Packet
 {
     /**
@@ -84,7 +85,7 @@ class Packet
         3 => 'PONG',
         4 => 'MESSAGE',
         5 => 'UPGRADE',
-        6 => 'NOOP'
+        6 => 'NOOP',
     ];
 
     /**
@@ -97,7 +98,7 @@ class Packet
         3 => 'ACK',
         4 => 'ERROR',
         5 => 'BINARY_EVENT',
-        6 => 'BINARY_ACK'
+        6 => 'BINARY_ACK',
     ];
 
     /**
@@ -107,11 +108,11 @@ class Packet
     {
         $type = $packet[0] ?? null;
 
-        if (! array_key_exists($type, static::$socketTypes)) {
+        if (!array_key_exists($type, static::$socketTypes)) {
             return null;
         }
 
-        return (int) $type;
+        return (int)$type;
     }
 
     /**
@@ -135,7 +136,7 @@ class Packet
 
         return [
             'event' => $data[0],
-            'data' => $data[1] ?? null
+            'data' => $data[1] ?? null,
         ];
     }
 

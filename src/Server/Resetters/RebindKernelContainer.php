@@ -2,10 +2,10 @@
 
 namespace SwooleTW\Http\Server\Resetters;
 
-use SwooleTW\Http\Server\Sandbox;
-use Illuminate\Contracts\Http\Kernel;
+
 use Illuminate\Contracts\Container\Container;
-use SwooleTW\Http\Server\Resetters\ResetterContract;
+use Illuminate\Contracts\Http\Kernel;
+use SwooleTW\Http\Server\Sandbox;
 
 class RebindKernelContainer implements ResetterContract
 {

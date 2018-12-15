@@ -2,11 +2,11 @@
 
 namespace SwooleTW\Http\Websocket\Middleware;
 
+
 use Closure;
-use Symfony\Component\HttpFoundation\Cookie;
-use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
+use Symfony\Component\HttpFoundation\Request;
 
 class DecryptCookies
 {
@@ -35,7 +35,8 @@ class DecryptCookies
     /**
      * Create a new CookieGuard instance.
      *
-     * @param  \Illuminate\Contracts\Encryption\Encrypter  $encrypter
+     * @param  \Illuminate\Contracts\Encryption\Encrypter $encrypter
+     *
      * @return void
      */
     public function __construct(EncrypterContract $encrypter)
@@ -46,19 +47,21 @@ class DecryptCookies
     /**
      * Disable encryption for the given cookie name(s).
      *
-     * @param  string|array  $name
+     * @param  string|array $name
+     *
      * @return void
      */
     public function disableFor($name)
     {
-        $this->except = array_merge($this->except, (array) $name);
+        $this->except = array_merge($this->except, (array)$name);
     }
 
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param  \Illuminate\Http\Request $request
+     * @param  \Closure $next
+     *
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function handle($request, Closure $next)
@@ -69,7 +72,8 @@ class DecryptCookies
     /**
      * Decrypt the cookies on the request.
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
+     * @param  \Symfony\Component\HttpFoundation\Request $request
+     *
      * @return \Symfony\Component\HttpFoundation\Request
      */
     protected function decrypt(Request $request)
@@ -92,21 +96,23 @@ class DecryptCookies
     /**
      * Decrypt the given cookie and return the value.
      *
-     * @param  string  $name
-     * @param  string|array  $cookie
+     * @param  string $name
+     * @param  string|array $cookie
+     *
      * @return string|array
      */
     protected function decryptCookie($name, $cookie)
     {
         return is_array($cookie)
-                        ? $this->decryptArray($cookie)
-                        : $this->encrypter->decrypt($cookie, static::serialized($name));
+            ? $this->decryptArray($cookie)
+            : $this->encrypter->decrypt($cookie, static::serialized($name));
     }
 
     /**
      * Decrypt an array based cookie.
      *
-     * @param  array  $cookie
+     * @param  array $cookie
+     *
      * @return array
      */
     protected function decryptArray(array $cookie)
@@ -126,6 +132,7 @@ class DecryptCookies
      * Determine whether encryption has been disabled for the given cookie.
      *
      * @param  string $name
+     *
      * @return bool
      */
     public function isDisabled($name)
@@ -136,7 +143,8 @@ class DecryptCookies
     /**
      * Determine if the cookie contents should be serialized.
      *
-     * @param  string  $name
+     * @param  string $name
+     *
      * @return bool
      */
     public static function serialized($name)

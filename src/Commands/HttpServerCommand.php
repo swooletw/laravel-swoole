@@ -2,9 +2,10 @@
 
 namespace SwooleTW\Http\Commands;
 
-use Throwable;
-use Swoole\Process;
+
 use Illuminate\Console\Command;
+use Swoole\Process;
+use Throwable;
 
 /**
  * @codeCoverageIgnore
@@ -106,7 +107,7 @@ class HttpServerCommand extends Command
     {
         $pid = $this->getPid();
 
-        if (! $this->isRunning($pid)) {
+        if (!$this->isRunning($pid)) {
             $this->error("Failed! There is no swoole_http_server process running.");
             exit(1);
         }
@@ -148,7 +149,7 @@ class HttpServerCommand extends Command
     {
         $pid = $this->getPid();
 
-        if (! $this->isRunning($pid)) {
+        if (!$this->isRunning($pid)) {
             $this->error("Failed! There is no swoole_http_server process running.");
             exit(1);
         }
@@ -157,7 +158,7 @@ class HttpServerCommand extends Command
 
         $isRunning = $this->killProcess($pid, SIGUSR1);
 
-        if (! $isRunning) {
+        if (!$isRunning) {
             $this->error('> failure');
             exit(1);
         }
@@ -215,7 +216,7 @@ class HttpServerCommand extends Command
     {
         $this->action = $this->argument('action');
 
-        if (! in_array($this->action, ['start', 'stop', 'restart', 'reload', 'infos'])) {
+        if (!in_array($this->action, ['start', 'stop', 'restart', 'reload', 'infos'])) {
             $this->error("Invalid argument '{$this->action}'. Expected 'start', 'stop', 'restart', 'reload' or 'infos'.");
             exit(1);
         }
@@ -225,11 +226,12 @@ class HttpServerCommand extends Command
      * If Swoole process is running.
      *
      * @param int $pid
+     *
      * @return bool
      */
     protected function isRunning($pid)
     {
-        if (! $pid) {
+        if (!$pid) {
             return false;
         }
 
@@ -246,6 +248,7 @@ class HttpServerCommand extends Command
      * @param int $pid
      * @param int $sig
      * @param int $wait
+     *
      * @return bool
      */
     protected function killProcess($pid, $sig, $wait = 0)
@@ -256,7 +259,7 @@ class HttpServerCommand extends Command
             $start = time();
 
             do {
-                if (! $this->isRunning($pid)) {
+                if (!$this->isRunning($pid)) {
                     break;
                 }
 
@@ -282,9 +285,9 @@ class HttpServerCommand extends Command
         $path = $this->getPidPath();
 
         if (file_exists($path)) {
-            $pid = (int) file_get_contents($path);
+            $pid = (int)file_get_contents($path);
 
-            if (! $pid) {
+            if (!$pid) {
                 $this->removePidFile();
             } else {
                 $this->pid = $pid;
@@ -330,10 +333,10 @@ class HttpServerCommand extends Command
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             $this->error("Swoole extension doesn't support Windows OS yet.");
             exit;
-        } elseif (! extension_loaded('swoole')) {
+        } else if (!extension_loaded('swoole')) {
             $this->error("Can't detect Swoole extension installed.");
             exit;
-        } elseif (! version_compare(swoole_version(), '4.0.0', 'ge')) {
+        } else if (!version_compare(swoole_version(), '4.0.0', 'ge')) {
             $this->error("Your Swoole version must be higher than 4.0 to use coroutine.");
             exit;
         }

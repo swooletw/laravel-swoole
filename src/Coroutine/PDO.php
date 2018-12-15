@@ -9,17 +9,15 @@
 
 namespace SwooleTW\Http\Coroutine;
 
+
 use Exception;
-use PDO as BasePDO;
 use Illuminate\Database\QueryException;
-use SwooleTW\Http\Coroutine\PDOStatement;
-use SwooleTW\Http\Coroutine\StatementException;
-use SwooleTW\Http\Coroutine\ConnectionException;
+use PDO as BasePDO;
 
 class PDO extends BasePDO
 {
     public static $keyMap = [
-        'dbname' => 'database'
+        'dbname' => 'database',
     ];
 
     private static $defaultOptions = [
@@ -29,7 +27,7 @@ class PDO extends BasePDO
         'password' => '',
         'database' => '',
         'charset' => 'utf8mb4',
-        'strict_type' => true
+        'strict_type' => true,
     ];
 
     /** @var \Swoole\Coroutine\Mysql */
@@ -42,7 +40,8 @@ class PDO extends BasePDO
         string $username = '',
         string $password = '',
         array $driverOptions = []
-    ) {
+    )
+    {
         $this->setClient();
         $this->connect($this->getOptions(...func_get_args()));
     }
@@ -56,7 +55,7 @@ class PDO extends BasePDO
     {
         $this->client->connect($options);
 
-        if (! $this->client->connected) {
+        if (!$this->client->connected) {
             $message = $this->client->connect_error ?: $this->client->error;
             $errorCode = $this->client->connect_errno ?: $this->client->errno;
 
@@ -101,7 +100,7 @@ class PDO extends BasePDO
 
     public static function checkDriver(string $driver)
     {
-        if (! in_array($driver, static::getAvailableDrivers())) {
+        if (!in_array($driver, static::getAvailableDrivers())) {
             throw new \InvalidArgumentException("{$driver} driver is not supported yet.");
         }
     }
@@ -198,6 +197,7 @@ class PDO extends BasePDO
 
         if ($stmtObj) {
             $stmtObj->bindKeyMap = $bindKeyMap ?? [];
+
             return new PDOStatement($this, $stmtObj, $driverOptions);
         } else {
             $statementException = new StatementException($this->client->error, $this->client->errno);

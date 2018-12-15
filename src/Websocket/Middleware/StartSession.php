@@ -2,10 +2,10 @@
 
 namespace SwooleTW\Http\Websocket\Middleware;
 
+
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Session\SessionManager;
-use Illuminate\Contracts\Session\Session;
 
 class StartSession
 {
@@ -19,7 +19,8 @@ class StartSession
     /**
      * Create a new session middleware.
      *
-     * @param  \Illuminate\Session\SessionManager  $manager
+     * @param  \Illuminate\Session\SessionManager $manager
+     *
      * @return void
      */
     public function __construct(SessionManager $manager)
@@ -30,8 +31,9 @@ class StartSession
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param  \Illuminate\Http\Request $request
+     * @param  \Closure $next
+     *
      * @return mixed
      */
     public function handle($request, Closure $next)
@@ -48,7 +50,8 @@ class StartSession
     /**
      * Start the session for the given request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Contracts\Session\Session
      */
     protected function startSession(Request $request)
@@ -63,7 +66,8 @@ class StartSession
     /**
      * Get the session implementation from the manager.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Contracts\Session\Session
      */
     public function getSession(Request $request)
@@ -80,6 +84,6 @@ class StartSession
      */
     protected function sessionConfigured()
     {
-        return ! is_null($this->manager->getSessionConfig()['driver'] ?? null);
+        return !is_null($this->manager->getSessionConfig()['driver'] ?? null);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Websocket\SocketIO\Strategies;
 
+
 use SwooleTW\Http\Websocket\SocketIO\Packet;
 
 class HeartbeatStrategy

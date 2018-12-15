@@ -2,16 +2,14 @@
 
 namespace SwooleTW\Http\Concerns;
 
-use Throwable;
-use Swoole\Websocket\Frame;
-use Swoole\Websocket\Server;
+
 use Illuminate\Pipeline\Pipeline;
-use SwooleTW\Http\Websocket\Parser;
-use Illuminate\Support\Facades\Facade;
-use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Websocket\HandlerContract;
+use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use SwooleTW\Http\Websocket\Websocket;
+use Throwable;
 
 trait InteractsWithWebsocket
 {
@@ -54,7 +52,7 @@ trait InteractsWithWebsocket
             // enable sandbox
             $this->app['swoole.sandbox']->enable();
             // check if socket.io connection established
-            if (! $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
+            if (!$this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
                 return;
             }
             // trigger 'connect' websocket event
@@ -116,7 +114,7 @@ trait InteractsWithWebsocket
      */
     public function onClose($server, $fd, $reactorId)
     {
-        if (! $this->isWebsocket($fd)) {
+        if (!$this->isWebsocket($fd)) {
             return;
         }
 
@@ -147,12 +145,12 @@ trait InteractsWithWebsocket
         $message = $this->parser->encode($event, $message);
 
         // attach sender if not broadcast
-        if (! $broadcast && $sender && ! in_array($sender, $fds)) {
+        if (!$broadcast && $sender && !in_array($sender, $fds)) {
             $fds[] = $sender;
         }
 
         // check if to broadcast all clients
-        if ($broadcast && empty($fds) && ! $assigned) {
+        if ($broadcast && empty($fds) && !$assigned) {
             foreach ($server->connections as $fd) {
                 if ($this->isWebsocket($fd)) {
                     $fds[] = $fd;
@@ -162,7 +160,7 @@ trait InteractsWithWebsocket
 
         // push message to designated fds
         foreach ($fds as $fd) {
-            if (($broadcast && $sender === (integer) $fd) || ! $server->exist($fd)) {
+            if (($broadcast && $sender === (integer)$fd) || !$server->exist($fd)) {
                 continue;
             }
             $server->push($fd, $message, $opcode);
@@ -221,7 +219,7 @@ trait InteractsWithWebsocket
     {
         $handlerClass = $this->container['config']->get('swoole_websocket.handler');
 
-        if (! $handlerClass) {
+        if (!$handlerClass) {
             throw new Exception('Websocket handler is not set in swoole_websocket config');
         }
 
@@ -290,7 +288,7 @@ trait InteractsWithWebsocket
     {
         $routePath = $this->container['config']->get('swoole_websocket.route_file');
 
-        if (! file_exists($routePath)) {
+        if (!file_exists($routePath)) {
             $routePath = __DIR__ . '/../../routes/websocket.php';
         }
 

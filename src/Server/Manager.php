@@ -2,19 +2,19 @@
 
 namespace SwooleTW\Http\Server;
 
-use Throwable;
-use Swoole\Http\Server;
-use SwooleTW\Http\Server\Sandbox;
-use SwooleTW\Http\Task\SwooleTaskJob;
-use Illuminate\Support\Facades\Facade;
-use SwooleTW\Http\Websocket\Websocket;
-use SwooleTW\Http\Transformers\Request;
-use SwooleTW\Http\Transformers\Response;
-use SwooleTW\Http\Concerns\WithApplication;
+
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
-use SwooleTW\Http\Concerns\InteractsWithWebsocket;
+use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Str;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
+use SwooleTW\Http\Concerns\InteractsWithWebsocket;
+use SwooleTW\Http\Concerns\WithApplication;
+use SwooleTW\Http\Task\SwooleTaskJob;
+use SwooleTW\Http\Transformers\Request;
+use SwooleTW\Http\Transformers\Response;
+use SwooleTW\Http\Websocket\Websocket;
+use Throwable;
 
 class Manager
 {
@@ -53,10 +53,11 @@ class Manager
     /**
      * HTTP server manager constructor.
      *
-     * @param \Swoole\Http\Server $server
      * @param \Illuminate\Contracts\Container\Container $container
      * @param string $framework
      * @param string $basePath
+     *
+     * @throws \Exception
      */
     public function __construct(Container $container, $framework, $basePath = null)
     {
@@ -71,7 +72,7 @@ class Manager
      */
     public function run()
     {
-        $this->container['swoole.server']->start();
+        $this->container->make('swoole.server')->start();
     }
 
     /**
@@ -79,7 +80,7 @@ class Manager
      */
     public function stop()
     {
-        $this->container['swoole.server']->shutdown();
+        $this->container->make('swoole.server')->shutdown();
     }
 
     /**
@@ -98,17 +99,12 @@ class Manager
     protected function setSwooleServerListeners()
     {
         foreach ($this->events as $event) {
-            $listener = 'on' . ucfirst($event);
+            $listener = Str::camel("on_$event");
+            $callback = method_exists($this, $listener) ? [$this, $listener] : function () use ($event) {
+                $this->container->make('events')->fire("swoole.$event", func_get_args());
+            };
 
-            if (method_exists($this, $listener)) {
-                $this->container['swoole.server']->on($event, [$this, $listener]);
-            } else {
-                $this->container['swoole.server']->on($event, function () use ($event) {
-                    $event = sprintf('swoole.%s', $event);
-
-                    $this->container['events']->fire($event, func_get_args());
-                });
-            }
+            $this->container->make('swoole.server')->on($event, $callback);
         }
     }
 
@@ -120,7 +116,7 @@ class Manager
         $this->setProcessName('master process');
         $this->createPidFile();
 
-        $this->container['events']->fire('swoole.start', func_get_args());
+        $this->container->make('events')->fire('swoole.start', func_get_args());
     }
 
     /**
@@ -131,18 +127,20 @@ class Manager
     public function onManagerStart()
     {
         $this->setProcessName('manager process');
-        $this->container['events']->fire('swoole.managerStart', func_get_args());
+        $this->container->make('events')->fire('swoole.managerStart', func_get_args());
     }
 
     /**
      * "onWorkerStart" listener.
+     *
+     * @param \Swoole\Http\Server $server
      */
     public function onWorkerStart($server)
     {
         $this->clearCache();
         $this->setProcessName('worker process');
 
-        $this->container['events']->fire('swoole.workerStart', func_get_args());
+        $this->container->make('events')->fire('swoole.workerStart', func_get_args());
 
         // don't init laravel app in task workers
         if ($server->taskworker) {
@@ -173,11 +171,11 @@ class Manager
      */
     public function onRequest($swooleRequest, $swooleResponse)
     {
-        $this->app['events']->fire('swoole.request');
+        $this->app->make('events')->fire('swoole.request');
 
         $this->resetOnRequest();
-        $handleStatic = $this->container['config']->get('swoole_http.handle_static_files', true);
-        $publicPath = $this->container['config']->get('swoole_http.server.public_path', base_path('public'));
+        $handleStatic = $this->container->make('config')->get('swoole_http.handle_static_files', true);
+        $publicPath = $this->container->make('config')->get('swoole_http.server.public_path', base_path('public'));
 
         try {
             // handle static file request first
@@ -188,12 +186,12 @@ class Manager
             $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
 
             // set current request to sandbox
-            $this->app['swoole.sandbox']->setRequest($illuminateRequest);
+            $this->app->make('swoole.sandbox')->setRequest($illuminateRequest);
             // enable sandbox
-            $this->app['swoole.sandbox']->enable();
+            $this->app->make('swoole.sandbox')->enable();
 
             // handle request via laravel/lumen's dispatcher
-            $illuminateResponse = $this->app['swoole.sandbox']->run($illuminateRequest);
+            $illuminateResponse = $this->app->make('swoole.sandbox')->run($illuminateRequest);
             $response = Response::make($illuminateResponse, $swooleResponse);
             $response->send();
         } catch (Throwable $e) {
@@ -206,7 +204,7 @@ class Manager
             }
         } finally {
             // disable and recycle sandbox resource
-            $this->app['swoole.sandbox']->disable();
+            $this->app->make('swoole.sandbox')->disable();
         }
     }
 
@@ -226,7 +224,7 @@ class Manager
      */
     public function onTask($server, $taskId, $srcWorkerId, $data)
     {
-        $this->container['events']->fire('swoole.task', func_get_args());
+        $this->container->make('events')->fire('swoole.task', func_get_args());
 
         try {
             // push websocket message
@@ -236,8 +234,8 @@ class Manager
                     && $data['action'] === Websocket::PUSH_ACTION) {
                     $this->pushMessage($server, $data['data'] ?? []);
                 }
-            // push async task to queue
-            } elseif (is_string($data)) {
+                // push async task to queue
+            } else if (is_string($data)) {
                 $decoded = json_decode($data, true);
 
                 if (JSON_ERROR_NONE === json_last_error() && isset($decoded['job'])) {
@@ -298,7 +296,7 @@ class Manager
      */
     protected function getPidFile()
     {
-        return $this->container['config']->get('swoole_http.server.options.pid_file');
+        return $this->container->make('config')->get('swoole_http.server.options.pid_file');
     }
 
     /**
@@ -342,6 +340,7 @@ class Manager
      * Set process name.
      *
      * @codeCoverageIgnore
+     *
      * @param $process
      */
     protected function setProcessName($process)
@@ -351,7 +350,7 @@ class Manager
             return;
         }
         $serverName = 'swoole_http_server';
-        $appName = $this->container['config']->get('app.name', 'Laravel');
+        $appName = $this->container->make('config')->get('app.name', 'Laravel');
 
         $name = sprintf('%s: %s for %s', $serverName, $process, $appName);
 

@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Concerns;
 
+
 use Swoole\Table;
 use SwooleTW\Http\Table\SwooleTable;
 

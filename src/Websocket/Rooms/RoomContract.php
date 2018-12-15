@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Websocket\Rooms;
 
+
 interface RoomContract
 {
     /**

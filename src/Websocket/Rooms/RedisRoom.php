@@ -2,8 +2,8 @@
 
 namespace SwooleTW\Http\Websocket\Rooms;
 
+
 use Predis\Client as RedisClient;
-use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
 class RedisRoom implements RoomContract
 {
@@ -126,7 +126,7 @@ class RedisRoom implements RoomContract
 
     protected function checkTable(string $table)
     {
-        if (! in_array($table, ['rooms', 'fds'])) {
+        if (!in_array($table, ['rooms', 'fds'])) {
             throw new \InvalidArgumentException('Invalid table name.');
         }
     }

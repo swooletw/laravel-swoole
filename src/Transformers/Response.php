@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Transformers;
 
+
 use Illuminate\Http\Response as IlluminateResponse;
 use Swoole\Http\Response as SwooleResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -25,7 +26,8 @@ class Response
      *
      * @param $illuminateResponse
      * @param \Swoole\Http\Response $swooleResponse
-     * @return \SwooleTW\Http\Server\Response
+     *
+     * @return \SwooleTW\Http\Transformers\Response
      */
     public static function make($illuminateResponse, SwooleResponse $swooleResponse)
     {
@@ -65,7 +67,7 @@ class Response
         $illuminateResponse = $this->getIlluminateResponse();
 
         /* RFC2616 - 14.18 says all Responses need to have a Date */
-        if (! $illuminateResponse->headers->has('Date')) {
+        if (!$illuminateResponse->headers->has('Date')) {
             $illuminateResponse->setDate(\DateTime::createFromFormat('U', time()));
         }
 
@@ -103,11 +105,9 @@ class Response
     {
         $illuminateResponse = $this->getIlluminateResponse();
 
-        if ($illuminateResponse instanceof StreamedResponse &&
-            property_exists($illuminateResponse, 'output')
-        ) {
+        if ($illuminateResponse instanceof StreamedResponse && property_exists($illuminateResponse, 'output')) {
             $this->swooleResponse->end($illuminateResponse->output);
-        } elseif ($illuminateResponse instanceof BinaryFileResponse) {
+        } else if ($illuminateResponse instanceof BinaryFileResponse) {
             $this->swooleResponse->sendfile($illuminateResponse->getFile()->getPathname());
         } else {
             $this->swooleResponse->end($illuminateResponse->getContent());
@@ -116,7 +116,8 @@ class Response
 
     /**
      * @param \Swoole\Http\Response $swooleResponse
-     * @return \SwooleTW\Http\Server\Response
+     *
+     * @return \SwooleTW\Http\Transformers\Response
      */
     protected function setSwooleResponse(SwooleResponse $swooleResponse)
     {
@@ -135,12 +136,13 @@ class Response
 
     /**
      * @param mixed illuminateResponse
-     * @return \SwooleTW\Http\Server\Response
+     *
+     * @return \SwooleTW\Http\Transformers\Response
      */
     protected function setIlluminateResponse($illuminateResponse)
     {
-        if (! $illuminateResponse instanceof SymfonyResponse) {
-            $content = (string) $illuminateResponse;
+        if (!$illuminateResponse instanceof SymfonyResponse) {
+            $content = (string)$illuminateResponse;
             $illuminateResponse = new IlluminateResponse($content);
         }
 

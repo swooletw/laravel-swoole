@@ -2,8 +2,9 @@
 
 namespace SwooleTW\Http\Websocket;
 
-use InvalidArgumentException;
+
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use InvalidArgumentException;
 
 trait Authenticatable
 {
@@ -46,6 +47,7 @@ trait Authenticatable
 
         $userIds = array_map(function ($user) {
             $this->checkUser($user);
+
             return $user->getAuthIdentifier();
         }, $users);
 
@@ -72,7 +74,7 @@ trait Authenticatable
      */
     public function getUserId()
     {
-        if (! is_null($this->userId)) {
+        if (!is_null($this->userId)) {
             return $this->userId;
         }
 
@@ -92,7 +94,7 @@ trait Authenticatable
      */
     public function isUserIdOnline($userId)
     {
-        return ! empty($this->room->getClients(static::USER_PREFIX . $userId));
+        return !empty($this->room->getClients(static::USER_PREFIX . $userId));
     }
 
     /**
@@ -100,7 +102,7 @@ trait Authenticatable
      */
     protected function checkUser($user)
     {
-        if (! $user instanceOf AuthenticatableContract) {
+        if (!$user instanceOf AuthenticatableContract) {
             throw new InvalidArgumentException('user object must implement ' . AuthenticatableContract::class);
         }
     }

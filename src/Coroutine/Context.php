@@ -2,8 +2,9 @@
 
 namespace SwooleTW\Http\Coroutine;
 
-use Swoole\Coroutine;
+
 use Illuminate\Contracts\Container\Container;
+use Swoole\Coroutine;
 
 class Context
 {

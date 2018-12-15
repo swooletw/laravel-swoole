@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Table\Facades;
 
+
 use Illuminate\Support\Facades\Facade;
 
 class SwooleTable extends Facade
