@@ -6,10 +6,16 @@ namespace SwooleTW\Http\Concerns;
 use Swoole\Table;
 use SwooleTW\Http\Table\SwooleTable;
 
+/**
+ * Trait InteractsWithSwooleTable
+ *
+ * @property \Illuminate\Contracts\Container\Container $container
+ * @property \Illuminate\Contracts\Console\Application|\Illuminate\Contracts\Foundation\Application $app
+ */
 trait InteractsWithSwooleTable
 {
     /**
-     * @var \SwooleTW\Http\Server\Table
+     * @var \SwooleTW\Http\Table\SwooleTable
      */
     protected $table;
 
@@ -27,7 +33,7 @@ trait InteractsWithSwooleTable
      */
     protected function registerTables()
     {
-        $tables = $this->container['config']->get('swoole_http.tables', []);
+        $tables = $this->container->make('config')->get('swoole_http.tables', []);
 
         foreach ($tables as $key => $value) {
             $table = new Table($value['size']);
@@ -53,6 +59,7 @@ trait InteractsWithSwooleTable
         $this->app->singleton(SwooleTable::class, function () {
             return $this->table;
         });
+
         $this->app->alias(SwooleTable::class, 'swoole.table');
     }
 }

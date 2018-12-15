@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
 use SwooleTW\Http\Concerns\InteractsWithWebsocket;
 use SwooleTW\Http\Concerns\WithApplication;
+use SwooleTW\Http\Helpers\OS;
 use SwooleTW\Http\Task\SwooleTaskJob;
 use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Transformers\Response;
@@ -196,7 +197,7 @@ class Manager
             $response->send();
         } catch (Throwable $e) {
             try {
-                $exceptionResponse = $this->app[ExceptionHandler::class]->render($illuminateRequest, $e);
+                $exceptionResponse = $this->app->make(ExceptionHandler::class)->render($illuminateRequest, $e);
                 $response = Response::make($exceptionResponse, $swooleResponse);
                 $response->send();
             } catch (Throwable $e) {
@@ -327,11 +328,11 @@ class Manager
      */
     protected function clearCache()
     {
-        if (function_exists('apc_clear_cache')) {
+        if (extension_loaded('apc')) {
             apc_clear_cache();
         }
 
-        if (function_exists('opcache_reset')) {
+        if (extension_loaded('opcache')) {
             opcache_reset();
         }
     }
@@ -346,7 +347,7 @@ class Manager
     protected function setProcessName($process)
     {
         // MacOS doesn't support modifying process name.
-        if ($this->isMacOS() || $this->isInTesting()) {
+        if (OS::is(OS::MAC_OS) || $this->isInTesting()) {
             return;
         }
         $serverName = 'swoole_http_server';
@@ -355,16 +356,6 @@ class Manager
         $name = sprintf('%s: %s for %s', $serverName, $process, $appName);
 
         swoole_set_process_name($name);
-    }
-
-    /**
-     * Indicates if the process is running in macOS.
-     *
-     * @return bool
-     */
-    protected function isMacOS()
-    {
-        return PHP_OS === 'Darwin';
     }
 
     /**
@@ -380,10 +371,10 @@ class Manager
     /**
      * Log server error.
      *
-     * @param Throwable
+     * @param \Throwable|\Exception $e
      */
     public function logServerError(Throwable $e)
     {
-        $this->container[ExceptionHandler::class]->report($e);
+        $this->container->make(ExceptionHandler::class)->report($e);
     }
 }
