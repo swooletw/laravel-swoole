@@ -17,6 +17,9 @@ use SwooleTW\Http\Transformers\Response;
 use SwooleTW\Http\Websocket\Websocket;
 use Throwable;
 
+/**
+ * Class Manager
+ */
 class Manager
 {
     use InteractsWithWebsocket,
@@ -135,6 +138,8 @@ class Manager
      * "onWorkerStart" listener.
      *
      * @param \Swoole\Http\Server|mixed $server
+     *
+     * @throws \Exception
      */
     public function onWorkerStart($server)
     {
@@ -255,6 +260,10 @@ class Manager
 
     /**
      * Set onFinish listener.
+     *
+     * @param mixed $server
+     * @param string $taskId
+     * @param mixed $data
      */
     public function onFinish($server, $taskId, $data)
     {
@@ -292,6 +301,7 @@ class Manager
         $this->app->singleton(Sandbox::class, function ($app) {
             return new Sandbox($app, $this->framework);
         });
+
         $this->app->alias(Sandbox::class, 'swoole.sandbox');
     }
 

@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Concerns;
 
 
+use Illuminate\Contracts\Console\Application as ConsoleApp;
 use Swoole\Table;
 use SwooleTW\Http\Table\SwooleTable;
 
@@ -10,7 +11,7 @@ use SwooleTW\Http\Table\SwooleTable;
  * Trait InteractsWithSwooleTable
  *
  * @property \Illuminate\Contracts\Container\Container $container
- * @property \Illuminate\Contracts\Console\Application|\Illuminate\Contracts\Foundation\Application $app
+ * @property \Illuminate\Contracts\Container\Container $app
  */
 trait InteractsWithSwooleTable
 {
@@ -56,10 +57,12 @@ trait InteractsWithSwooleTable
      */
     protected function bindSwooleTable()
     {
-        $this->app->singleton(SwooleTable::class, function () {
-            return $this->table;
-        });
+        if (!$this->app instanceof ConsoleApp) {
+            $this->app->singleton(SwooleTable::class, function () {
+                return $this->table;
+            });
 
-        $this->app->alias(SwooleTable::class, 'swoole.table');
+            $this->app->alias(SwooleTable::class, 'swoole.table');
+        }
     }
 }

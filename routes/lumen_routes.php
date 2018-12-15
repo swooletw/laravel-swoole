@@ -11,10 +11,12 @@
 |
 */
 
+/** @scrutinizer ignore-call */
 $app->get('socket.io', [
-    'as' => 'io.get', 'uses' => 'SocketIOController@upgrade'
+    'as' => 'io.get', 'uses' => 'SwooleTW\Http\Controllers\SocketIOController@upgrade'
 ]);
 
+/** @scrutinizer ignore-call */
 $app->post('socket.io', [
-    'as' => 'io.post', 'uses' => 'SocketIOController@reject'
+    'as' => 'io.post', 'uses' => 'SwooleTW\Http\Controllers\SocketIOController@reject'
 ]);

@@ -16,6 +16,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Class Sandbox
+ */
 class Sandbox
 {
     use ResetApplication;
@@ -32,6 +35,11 @@ class Sandbox
 
     /**
      * Constructor
+     *
+     * @param null $app
+     * @param null $framework
+     *
+     * @throws \SwooleTW\Http\Exceptions\SandboxException
      */
     public function __construct($app = null, $framework = null)
     {
@@ -46,6 +54,10 @@ class Sandbox
 
     /**
      * Set framework type.
+     *
+     * @param string $framework
+     *
+     * @return \SwooleTW\Http\Server\Sandbox
      */
     public function setFramework(string $framework)
     {
@@ -66,6 +78,8 @@ class Sandbox
      * Set a base application.
      *
      * @param \Illuminate\Container\Container
+     *
+     * @return \SwooleTW\Http\Server\Sandbox
      */
     public function setBaseApp(Container $app)
     {
@@ -78,6 +92,8 @@ class Sandbox
      * Set current request.
      *
      * @param \Illuminate\Http\Request
+     *
+     * @return \SwooleTW\Http\Server\Sandbox
      */
     public function setRequest(Request $request)
     {
@@ -90,6 +106,8 @@ class Sandbox
      * Set current snapshot.
      *
      * @param \Illuminate\Container\Container
+     *
+     * @return \SwooleTW\Http\Server\Sandbox
      */
     public function setSnapshot(Container $snapshot)
     {
@@ -100,6 +118,8 @@ class Sandbox
 
     /**
      * Initialize based on base app.
+     *
+     * @throws \SwooleTW\Http\Exceptions\SandboxException
      */
     public function initialize()
     {
@@ -132,7 +152,7 @@ class Sandbox
     public function getApplication()
     {
         $snapshot = $this->getSnapshot();
-        if ($snapshot instanceOf Container) {
+        if ($snapshot instanceof Container) {
             return $snapshot;
         }
 
@@ -148,6 +168,8 @@ class Sandbox
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\Response
+     * @throws \SwooleTW\Http\Exceptions\SandboxException
+     * @throws \ReflectionException
      */
     public function run(Request $request)
     {
@@ -170,6 +192,7 @@ class Sandbox
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\Response
+     * @throws \ReflectionException
      */
     protected function prepareResponse(Request $request)
     {
@@ -188,6 +211,7 @@ class Sandbox
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\Response
+     * @throws \ReflectionException
      */
     protected function prepareObResponse(Request $request)
     {
@@ -213,6 +237,7 @@ class Sandbox
         // append ob content to response
         if (!$isFile && ob_get_length() > 0) {
             if ($isStream) {
+                // TODO add output to StreamedResponse to avoid 'Field declared dynamically'
                 $response->output = ob_get_contents();
             } else {
                 $response->setContent(ob_get_contents() . $content);
@@ -259,6 +284,8 @@ class Sandbox
     /**
      * @param \Illuminate\Http\Request $request
      * @param \Illuminate\Http\Response $response
+     *
+     * @throws \ReflectionException
      */
     public function terminate(Request $request, $response)
     {
@@ -282,6 +309,8 @@ class Sandbox
 
     /**
      * Set laravel snapshot to container and facade.
+     *
+     * @throws \SwooleTW\Http\Exceptions\SandboxException
      */
     public function enable()
     {
@@ -304,6 +333,8 @@ class Sandbox
 
     /**
      * Replace app's self bindings.
+     *
+     * @param \Illuminate\Container\Container $app
      */
     public function setInstance(Container $app)
     {
@@ -333,7 +364,7 @@ class Sandbox
      */
     protected function removeRequest()
     {
-        return Context::removeData('_request');
+        Context::removeData('_request');
     }
 
     /**

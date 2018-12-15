@@ -52,6 +52,10 @@ class PDO extends BasePDO
         $this->connect($this->getOptions(...func_get_args()));
     }
 
+    /**
+     * @param null $client
+     * @param null $type
+     */
     protected function setClient($client = null, $type = null)
     {
         $this->client = $client ?: new \Swoole\Coroutine\Mysql($type);
@@ -77,6 +81,14 @@ class PDO extends BasePDO
         return $this;
     }
 
+    /**
+     * @param $dsn
+     * @param $username
+     * @param $password
+     * @param $driverOptions
+     *
+     * @return array
+     */
     protected function getOptions($dsn, $username, $password, $driverOptions)
     {
         $dsn = explode(':', $dsn);
@@ -110,6 +122,9 @@ class PDO extends BasePDO
         return $options + static::$defaultOptions;
     }
 
+    /**
+     * @param string $driver
+     */
     public static function checkDriver(string $driver)
     {
         if (!in_array($driver, static::getAvailableDrivers())) {
@@ -117,44 +132,70 @@ class PDO extends BasePDO
         }
     }
 
+    /**
+     * @return array
+     */
     public static function getAvailableDrivers()
     {
         return ['Mysql'];
     }
 
+    /**
+     * @return bool|void
+     */
     public function beginTransaction()
     {
         $this->client->begin();
         $this->inTransaction = true;
     }
 
+    /**
+     * @return bool|void
+     */
     public function rollBack()
     {
         $this->client->rollback();
         $this->inTransaction = false;
     }
 
+    /**
+     * @return bool|void
+     */
     public function commit()
     {
         $this->client->commit();
         $this->inTransaction = true;
     }
 
+    /**
+     * @return bool
+     */
     public function inTransaction()
     {
         return $this->inTransaction;
     }
 
+    /**
+     * @param null $seqname
+     *
+     * @return int|string
+     */
     public function lastInsertId($seqname = null)
     {
         return $this->client->insert_id;
     }
 
+    /**
+     * @return mixed|void
+     */
     public function errorCode()
     {
         $this->client->errno;
     }
 
+    /**
+     * @return array
+     */
     public function errorInfo()
     {
         return [
@@ -164,6 +205,11 @@ class PDO extends BasePDO
         ];
     }
 
+    /**
+     * @param string $statement
+     *
+     * @return int
+     */
     public function exec($statement): int
     {
         $this->query($statement);
@@ -220,6 +266,11 @@ class PDO extends BasePDO
         }
     }
 
+    /**
+     * @param int $attribute
+     *
+     * @return bool|mixed|string
+     */
     public function getAttribute($attribute)
     {
         switch ($attribute) {
@@ -245,6 +296,12 @@ class PDO extends BasePDO
         }
     }
 
+    /**
+     * @param string $string
+     * @param null $paramtype
+     *
+     * @return string|void
+     */
     public function quote($string, $paramtype = null)
     {
         throw new \BadMethodCallException(<<<TXT
@@ -258,6 +315,9 @@ TXT
         );
     }
 
+    /**
+     * Destructor
+     */
     public function __destruct()
     {
         $this->client->close();
