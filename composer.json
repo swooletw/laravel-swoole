@@ -34,10 +34,6 @@
         "codedungeon/phpunit-result-printer": "^0.14.0",
         "php-mock/php-mock": "^2.0"
     },
-    "provide": {
-        "ext-apc": "To clear apc cache.",
-        "ext-opcache": "To clear opcache cache."
-    },
     "autoload": {
         "files": [
             "src/Server/helpers.php"

@@ -318,7 +318,7 @@ class HttpServerCommand extends Command
      */
     protected function isDaemon(): bool
     {
-        return Arr::get($this->config, 'server.options.daemonize');
+        return Arr::get($this->config, 'server.options.daemonize', false);
     }
 
     /**
