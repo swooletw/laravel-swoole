@@ -4,8 +4,6 @@ namespace SwooleTW\Http\Task;
 
 
 use Illuminate\Contracts\Queue\Queue;
-use SwooleTW\Http\Task\V56\SwooleTaskQueue as STQ_V56;
-use SwooleTW\Http\Task\V57\SwooleTaskQueue as STQ_V57;
 
 /**
  * Class QueueFactory
