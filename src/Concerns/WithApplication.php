@@ -7,17 +7,24 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
 
+/**
+ * Trait WithApplication
+ *
+ * @property-read Container $container
+ */
 trait WithApplication
 {
     /**
      * Laravel|Lumen Application.
      *
-     * @var \Illuminate\Contracts\Container\Container
+     * @var \Illuminate\Contracts\Container\Container|mixed
      */
     protected $app;
 
     /**
      * Bootstrap framework.
+     *
+     * @throws \ReflectionException
      */
     protected function bootstrap()
     {
@@ -38,11 +45,12 @@ trait WithApplication
      */
     protected function loadApplication()
     {
-        return require $this->basePath . '/bootstrap/app.php';
+        return require "{$this->basePath}/bootstrap/app.php";
     }
 
     /**
-     * @return \Illuminate\Contracts\Container\Container
+     * @return \Illuminate\Contracts\Container\Container|mixed
+     * @throws \ReflectionException
      */
     public function getApplication()
     {
@@ -56,6 +64,8 @@ trait WithApplication
 
     /**
      * Set laravel application.
+     *
+     * @param \Illuminate\Contracts\Container\Container $app
      */
     public function setApplication(Container $app)
     {
@@ -66,6 +76,7 @@ trait WithApplication
      * Get bootstrappers.
      *
      * @return array
+     * @throws \ReflectionException
      */
     protected function getBootstrappers()
     {
@@ -129,10 +140,12 @@ trait WithApplication
 
     /**
      * Reslove some instances before request.
+     *
+     * @throws \ReflectionException
      */
     protected function preResolveInstances()
     {
-        $resolves = $this->container['config']->get('swoole_http.pre_resolved', []);
+        $resolves = $this->container->make('config')->get('swoole_http.pre_resolved', []);
 
         foreach ($resolves as $abstract) {
             if ($this->getApplication()->offsetExists($abstract)) {

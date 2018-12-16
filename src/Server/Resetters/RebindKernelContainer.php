@@ -10,6 +10,11 @@ use SwooleTW\Http\Server\Sandbox;
 class RebindKernelContainer implements ResetterContract
 {
     /**
+     * @var \Illuminate\Contracts\Container\Container
+     */
+    protected $app;
+
+    /**
      * "handle" function for resetting app.
      *
      * @param \Illuminate\Contracts\Container\Container $app

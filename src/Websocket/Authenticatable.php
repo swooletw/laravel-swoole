@@ -6,12 +6,21 @@ namespace SwooleTW\Http\Websocket;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use InvalidArgumentException;
 
+/**
+ * Trait Authenticatable
+ *
+ * @property-read \SwooleTW\Http\Websocket\Rooms\RoomContract $room
+ */
 trait Authenticatable
 {
     protected $userId;
 
     /**
      * Login using current user.
+     *
+     * @param \Illuminate\Contracts\Auth\Authenticatable $user
+     *
+     * @return mixed
      */
     public function loginUsing(AuthenticatableContract $user)
     {
@@ -20,6 +29,10 @@ trait Authenticatable
 
     /**
      * Login using current userId.
+     *
+     * @param $userId
+     *
+     * @return mixed
      */
     public function loginUsingId($userId)
     {
@@ -28,11 +41,13 @@ trait Authenticatable
 
     /**
      * Logout with current sender's fd.
+     *
+     * @return mixed
      */
     public function logout()
     {
         if (is_null($userId = $this->getUserId())) {
-            return;
+            return null;
         }
 
         return $this->leave(static::USER_PREFIX . $userId);
@@ -40,12 +55,16 @@ trait Authenticatable
 
     /**
      * Set multiple recepients' fds by users.
+     *
+     * @param $users
+     *
+     * @return \SwooleTW\Http\Websocket\Authenticatable
      */
     public function toUser($users)
     {
         $users = is_object($users) ? func_get_args() : $users;
 
-        $userIds = array_map(function ($user) {
+        $userIds = array_map(function (AuthenticatableContract $user) {
             $this->checkUser($user);
 
             return $user->getAuthIdentifier();
@@ -56,6 +75,10 @@ trait Authenticatable
 
     /**
      * Set multiple recepients' fds by userIds.
+     *
+     * @param $userIds
+     *
+     * @return \SwooleTW\Http\Websocket\Authenticatable
      */
     public function toUserId($userIds)
     {
@@ -91,6 +114,10 @@ trait Authenticatable
 
     /**
      * Check if a user is online by given userId.
+     *
+     * @param $userId
+     *
+     * @return bool
      */
     public function isUserIdOnline($userId)
     {
@@ -99,6 +126,8 @@ trait Authenticatable
 
     /**
      * Check if user object implements AuthenticatableContract.
+     *
+     * @param $user
      */
     protected function checkUser($user)
     {

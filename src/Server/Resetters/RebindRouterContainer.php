@@ -10,10 +10,17 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class RebindRouterContainer implements ResetterContract
 {
     /**
+     * @var \Illuminate\Contracts\Container\Container
+     */
+    protected $container;
+
+    /**
      * "handle" function for resetting app.
      *
      * @param \Illuminate\Contracts\Container\Container $app
      * @param \SwooleTW\Http\Server\Sandbox $sandbox
+     *
+     * @return \Illuminate\Contracts\Container\Container
      */
     public function handle(Container $app, Sandbox $sandbox)
     {

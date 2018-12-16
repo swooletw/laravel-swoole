@@ -7,12 +7,15 @@ use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Factory as Auth;
 
+/**
+ * Class Authenticate
+ */
 class Authenticate
 {
     /**
      * The authentication factory instance.
      *
-     * @var \Illuminate\Contracts\Auth\Factory
+     * @var \Illuminate\Contracts\Auth\Factory|mixed
      */
     protected $auth;
 
@@ -36,7 +39,6 @@ class Authenticate
      *
      * @return mixed
      *
-     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function handle($request, Closure $next)
     {

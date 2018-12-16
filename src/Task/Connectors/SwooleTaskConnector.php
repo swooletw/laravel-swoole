@@ -6,6 +6,9 @@ namespace SwooleTW\Http\Task\Connectors;
 use Illuminate\Queue\Connectors\ConnectorInterface;
 use SwooleTW\Http\Task\SwooleTaskQueue;
 
+/**
+ * Class SwooleTaskConnector
+ */
 class SwooleTaskConnector implements ConnectorInterface
 {
     /**

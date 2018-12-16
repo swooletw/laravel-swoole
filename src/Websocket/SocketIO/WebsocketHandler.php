@@ -16,6 +16,8 @@ class WebsocketHandler implements HandlerContract
      *
      * @param int $fd
      * @param \Illuminate\Http\Request $request
+     *
+     * @return bool
      */
     public function onOpen($fd, Request $request)
     {

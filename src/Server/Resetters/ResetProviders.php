@@ -9,10 +9,17 @@ use SwooleTW\Http\Server\Sandbox;
 class ResetProviders implements ResetterContract
 {
     /**
+     * @var \Illuminate\Contracts\Container\Container
+     */
+    protected $app;
+
+    /**
      * "handle" function for resetting app.
      *
      * @param \Illuminate\Contracts\Container\Container $app
      * @param \SwooleTW\Http\Server\Sandbox $sandbox
+     *
+     * @return \Illuminate\Contracts\Container\Container
      */
     public function handle(Container $app, Sandbox $sandbox)
     {
@@ -31,6 +38,9 @@ class ResetProviders implements ResetterContract
 
     /**
      * Rebind service provider's container.
+     *
+     * @param $app
+     * @param $provider
      */
     protected function rebindProviderContainer($app, $provider)
     {

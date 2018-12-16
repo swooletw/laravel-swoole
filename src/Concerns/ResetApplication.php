@@ -20,7 +20,7 @@ trait ResetApplication
     protected $providers = [];
 
     /**
-     * @var array
+     * @var \SwooleTW\Http\Server\Resetters\ResetterContract[]|array
      */
     protected $resetters = [];
 
@@ -91,6 +91,8 @@ trait ResetApplication
 
     /**
      * Reset Laravel/Lumen Application.
+     *
+     * @param \Illuminate\Contracts\Container\Container $app
      */
     public function resetApp(Container $app)
     {

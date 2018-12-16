@@ -8,6 +8,9 @@ use Illuminate\Contracts\Queue\Queue as QueueContract;
 use Illuminate\Queue\Queue;
 use Swoole\Timer;
 
+/**
+ * Class SwooleTaskQueue
+ */
 class SwooleTaskQueue extends Queue implements QueueContract
 {
     /**

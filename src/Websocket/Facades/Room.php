@@ -5,6 +5,9 @@ namespace SwooleTW\Http\Websocket\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
+/**
+ * Class Room
+ */
 class Room extends Facade
 {
     /**

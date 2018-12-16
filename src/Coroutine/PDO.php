@@ -12,8 +12,12 @@ namespace SwooleTW\Http\Coroutine;
 
 use Exception;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Arr;
 use PDO as BasePDO;
 
+/**
+ * Class PDO
+ */
 class PDO extends BasePDO
 {
     public static $keyMap = [
@@ -28,6 +32,7 @@ class PDO extends BasePDO
         'database' => '',
         'charset' => 'utf8mb4',
         'strict_type' => true,
+        'timeout' => -1
     ];
 
     /** @var \Swoole\Coroutine\Mysql */
@@ -54,11 +59,10 @@ class PDO extends BasePDO
 
     /**
      * @param null $client
-     * @param null $type
      */
-    protected function setClient($client = null, $type = null)
+    protected function setClient($client = null)
     {
-        $this->client = $client ?: new \Swoole\Coroutine\Mysql($type);
+        $this->client = $client ?: new \Swoole\Coroutine\Mysql();
     }
 
     /**
@@ -219,13 +223,15 @@ class PDO extends BasePDO
 
     /**
      * @param string $statement
-     * @param float $timeout
+     * @param int $mode
+     * @param null $arg3
+     * @param array $ctorargs
      *
      * @return array|bool|false|\PDOStatement
      */
-    public function query(string $statement, float $timeout = -1)
+    public function query($statement, $mode = PDO::ATTR_DEFAULT_FETCH_MODE, $arg3 = null, array $ctorargs = [])
     {
-        $result = $this->client->query($statement, $timeout);
+        $result = $this->client->query($statement, Arr::get(self::$options, 'timeout'));
 
         if ($result === false) {
             $exception = new Exception($this->client->error, $this->client->errno);

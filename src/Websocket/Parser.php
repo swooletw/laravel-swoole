@@ -16,6 +16,9 @@ abstract class Parser
      * Execute strategies before decoding payload.
      * If return value is true will skip decoding.
      *
+     * @param \Swoole\WebSocket\Server $server
+     * @param \Swoole\WebSocket\Frame $frame
+     *
      * @return boolean
      */
     public function execute($server, $frame)

@@ -6,6 +6,9 @@ namespace SwooleTW\Http\Websocket\SocketIO;
 use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Websocket\SocketIO\Strategies\HeartbeatStrategy;
 
+/**
+ * Class SocketIOParser
+ */
 class SocketIOParser extends Parser
 {
     /**

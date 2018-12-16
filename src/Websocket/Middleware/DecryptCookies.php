@@ -8,6 +8,9 @@ use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Class DecryptCookies
+ */
 class DecryptCookies
 {
     /**
@@ -120,7 +123,7 @@ class DecryptCookies
         $decrypted = [];
 
         foreach ($cookie as $key => $value) {
-            if (is_string($value)) {
+            if (\is_string($value)) {
                 $decrypted[$key] = $this->encrypter->decrypt($value, static::serialized($key));
             }
         }
@@ -135,19 +138,19 @@ class DecryptCookies
      *
      * @return bool
      */
-    public function isDisabled($name)
+    public function isDisabled(string $name)
     {
-        return in_array($name, $this->except);
+        return \in_array($name, $this->except);
     }
 
     /**
      * Determine if the cookie contents should be serialized.
      *
-     * @param  string $name
+     * @param string $name
      *
      * @return bool
      */
-    public static function serialized($name)
+    public static function serialized(string $name)
     {
         return static::$serialize;
     }

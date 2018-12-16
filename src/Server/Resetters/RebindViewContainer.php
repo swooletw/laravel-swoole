@@ -9,10 +9,22 @@ use SwooleTW\Http\Server\Sandbox;
 class RebindViewContainer implements ResetterContract
 {
     /**
+     * @var Container
+     */
+    protected $container;
+
+    /**
+     * @var array
+     */
+    protected $shared;
+
+    /**
      * "handle" function for resetting app.
      *
      * @param \Illuminate\Contracts\Container\Container $app
      * @param \SwooleTW\Http\Server\Sandbox $sandbox
+     *
+     * @return \Illuminate\Contracts\Container\Container
      */
     public function handle(Container $app, Sandbox $sandbox)
     {

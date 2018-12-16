@@ -3,8 +3,9 @@
 namespace SwooleTW\Http\Server;
 
 
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository as ConfigContract;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Container\Container as ContainerFacade;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Facade;
@@ -77,7 +78,7 @@ class Sandbox
     /**
      * Set a base application.
      *
-     * @param \Illuminate\Container\Container
+     * @param \Illuminate\Contracts\Container\Container $app
      *
      * @return \SwooleTW\Http\Server\Sandbox
      */
@@ -105,7 +106,7 @@ class Sandbox
     /**
      * Set current snapshot.
      *
-     * @param \Illuminate\Container\Container
+     * @param \Illuminate\Contracts\Container\Container $snapshot
      *
      * @return \SwooleTW\Http\Server\Sandbox
      */
@@ -137,7 +138,7 @@ class Sandbox
     /**
      * Get base application.
      *
-     * @return \Illuminate\Container\Container
+     * @return \Illuminate\Contracts\Container\Container
      */
     public function getBaseApp()
     {
@@ -147,7 +148,7 @@ class Sandbox
     /**
      * Get an application snapshot
      *
-     * @return \Illuminate\Container\Container
+     * @return \Illuminate\Contracts\Container\Container|mixed
      */
     public function getApplication()
     {
@@ -334,7 +335,7 @@ class Sandbox
     /**
      * Replace app's self bindings.
      *
-     * @param \Illuminate\Container\Container $app
+     * @param \Illuminate\Contracts\Container\Container|mixed $app
      */
     public function setInstance(Container $app)
     {
@@ -345,7 +346,7 @@ class Sandbox
             $app->instance(LumenApplication::class, $app);
         }
 
-        Container::setInstance($app);
+        ContainerFacade::setInstance($app);
         Context::setApp($app);
         Facade::clearResolvedInstances();
         Facade::setFacadeApplication($app);

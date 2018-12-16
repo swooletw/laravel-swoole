@@ -56,14 +56,14 @@ class Websocket
     /**
      * Pipeline instance.
      *
-     * @var PipelineContract
+     * @var \Illuminate\Contracts\Pipeline\Pipeline
      */
     protected $pipeline;
 
     /**
      * Room adapter.
      *
-     * @var RoomContract
+     * @var \SwooleTW\Http\Websocket\Rooms\RoomContract
      */
     protected $room;
 
@@ -97,7 +97,7 @@ class Websocket
      *
      * @return $this
      */
-    public function to($values)
+    public function to($values): self
     {
         $values = is_string($values) || is_integer($values) ? func_get_args() : $values;
 
@@ -117,7 +117,7 @@ class Websocket
      *
      * @return $this
      */
-    public function join($rooms)
+    public function join($rooms): self
     {
         $rooms = is_string($rooms) || is_integer($rooms) ? func_get_args() : $rooms;
 
@@ -129,11 +129,11 @@ class Websocket
     /**
      * Make sender leave multiple rooms.
      *
-     * @param string, array
+     * @param array $rooms
      *
      * @return $this
      */
-    public function leave($rooms = [])
+    public function leave($rooms = []): self
     {
         $rooms = is_string($rooms) || is_integer($rooms) ? func_get_args() : $rooms;
 
@@ -150,7 +150,7 @@ class Websocket
      *
      * @return boolean
      */
-    public function emit(string $event, $data)
+    public function emit(string $event, $data): bool
     {
         $fds = $this->getFds();
         $assigned = !empty($this->to);
@@ -330,6 +330,10 @@ class Websocket
 
     /**
      * Reset some data status.
+     *
+     * @param bool $force
+     *
+     * @return \SwooleTW\Http\Websocket\Websocket
      */
     public function reset($force = false)
     {
@@ -346,6 +350,10 @@ class Websocket
 
     /**
      * Get or set middleware.
+     *
+     * @param array|string|null $middleware
+     *
+     * @return array|\SwooleTW\Http\Websocket\Websocket
      */
     public function middleware($middleware = null)
     {
@@ -372,6 +380,8 @@ class Websocket
 
     /**
      * Set container to pipeline.
+     *
+     * @param \Illuminate\Contracts\Container\Container $container
      */
     public function setContainer(Container $container)
     {
@@ -387,6 +397,10 @@ class Websocket
 
     /**
      * Set pipeline.
+     *
+     * @param \Illuminate\Contracts\Pipeline\Pipeline $pipeline
+     *
+     * @return \SwooleTW\Http\Websocket\Websocket
      */
     public function setPipeline(PipelineContract $pipeline)
     {

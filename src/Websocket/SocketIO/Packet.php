@@ -3,6 +3,9 @@
 namespace SwooleTW\Http\Websocket\SocketIO;
 
 
+/**
+ * Class Packet
+ */
 class Packet
 {
     /**
@@ -103,6 +106,10 @@ class Packet
 
     /**
      * Get socket packet type of a raw payload.
+     *
+     * @param string $packet
+     *
+     * @return int|null
      */
     public static function getSocketType(string $packet)
     {
@@ -117,6 +124,10 @@ class Packet
 
     /**
      * Get data packet from a raw payload.
+     *
+     * @param string $packet
+     *
+     * @return array|null
      */
     public static function getPayload(string $packet)
     {
@@ -142,6 +153,11 @@ class Packet
 
     /**
      * Return if a socket packet belongs to specific type.
+     *
+     * @param $packet
+     * @param string $typeName
+     *
+     * @return bool
      */
     public static function isSocketType($packet, string $typeName)
     {

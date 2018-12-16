@@ -18,8 +18,8 @@ use Throwable;
 /**
  * Trait InteractsWithWebsocket
  *
- * @property \Illuminate\Contracts\Container\Container $container
- * @property \Illuminate\Contracts\Container\Container $app
+ * @property-read \Illuminate\Contracts\Container\Container $container
+ * @property-read \Illuminate\Contracts\Container\Container $app
  */
 trait InteractsWithWebsocket
 {
@@ -101,8 +101,8 @@ trait InteractsWithWebsocket
             // enable sandbox
             $this->app->make('swoole.sandbox')->enable();
 
-            ['event' => $event, 'data' => $data] = $payload;
             // dispatch message to registered event callback
+            ['event' => $event, 'data' => $data] = $payload;
             $this->app->make('swoole.websocket')->eventExists($event)
                 ? $this->app->make('swoole.websocket')->call($event, $data)
                 : $this->websocketHandler->onMessage($frame);
@@ -165,7 +165,7 @@ trait InteractsWithWebsocket
 
         // push message to designated fds
         foreach ($push->getDescriptors() as $descriptor) {
-            if ($server->exist($descriptor) || !$push->isBroadcastToDescriptor((int) $descriptor)) {
+            if ($server->exist($descriptor) || !$push->isBroadcastToDescriptor((int)$descriptor)) {
                 $server->push($descriptor, $payload, $push->getOpcode());
             }
         }

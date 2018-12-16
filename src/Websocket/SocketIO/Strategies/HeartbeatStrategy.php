@@ -10,6 +10,9 @@ class HeartbeatStrategy
     /**
      * If return value is true will skip decoding.
      *
+     * @param \Swoole\WebSocket\Server $server
+     * @param \Swoole\WebSocket\Frame $frame
+     *
      * @return boolean
      */
     public function handle($server, $frame)

@@ -106,6 +106,7 @@ class Response
         $illuminateResponse = $this->getIlluminateResponse();
 
         if ($illuminateResponse instanceof StreamedResponse && property_exists($illuminateResponse, 'output')) {
+            // TODO Add Streamed Response with output
             $this->swooleResponse->end($illuminateResponse->output);
         } else if ($illuminateResponse instanceof BinaryFileResponse) {
             $this->swooleResponse->sendfile($illuminateResponse->getFile()->getPathname());
