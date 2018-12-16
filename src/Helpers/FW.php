@@ -45,6 +45,16 @@ final class FW
     }
 
     /**
+     * Current Framework
+     *
+     * @return string
+     */
+    public static function current(): string
+    {
+        return class_exists('Illuminate\Foundation\Application') ? static::LARAVEL : static::LUMEN;
+    }
+
+    /**
      * Returns application version
      *
      * @return string
@@ -58,20 +68,26 @@ final class FW
         /** @var \Laravel\Lumen\Application $app */
         $app = call_user_func('Laravel\Lumen\Application::getInstance');
 
-        if (preg_match(static::VERSION_EXPRESSION, $app->version(), $result)) {
-            return Arr::first($result);
+        if ($version = static::extractLumenVersion($app->version())) {
+            return $version;
         }
 
         throw new LogicException('No any version found.');
     }
 
     /**
-     * Current Framework
+     * Extracts lumen version from $app->version()
      *
-     * @return string
+     * @param string $version
+     *
+     * @return string|null
      */
-    public static function current(): string
+    protected static function extractLumenVersion(string $version): ?string
     {
-        return class_exists('Illuminate\Foundation\Application') ? static::LARAVEL : static::LUMEN;
+        if (preg_match(static::VERSION_EXPRESSION, $version, $result)) {
+            return Arr::first($result);
+        }
+
+        return null;
     }
 }
