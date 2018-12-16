@@ -25,6 +25,7 @@ class SwooleQueueTest extends TestCase
         $server = $this->getServer();
         $queue = QueueFactory::make($server, Application::VERSION);
 
+        var_dump(Application::VERSION, QueueFactory::CHANGE_VERSION);
         $isGreater = version_compare(Application::VERSION, QueueFactory::CHANGE_VERSION, '>=');
         $expected = $isGreater ? STQ_V57::class : STQ_V56::class;
 
