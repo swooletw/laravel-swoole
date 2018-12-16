@@ -10,8 +10,8 @@ use SwooleTW\Http\Table\SwooleTable;
 /**
  * Trait InteractsWithSwooleTable
  *
- * @property-read \Illuminate\Contracts\Container\Container $container
- * @property-read \Illuminate\Contracts\Container\Container $app
+ * @property \Illuminate\Contracts\Container\Container $container
+ * @property \Illuminate\Contracts\Container\Container $app
  */
 trait InteractsWithSwooleTable
 {
