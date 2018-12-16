@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Facade;
  * Trait WithApplication
  *
  * @property-read Container $container
+ * @property string $framework
  */
 trait WithApplication
 {

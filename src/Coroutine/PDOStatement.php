@@ -152,6 +152,8 @@ class PDOStatement extends BaseStatement
     public function setFetchMode($fetchStyle, $params = null, array $ctorarfg = [])
     {
         $this->fetchStyle = $fetchStyle;
+
+        return true;
     }
 
     private function __executeWhenStringQueryEmpty()

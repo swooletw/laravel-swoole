@@ -104,7 +104,7 @@ class PDO extends BasePDO
 
         foreach ($dsn as $kv) {
             $kv = explode('=', $kv);
-            if ($kv) {
+            if (count($kv)) {
                 $options[$kv[0]] = $kv[1] ?? '';
             }
         }

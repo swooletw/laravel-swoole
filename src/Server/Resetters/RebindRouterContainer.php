@@ -15,6 +15,11 @@ class RebindRouterContainer implements ResetterContract
     protected $container;
 
     /**
+     * @var mixed
+     */
+    protected $routes;
+
+    /**
      * "handle" function for resetting app.
      *
      * @param \Illuminate\Contracts\Container\Container $app
@@ -33,6 +38,7 @@ class RebindRouterContainer implements ResetterContract
                     return;
                 }
                 try {
+                    /** @var mixed $route */
                     $route = $this->routes->match($request);
                     // clear resolved controller
                     if (property_exists($route, 'container')) {
