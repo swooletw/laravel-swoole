@@ -8,7 +8,7 @@ use SwooleTW\Http\Task\QueueFactory;
 $version = FW::version();
 $framework = ucfirst(FW::current());
 $stub = QueueFactory::stub($version);
-QueueFactory::copy($stub);
+QueueFactory::copy($stub, true);
 $color = "\033[0;32m";
 $noColor = "\033[0m";
 

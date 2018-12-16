@@ -9,7 +9,7 @@ use Illuminate\Queue\Queue;
 use Swoole\Timer;
 
 /**
- * Class SwooleTaskQueue
+ * Class SwooleTaskQueue (5.6)
  */
 class SwooleTaskQueue extends Queue implements QueueContract
 {

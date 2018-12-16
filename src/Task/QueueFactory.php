@@ -4,6 +4,8 @@ namespace SwooleTW\Http\Task;
 
 
 use Illuminate\Contracts\Queue\Queue;
+use Illuminate\Support\Arr;
+use SwooleTW\Http\Helpers\FW;
 
 /**
  * Class QueueFactory
@@ -18,6 +20,20 @@ class QueueFactory
     public const CHANGE_VERSION = '5.7';
 
     /**
+     * Swoole task queue class
+     *
+     * @const string
+     */
+    public const QUEUE_CLASS = 'SwooleTW\Http\Task\SwooleTaskQueue';
+
+    /**
+     * Swoole task queue path
+     *
+     * @const string
+     */
+    public const QUEUE_CLASS_PATH = __DIR__ . '/SwooleTaskQueue.php';
+
+    /**
      * @param \Swoole\Http\Server $server
      * @param string $version
      *
@@ -25,8 +41,8 @@ class QueueFactory
      */
     public static function make($server, string $version): Queue
     {
-        $stub = static::stub($version);
-        $class = static::copy($stub);
+        $isMatch = static::isFileVersionMatch($version);
+        $class = static::copy(static::stub($version), !$isMatch);
 
         return new $class($server);
     }
@@ -36,27 +52,48 @@ class QueueFactory
      *
      * @return string
      */
-    public static function stub(string $version)
+    public static function stub(string $version): string
     {
         return static::hasBreakingChanges($version)
-            ? __DIR__ . '/../../stubs/5.6/SwooleTaskQueue.stub'
-            : __DIR__ . '/../../stubs/5.7/SwooleTaskQueue.stub';
+            ? __DIR__ . '/../../stubs/5.7/SwooleTaskQueue.stub'
+            : __DIR__ . '/../../stubs/5.6/SwooleTaskQueue.stub';
     }
 
     /**
      * @param string $stub
+     * @param bool $rewrite
      *
      * @return string
      */
-    public static function copy(string $stub)
+    public static function copy(string $stub, bool $rewrite = false): string
     {
-        $destination = __DIR__ . '/SwooleTaskQueue.php';
-
-        if (!file_exists($destination)) {
-            copy($stub, $destination);
+        if (!file_exists(static::QUEUE_CLASS_PATH) || $rewrite) {
+            copy($stub, static::QUEUE_CLASS_PATH);
         }
 
-        return 'SwooleTW\Http\Task\SwooleTaskQueue';
+        return static::QUEUE_CLASS;
+    }
+
+    /**
+     * @param string $version
+     *
+     * @return bool
+     */
+    private static function isFileVersionMatch(string $version): bool
+    {
+        try {
+            $fileVersion = null;
+            if (class_exists(self::QUEUE_CLASS)) {
+                $ref = new \ReflectionClass(self::QUEUE_CLASS);
+                if (preg_match(FW::VERSION_WITHOUT_BUG_FIX, $ref->getDocComment(), $result)) {
+                    $fileVersion = Arr::first($result);
+                }
+            }
+
+            return version_compare($fileVersion, $version, '=');
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**

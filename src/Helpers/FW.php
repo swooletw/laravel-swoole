@@ -30,7 +30,14 @@ final class FW
      *
      * @const string
      */
-    private const VERSION_EXPRESSION = '/\s*(?:\d+\.?)+/i';
+    public const VERSION_FULL = '/\s*(?:\d+\.?)+/i';
+
+    /**
+     * Version without bugfix regular expression
+     *
+     * @const string
+     */
+    public const VERSION_WITHOUT_BUG_FIX = '/\s*(?:\d+\.*?){2}/i';
 
     /**
      * Returns true if current Framework in types
@@ -57,18 +64,20 @@ final class FW
     /**
      * Returns application version
      *
+     * @param string $expression
+     *
      * @return string
      */
-    public static function version(): string
+    public static function version(string $expression = self::VERSION_WITHOUT_BUG_FIX): string
     {
         if (static::is(static::LARAVEL)) {
-            return constant('Illuminate\Foundation\Application::VERSION');
+            return static::extractVersion(constant('Illuminate\Foundation\Application::VERSION'), $expression);
         }
 
         /** @var \Laravel\Lumen\Application $app */
         $app = call_user_func('Laravel\Lumen\Application::getInstance');
 
-        if ($version = static::extractLumenVersion($app->version())) {
+        if ($version = static::extractVersion($app->version(), $expression)) {
             return $version;
         }
 
@@ -79,12 +88,13 @@ final class FW
      * Extracts lumen version from $app->version()
      *
      * @param string $version
+     * @param string $expression
      *
      * @return string|null
      */
-    protected static function extractLumenVersion(string $version): ?string
+    protected static function extractVersion(string $version, string $expression): ?string
     {
-        if (preg_match(static::VERSION_EXPRESSION, $version, $result)) {
+        if (preg_match($expression, $version, $result)) {
             return Arr::first($result);
         }
 
