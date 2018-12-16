@@ -7,5 +7,6 @@ filter:
     - "tests/*"
     - "routes/*"
     - "config/*"
+    - "stubs/*"
   dependency_paths:
     - "vendor/*"

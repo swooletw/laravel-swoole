@@ -1,43 +1,43 @@
 <?php
-//
-//namespace SwooleTW\Http\Tests\Task;
-//
-//
-//use Mockery as m;
-//use SwooleTW\Http\Helpers\FW;
-//use SwooleTW\Http\Task\QueueFactory;
-//use SwooleTW\Http\Tests\TestCase;
-//
-//class SwooleQueueTest extends TestCase
-//{
-//    public function testPushProperlyPushesJobOntoSwoole()
-//    {
-//        $server = $this->getServer();
-//        $queue = QueueFactory::make($server, FW::version());
-//        $server->shouldReceive('task')->once();
-//        $queue->push(new FakeJob);
-//    }
-//
-//    public function testQueueFactoryVersionClass()
-//    {
-//        $server = $this->getServer();
-//        $queue = QueueFactory::make($server, FW::version());
-//
-//        $isGreater = version_compare(FW::version(), QueueFactory::CHANGE_VERSION, '>=');
-//        $expected = $isGreater ? 'SwooleTW\Http\Task\V57\SwooleTaskQueue' : 'SwooleTW\Http\Task\V56\SwooleTaskQueue';
-//
-//        $this->assertInstanceOf($expected, $queue);
-//    }
-//
-//    protected function getServer()
-//    {
-//        $server = m::mock('server');
-//        $server->shouldReceive('on');
-//        $server->taskworker = false;
-//        $server->master_pid = -1;
-//
-//        return $server;
-//    }
-//}
-//
-//
+
+namespace SwooleTW\Http\Tests\Task;
+
+
+use Mockery as m;
+use SwooleTW\Http\Helpers\FW;
+use SwooleTW\Http\Task\QueueFactory;
+use SwooleTW\Http\Tests\TestCase;
+
+class SwooleQueueTest extends TestCase
+{
+    public function testPushProperlyPushesJobOntoSwoole()
+    {
+        $server = $this->getServer();
+        $queue = QueueFactory::make($server, FW::version());
+        $server->shouldReceive('task')->once();
+        $queue->push(new FakeJob);
+    }
+
+    public function testQueueFactoryVersionClass()
+    {
+        $server = $this->getServer();
+        $queue = QueueFactory::make($server, FW::version());
+
+        $isGreater = version_compare(FW::version(), QueueFactory::CHANGE_VERSION, '>=');
+        $expected = $isGreater ? 'SwooleTW\Http\Task\V57\SwooleTaskQueue' : 'SwooleTW\Http\Task\V56\SwooleTaskQueue';
+
+        $this->assertInstanceOf($expected, $queue);
+    }
+
+    protected function getServer()
+    {
+        $server = m::mock('server');
+        $server->shouldReceive('on');
+        $server->taskworker = false;
+        $server->master_pid = -1;
+
+        return $server;
+    }
+}
+
+

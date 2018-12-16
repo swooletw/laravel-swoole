@@ -26,11 +26,7 @@
     "illuminate/contracts": "~5.6",
     "illuminate/http": "~5.6",
     "illuminate/support": "~5.6",
-    "predis/predis": "^1.1",
-    "ext-fileinfo": "*",
-    "ext-pdo": "*",
-    "ext-pcntl": "*",
-    "ext-json": "*"
+    "predis/predis": "^1.1"
   },
   "require-dev": {
     "laravel/lumen-framework": "~5.6",

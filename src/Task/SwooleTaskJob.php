@@ -71,7 +71,7 @@ class SwooleTaskJob extends Job implements JobContract
     public function fire()
     {
         if (method_exists($this, 'resolveAndFire')) {
-            $this->resolveAndFire(json_decode($this->getRawBody(), true));
+            $this->resolveAndFire(\json_decode($this->getRawBody(), true));
         } else {
             parent::fire();
         }

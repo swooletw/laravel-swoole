@@ -6,3 +6,4 @@ composer.lock
 # Folders
 vendor
 .idea
+stubs
