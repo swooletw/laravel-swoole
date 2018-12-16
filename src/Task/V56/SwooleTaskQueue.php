@@ -1,6 +1,6 @@
 <?php
 
-namespace SwooleTW\Http\Task;
+namespace SwooleTW\Http\Task\V56;
 
 
 use Exception;
@@ -79,12 +79,11 @@ class SwooleTaskQueue extends Queue implements QueueContract
      * Create a typical, string based queue payload array.
      *
      * @param  string $job
-     * @param  string $queue
      * @param  mixed $data
      *
      * @throws \Exception
      */
-    protected function createStringPayload($job, $queue, $data)
+    protected function createStringPayload($job, $data)
     {
         throw new Exception('Unsupported empty data');
     }

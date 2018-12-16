@@ -2,18 +2,23 @@
 
 namespace SwooleTW\Http\Tests\Task;
 
-
+use Illuminate\Foundation\Application;
 use Mockery as m;
-use SwooleTW\Http\Task\SwooleTaskQueue;
+use SwooleTW\Http\Task\V57\SwooleTaskQueue as STQ_V57;
+use SwooleTW\Http\Task\V56\SwooleTaskQueue as STQ_V56;
 use SwooleTW\Http\Tests\TestCase;
 
 class SwooleQueueTest extends TestCase
 {
     public function testPushProperlyPushesJobOntoSwoole()
     {
-        $server = $this->getServer();
+        $version = Application::VERSION;
+        $isGreater = version_compare($version, '5.7', '>=');
+        $taskClass = $isGreater ? STQ_V57::class : STQ_V56::class;
 
-        $queue = new SwooleTaskQueue($server);
+        $server = $this->getServer();
+        /** @var \Illuminate\Contracts\Queue\Queue $queue */
+        $queue = new $taskClass($server);
         $server->shouldReceive('task')->once();
         $queue->push(new FakeJob);
     }
