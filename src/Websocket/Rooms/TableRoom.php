@@ -13,15 +13,20 @@ class TableRoom implements RoomContract
     protected $config;
 
     /**
-     * @var array
+     * @var \Swoole\Table
      */
     protected $rooms;
 
     /**
-     * @var array
+     * @var \Swoole\Table
      */
     protected $fds;
 
+    /**
+     * TableRoom constructor.
+     *
+     * @param array $config
+     */
     public function __construct(array $config)
     {
         $this->config = $config;

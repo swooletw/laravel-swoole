@@ -2,9 +2,10 @@
 
 namespace SwooleTW\Http\Tests\Websocket;
 
+
 use Mockery as m;
-use SwooleTW\Http\Tests\TestCase;
 use Predis\Client as RedisClient;
+use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\Rooms\RedisRoom;
 
 class RedisRoomTest extends TestCase

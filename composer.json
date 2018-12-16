@@ -1,64 +1,71 @@
 {
-    "name": "swooletw/laravel-swoole",
-    "description": "High performance HTTP server based on Swoole. Speed up your Laravel and Lumen applications.",
-    "keywords": ["swoole", "laravel", "lumen", "performance", "http", "server"],
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Albert Chen",
-            "email": "albert@unisharp.com"
-        },
-        {
-            "name": "Huang Yi",
-            "email": "coodeer@163.com"
-        }
-    ],
-    "require": {
-        "php": "^7.2",
-        "illuminate/console": "~5.6",
-        "illuminate/contracts": "~5.6",
-        "illuminate/http": "~5.6",
-        "illuminate/support": "~5.6",
-        "predis/predis": "^1.1",
-        "ext-fileinfo": "*",
-        "ext-pdo": "*",
-        "ext-pcntl": "*",
-        "ext-json": "*"
+  "name": "swooletw/laravel-swoole",
+  "description": "High performance HTTP server based on Swoole. Speed up your Laravel and Lumen applications.",
+  "keywords": [
+    "swoole",
+    "laravel",
+    "lumen",
+    "performance",
+    "http",
+    "server"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Albert Chen",
+      "email": "albert@unisharp.com"
     },
-    "require-dev": {
-        "laravel/lumen-framework": "~5.6",
-        "phpunit/phpunit": "^6.1",
-        "phpunit/php-code-coverage": "^5.2",
-        "satooshi/php-coveralls": "^1.0",
-        "mockery/mockery": "~1.0",
-        "codedungeon/phpunit-result-printer": "^0.14.0",
-        "php-mock/php-mock": "^2.0"
-    },
-    "autoload": {
-        "files": [
-            "src/Server/helpers.php"
-        ],
-        "psr-4": {
-            "SwooleTW\\Http\\": "src"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "SwooleTW\\Http\\Tests\\": "tests",
-            "SwooleTW\\Http\\Tests\\Fixtures\\Laravel\\App\\": "tests/fixtures/laravel/app"
-        }
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "SwooleTW\\Http\\LaravelServiceProvider"
-            ],
-            "aliases": {
-                "Server": "SwooleTW\\Http\\Server\\Facades\\Server",
-                "Table": "SwooleTW\\Http\\Server\\Facades\\Table",
-                "Room": "SwooleTW\\Http\\Websocket\\Facades\\Room",
-                "Websocket": "SwooleTW\\Http\\Websocket\\Facades\\Websocket"
-            }
-        }
+    {
+      "name": "Huang Yi",
+      "email": "coodeer@163.com"
     }
+  ],
+  "require": {
+    "php": "^7.2",
+    "illuminate/console": "~5.6",
+    "illuminate/contracts": "~5.6",
+    "illuminate/http": "~5.6",
+    "illuminate/support": "~5.6",
+    "predis/predis": "^1.1",
+    "ext-fileinfo": "*",
+    "ext-pdo": "*",
+    "ext-pcntl": "*",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "laravel/lumen-framework": "~5.6",
+    "phpunit/phpunit": "^6.1",
+    "phpunit/php-code-coverage": "^5.2",
+    "satooshi/php-coveralls": "^1.0",
+    "mockery/mockery": "~1.0",
+    "codedungeon/phpunit-result-printer": "^0.14.0",
+    "php-mock/php-mock": "^2.0"
+  },
+  "autoload": {
+    "files": [
+      "src/Server/helpers.php"
+    ],
+    "psr-4": {
+      "SwooleTW\\Http\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "SwooleTW\\Http\\Tests\\": "tests",
+      "SwooleTW\\Http\\Tests\\Fixtures\\Laravel\\App\\": "tests/fixtures/laravel/app"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "SwooleTW\\Http\\LaravelServiceProvider"
+      ],
+      "aliases": {
+        "Server": "SwooleTW\\Http\\Server\\Facades\\Server",
+        "Table": "SwooleTW\\Http\\Server\\Facades\\Table",
+        "Room": "SwooleTW\\Http\\Websocket\\Facades\\Room",
+        "Websocket": "SwooleTW\\Http\\Websocket\\Facades\\Websocket"
+      }
+    }
+  }
 }

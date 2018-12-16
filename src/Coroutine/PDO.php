@@ -32,7 +32,7 @@ class PDO extends BasePDO
         'database' => '',
         'charset' => 'utf8mb4',
         'strict_type' => true,
-        'timeout' => -1
+        'timeout' => -1,
     ];
 
     /** @var \Swoole\Coroutine\Mysql */
@@ -58,7 +58,7 @@ class PDO extends BasePDO
     }
 
     /**
-     * @param null $client
+     * @param mixed $client
      */
     protected function setClient($client = null)
     {
@@ -224,7 +224,7 @@ class PDO extends BasePDO
     /**
      * @param string $statement
      * @param int $mode
-     * @param null $arg3
+     * @param mixed $arg3
      * @param array $ctorargs
      *
      * @return array|bool|false|\PDOStatement

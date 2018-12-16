@@ -2,11 +2,8 @@
 
 namespace SwooleTW\Http\Tests\Websocket\Middleware;
 
-use Mockery as m;
-use Illuminate\Http\Request;
+
 use SwooleTW\Http\Tests\TestCase;
-use Illuminate\Session\SessionManager;
-use SwooleTW\Http\Websocket\Middleware\StartSession;
 
 class StartSessionTest extends TestCase
 {

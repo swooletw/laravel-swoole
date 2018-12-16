@@ -2,9 +2,10 @@
 
 namespace SwooleTW\Http\Tests\Task;
 
+
 use Mockery as m;
-use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Task\SwooleTaskQueue;
+use SwooleTW\Http\Tests\TestCase;
 
 class SwooleQueueTest extends TestCase
 {

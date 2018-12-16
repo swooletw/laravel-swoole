@@ -1,7 +1,5 @@
 <?php
 
-use Swoole\Table;
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -65,7 +63,7 @@ return [
         'level' => env('SWOOLE_HOT_RELOAD_DEEP_LEVEL', 10),
         'directory' => env('SWOOLE_HOT_RELOAD_DIRECTORY', base_path()),
         'log' => env('SWOOLE_HOT_RELOAD_LOG', true),
-        'files' => ['*.php']
+        'files' => ['*.php'],
     ],
 
     /*
@@ -135,5 +133,5 @@ return [
         //         ['name' => 'column_name', 'type' => Table::TYPE_STRING, 'size' => 1024],
         //     ]
         // ],
-    ]
+    ],
 ];

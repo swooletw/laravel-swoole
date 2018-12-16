@@ -3,9 +3,9 @@
 namespace SwooleTW\Http\Server;
 
 
+use Illuminate\Container\Container as ContainerFacade;
 use Illuminate\Contracts\Config\Repository as ConfigContract;
 use Illuminate\Contracts\Container\Container;
-use Illuminate\Container\Container as ContainerFacade;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Facade;
@@ -25,7 +25,7 @@ class Sandbox
     use ResetApplication;
 
     /**
-     * @var \Illuminate\Container\Container
+     * @var \Illuminate\Contracts\Container\Container
      */
     protected $app;
 
