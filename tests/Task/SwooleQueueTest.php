@@ -18,17 +18,6 @@ class SwooleQueueTest extends TestCase
         $queue->push(new FakeJob);
     }
 
-    public function testQueueFactoryVersionClass()
-    {
-        $server = $this->getServer();
-        $queue = QueueFactory::make($server, FW::version());
-
-        $isGreater = version_compare(FW::version(), QueueFactory::CHANGE_VERSION, '>=');
-        $expected = $isGreater ? 'SwooleTW\Http\Task\V57\SwooleTaskQueue' : 'SwooleTW\Http\Task\V56\SwooleTaskQueue';
-
-        $this->assertInstanceOf($expected, $queue);
-    }
-
     protected function getServer()
     {
         $server = m::mock('server');
