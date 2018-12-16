@@ -4,7 +4,6 @@ namespace SwooleTW\Http\Websocket;
 
 
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 
 /**
  * Class Push
@@ -37,7 +36,7 @@ class Push
     protected $assigned;
 
     /**
-     * @var string|null
+     * @var string
      */
     protected $event;
 
@@ -54,7 +53,7 @@ class Push
      * @param array $descriptors
      * @param bool $broadcast
      * @param bool $assigned
-     * @param string|null $event
+     * @param string $event
      * @param string|null $message
      */
     private function __construct(
@@ -63,9 +62,10 @@ class Push
         array $descriptors,
         bool $broadcast,
         bool $assigned,
-        string $event = null,
+        string $event,
         string $message = null
-    ) {
+    )
+    {
         $this->opcode = $opcode;
         $this->sender = $sender;
         $this->descriptors = $descriptors;
@@ -89,7 +89,7 @@ class Push
         $descriptors = Arr::get($data, 'fds', []);
         $broadcast = Arr::get($data, 'broadcast', false);
         $assigned = Arr::get($data, 'assigned', false);
-        $event = Arr::get($data, 'event', null);
+        $event = Arr::get($data, 'event', '');
         $message = Arr::get($data, 'message', null);
 
         return new static($opcode, $sender, $descriptors, $broadcast, $assigned, $event, $message);
@@ -170,9 +170,9 @@ class Push
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getEvent(): ?string
+    public function getEvent(): string
     {
         return $this->event;
     }
