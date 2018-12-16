@@ -26,6 +26,13 @@ final class FW
     public const LUMEN = 'lumen';
 
     /**
+     * Version regular expression
+     *
+     * @const string
+     */
+    private const VERSION_EXPRESSION = '/\s*(?:\d+\.?)+/i';
+
+    /**
      * Returns true if current Framework in types
      *
      * @param string ...$types
@@ -51,7 +58,7 @@ final class FW
         /** @var \Laravel\Lumen\Application $app */
         $app = call_user_func('Laravel\Lumen\Application::getInstance');
 
-        if (preg_match("/\s*(?:[0-9]+\.?)+/i", $app->version(), $result)) {
+        if (preg_match(static::VERSION_EXPRESSION, $app->version(), $result)) {
             return Arr::first($result);
         }
 

@@ -15,17 +15,20 @@
          stopOnFailure="false"
          verbose="true"
          printerClass="Codedungeon\PHPUnitPrettyResultPrinter\Printer">
-    <testsuites>
-        <testsuite name="Laravel Swoole Http Test Suite">
-            <directory suffix="Test.php">./tests</directory>
-        </testsuite>
-    </testsuites>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">./src</directory>
         </whitelist>
     </filter>
+    <testsuites>
+        <testsuite name="Laravel Swoole Http Test Suite">
+            <directory suffix="Test.php">./tests</directory>
+        </testsuite>
+    </testsuites>
     <php>
         <const name="IN_PHPUNIT" value="true"/>
     </php>
+    <logging>
+        <log type="coverage-clover" target="build/logs/clover.xml"/>
+    </logging>
 </phpunit>
