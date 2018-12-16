@@ -21,9 +21,8 @@ install:
   - travis_retry composer install --no-suggest --prefer-dist -n -o
 
 script:
-  #- mkdir -p build/logs
-  #- vendor/bin/phpunit --coverage-clover build/logs/clover.xml
-  - vendor/bin/phpunit
+  - mkdir -p build/logs
+  - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
 
-#after_success:
-#  - vendor/bin/coveralls -v
+after_success:
+  - vendor/bin/php-coveralls -v
