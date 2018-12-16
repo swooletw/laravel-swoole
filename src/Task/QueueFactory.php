@@ -27,9 +27,11 @@ class QueueFactory
      */
     public static function make($server, string $version): Queue
     {
-        return self::hasBreakingChanges($version)
-            ? new STQ_V57($server)
-            : new STQ_V56($server);
+        $class = self::hasBreakingChanges($version)
+            ? 'SwooleTW\Http\Task\V57\SwooleTaskQueue'
+            : 'SwooleTW\Http\Task\V56\SwooleTaskQueue';
+
+        return new $class($server);
     }
 
     /**

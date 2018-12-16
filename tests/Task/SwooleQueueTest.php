@@ -7,8 +7,6 @@ use Illuminate\Foundation\Application;
 use Mockery as m;
 use SwooleTW\Http\Task\QueueFactory;
 use SwooleTW\Http\Tests\TestCase;
-use SwooleTW\Http\Task\V56\SwooleTaskQueue as STQ_V56;
-use SwooleTW\Http\Task\V57\SwooleTaskQueue as STQ_V57;
 
 class SwooleQueueTest extends TestCase
 {
@@ -27,7 +25,7 @@ class SwooleQueueTest extends TestCase
 
         var_dump(Application::VERSION, QueueFactory::CHANGE_VERSION);
         $isGreater = version_compare(Application::VERSION, QueueFactory::CHANGE_VERSION, '>=');
-        $expected = $isGreater ? STQ_V57::class : STQ_V56::class;
+        $expected = $isGreater ? 'SwooleTW\Http\Task\V57\SwooleTaskQueue' : 'SwooleTW\Http\Task\V56\SwooleTaskQueue';
 
         $this->assertInstanceOf($expected, $queue);
     }
