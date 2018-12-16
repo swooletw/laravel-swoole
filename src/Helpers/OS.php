@@ -15,7 +15,7 @@ final class OS
      *
      * @const string
      */
-    public const MAC_OS = 'darwin';
+    public const MAC_OS = 'dar';
 
     /**
      * Linux
@@ -25,11 +25,11 @@ final class OS
     public const LINUX = 'linux';
 
     /**
-     * Windows
+     * Linux
      *
      * @const string
      */
-    public const WINDOWS = 'windows';
+    public const WIN = 'win';
 
     /**
      * Returns true if current OS in types

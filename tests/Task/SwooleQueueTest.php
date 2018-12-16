@@ -3,8 +3,8 @@
 namespace SwooleTW\Http\Tests\Task;
 
 
-use Illuminate\Foundation\Application;
 use Mockery as m;
+use SwooleTW\Http\Helpers\FW;
 use SwooleTW\Http\Task\QueueFactory;
 use SwooleTW\Http\Tests\TestCase;
 
@@ -13,7 +13,7 @@ class SwooleQueueTest extends TestCase
     public function testPushProperlyPushesJobOntoSwoole()
     {
         $server = $this->getServer();
-        $queue = QueueFactory::make($server, Application::VERSION);
+        $queue = QueueFactory::make($server, FW::version());
         $server->shouldReceive('task')->once();
         $queue->push(new FakeJob);
     }
@@ -21,10 +21,9 @@ class SwooleQueueTest extends TestCase
     public function testQueueFactoryVersionClass()
     {
         $server = $this->getServer();
-        $queue = QueueFactory::make($server, Application::VERSION);
+        $queue = QueueFactory::make($server, FW::version());
 
-        var_dump(Application::VERSION, QueueFactory::CHANGE_VERSION);
-        $isGreater = version_compare(Application::VERSION, QueueFactory::CHANGE_VERSION, '>=');
+        $isGreater = version_compare(FW::version(), QueueFactory::CHANGE_VERSION, '>=');
         $expected = $isGreater ? 'SwooleTW\Http\Task\V57\SwooleTaskQueue' : 'SwooleTW\Http\Task\V56\SwooleTaskQueue';
 
         $this->assertInstanceOf($expected, $queue);

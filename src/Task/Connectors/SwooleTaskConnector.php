@@ -3,8 +3,8 @@
 namespace SwooleTW\Http\Task\Connectors;
 
 
-use Illuminate\Foundation\Application;
 use Illuminate\Queue\Connectors\ConnectorInterface;
+use SwooleTW\Http\Helpers\FW;
 use SwooleTW\Http\Task\QueueFactory;
 
 /**
@@ -40,6 +40,6 @@ class SwooleTaskConnector implements ConnectorInterface
      */
     public function connect(array $config)
     {
-        return QueueFactory::make($this->swoole, Application::VERSION);
+        return QueueFactory::make($this->swoole, FW::version());
     }
 }
