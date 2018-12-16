@@ -25,12 +25,22 @@ class QueueFactory
      */
     public static function make($server, string $version): Queue
     {
-        $stub = self::hasBreakingChanges($version)
-            ? __DIR__ . '/../../stubs/V57/SwooleTaskQueue.stub'
-            : __DIR__ . '/../../stubs/V56/SwooleTaskQueue.stub';
+        $stub = static::stub($version);
         $class = static::copy($stub);
 
         return new $class($server);
+    }
+
+    /**
+     * @param string $version
+     *
+     * @return string
+     */
+    public static function stub(string $version)
+    {
+        return static::hasBreakingChanges($version)
+            ? __DIR__ . '/../../stubs/5.6/SwooleTaskQueue.stub'
+            : __DIR__ . '/../../stubs/5.7/SwooleTaskQueue.stub';
     }
 
     /**
@@ -38,7 +48,7 @@ class QueueFactory
      *
      * @return string
      */
-    private static function copy(string $stub)
+    public static function copy(string $stub)
     {
         $destination = __DIR__ . '/SwooleTaskQueue.php';
 

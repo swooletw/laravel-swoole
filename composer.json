@@ -63,5 +63,10 @@
         "Websocket": "SwooleTW\\Http\\Websocket\\Facades\\Websocket"
       }
     }
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "@php copy_versioned_files.php"
+    ]
   }
 }
