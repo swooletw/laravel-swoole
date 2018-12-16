@@ -5,8 +5,7 @@ namespace SwooleTW\Http\Task\Connectors;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Queue\Connectors\ConnectorInterface;
-use SwooleTW\Http\Task\V56\SwooleTaskQueue as STQ_V56;
-use SwooleTW\Http\Task\V57\SwooleTaskQueue as STQ_V57;
+use SwooleTW\Http\Task\QueueFactory;
 
 /**
  * Class SwooleTaskConnector
@@ -41,8 +40,6 @@ class SwooleTaskConnector implements ConnectorInterface
      */
     public function connect(array $config)
     {
-        $isGreater = version_compare(Application::VERSION, '5.7', '>=');
-
-        return ($isGreater) ? new STQ_V57($this->swoole) : new STQ_V56($this->swoole);
+        return QueueFactory::make($this->swoole, Application::VERSION);
     }
 }
