@@ -39,12 +39,16 @@ class RedisRoom implements RoomContract
 
     /**
      * @param \Predis\Client|null $redis
+     *
+     * @return \SwooleTW\Http\Websocket\Rooms\RoomContract
      */
-    public function prepare(RedisClient $redis = null)
+    public function prepare(RedisClient $redis = null): RoomContract
     {
         $this->setRedis($redis);
         $this->setPrefix();
         $this->cleanRooms();
+
+        return $this;
     }
 
     /**

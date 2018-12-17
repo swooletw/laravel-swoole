@@ -5,9 +5,21 @@ sudo: false
 matrix:
   include:
     - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/framework:5.3.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/framework:5.4.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/framework:5.5.*
+    - php: 7.2
       env: FRAMEWORK_VERSION=laravel/framework:5.6.*
     - php: 7.2
       env: FRAMEWORK_VERSION=laravel/framework:5.7.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.3.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.4.*
+    - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:5.5.*
     - php: 7.2
       env: FRAMEWORK_VERSION=laravel/lumen-framework:5.6.*
     - php: 7.2
@@ -25,4 +37,4 @@ script:
   - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
 
 after_success:
-  - vendor/bin/php-coveralls -v
+  - vendor/bin/coveralls -v

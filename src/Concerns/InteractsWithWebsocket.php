@@ -20,6 +20,7 @@ use Throwable;
  *
  * @property \Illuminate\Contracts\Container\Container $container
  * @property \Illuminate\Contracts\Container\Container $app
+ * @property array $types
  */
 trait InteractsWithWebsocket
 {
@@ -202,7 +203,7 @@ trait InteractsWithWebsocket
         $parser = $this->container->make('config')->get('swoole_websocket.parser');
 
         if ($isWebsocket) {
-            array_push($this->events, ...$this->wsEvents);
+            $this->types = array_merge($this->types ?? [], $this->wsEvents);
             $this->isWebsocket = true;
             $this->setParser(new $parser);
         }
@@ -279,6 +280,17 @@ trait InteractsWithWebsocket
     }
 
     /**
+     * @param string $class
+     * @param array $settings
+     *
+     * @return \SwooleTW\Http\Websocket\Rooms\RoomContract
+     */
+    protected function createRoom(string $class, array $settings): RoomContract
+    {
+        return new $class($settings);
+    }
+
+    /**
      * Bind room instance to Laravel app container.
      */
     protected function bindRoom(): void
@@ -288,7 +300,7 @@ trait InteractsWithWebsocket
             $settings = $container->make('config')->get("swoole_websocket.settings.{$driver}");
             $className = $container->make('config')->get("swoole_websocket.drivers.{$driver}");
 
-            return tap(new $className($settings))->prepare();
+            return $this->createRoom($className, $settings);
         });
 
         $this->app->alias(RoomContract::class, 'swoole.room');

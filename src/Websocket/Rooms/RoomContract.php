@@ -21,8 +21,10 @@ interface RoomContract
 
     /**
      * Do some init stuffs before workers started.
+     *
+     * @return \SwooleTW\Http\Websocket\Rooms\RoomContract
      */
-    public function prepare();
+    public function prepare(): RoomContract;
 
     /**
      * Add multiple socket fds to a room.
