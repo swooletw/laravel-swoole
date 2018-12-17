@@ -2,11 +2,8 @@
 
 namespace SwooleTW\Http\Server;
 
-use Exception;
-use Throwable;
-use Swoole\Http\Server;
-use SwooleTW\Http\Server\Sandbox;
 
+use Exception;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Facade;
@@ -18,13 +15,8 @@ use SwooleTW\Http\Helpers\OS;
 use SwooleTW\Http\Task\SwooleTaskJob;
 use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Transformers\Response;
-use SwooleTW\Http\Concerns\WithApplication;
-use Illuminate\Contracts\Container\Container;
-use Illuminate\Contracts\Debug\ExceptionHandler;
-use SwooleTW\Http\Concerns\InteractsWithWebsocket;
-use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
-use Symfony\Component\Debug\Exception\FatalThrowableError;
 use SwooleTW\Http\Websocket\Websocket;
+use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Throwable;
 
 /**
@@ -160,6 +152,7 @@ class Manager
         // don't init laravel app in task workers
         if ($server->taskworker) {
             $this->setProcessName('task process');
+
             return;
         }
         $this->setProcessName('worker process');
@@ -280,6 +273,7 @@ class Manager
     {
         // task worker callback
         $this->container->make('events')->fire('swoole.finish', func_get_args());
+
         return;
     }
 
@@ -402,7 +396,7 @@ class Manager
      */
     public function logServerError(Throwable $e)
     {
-        if (! $e instanceof Exception) {
+        if (!$e instanceof Exception) {
             $e = new FatalThrowableError($e);
         }
 

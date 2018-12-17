@@ -148,7 +148,7 @@ class PDOStatement extends BaseStatement
         $this->resultSet = ($ok = $result !== false) ? $result : [];
         $this->afterExecute();
 
-        if ($result === false){
+        if ($result === false) {
             throw new \PDOException($this->errorInfo(), $this->errorCode());
         }
 

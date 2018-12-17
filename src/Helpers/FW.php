@@ -8,6 +8,8 @@ use LogicException;
 
 /**
  * Class FW
+ *
+ * @codeCoverageIgnore
  */
 final class FW
 {

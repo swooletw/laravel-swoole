@@ -11,6 +11,8 @@ use SwooleTW\Http\Helpers\FW;
  * Class QueueFactory
  *
  * TODO Abstract version factory for Connector and Queue
+ *
+ * @codeCoverageIgnore
  */
 class QueueFactory
 {

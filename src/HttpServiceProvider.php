@@ -3,12 +3,12 @@
 namespace SwooleTW\Http;
 
 
+use Illuminate\Queue\Capsule\Manager;
 use Illuminate\Support\ServiceProvider;
 use Swoole\Http\Server as HttpServer;
 use Swoole\Websocket\Server as WebsocketServer;
 use SwooleTW\Http\Commands\HttpServerCommand;
 use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
-use SwooleTW\Http\Coroutine\Connectors\MySqlConnector;
 use SwooleTW\Http\Coroutine\MySqlConnection;
 use SwooleTW\Http\Helpers\FW;
 use SwooleTW\Http\Server\Facades\Server;
@@ -166,9 +166,6 @@ abstract class HttpServiceProvider extends ServiceProvider
         $this->app->extend('db', function ($db) {
             $db->extend('mysql-coroutine', function ($config, $name) {
                 $config['name'] = $name;
-                $connection = function () use ($config) {
-                    return ConnectorFactory::make(FW::version())->connect($config);
-                };
                 $config = $this->getMergedDatabaseConfig($config, $name);
 
                 $connection = new MySqlConnection(
@@ -191,6 +188,11 @@ abstract class HttpServiceProvider extends ServiceProvider
 
     /**
      * Get mereged config for coroutine mysql.
+     *
+     * @param array $config
+     * @param string $name
+     *
+     * @return array
      */
     protected function getMergedDatabaseConfig(array $config, string $name)
     {
@@ -208,10 +210,14 @@ abstract class HttpServiceProvider extends ServiceProvider
 
     /**
      * Get a new mysql connection.
+     *
+     * @param array $config
+     *
+     * @return \PDO
      */
     protected function getNewMySqlConnection(array $config)
     {
-        return (new MySqlConnector())->connect($config);
+        return ConnectorFactory::make(FW::version())->connect($config);
     }
 
     /**
@@ -219,7 +225,7 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function registerSwooleQueueDriver()
     {
-        $this->app->afterResolving('queue', function ($manager) {
+        $this->app->afterResolving('queue', function (Manager $manager) {
             $manager->addConnector('swoole', function () {
                 return new SwooleTaskConnector($this->app->make(Server::class));
             });

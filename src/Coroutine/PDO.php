@@ -258,8 +258,8 @@ class PDO extends BasePDO
                 function ($matches) use (&$i, &$bindKeyMap) {
                     $bindKeyMap[$matches[1]] = $i++;
 
-                return '?';
-            }, $statement);
+                    return '?';
+                }, $statement);
         }
 
         $stmtObj = $this->client->prepare($statement);

@@ -3,15 +3,15 @@
 namespace SwooleTW\Http\Coroutine\Connectors;
 
 
-use Illuminate\Contracts\Queue\Queue;
 use Illuminate\Support\Arr;
-use SwooleTW\Http\Coroutine\Connectors\MySqlConnector;
 use SwooleTW\Http\Helpers\FW;
 
 /**
  * Class ConnectorFactory
  *
  * TODO Abstract version factory for Connector and Queue
+ *
+ * @codeCoverageIgnore
  */
 class ConnectorFactory
 {

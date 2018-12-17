@@ -1,12 +1,10 @@
 <?php
 
-
 namespace SwooleTW\Http\Tests\Task;
 
 
-use Mockery as m;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Mockery as m;
 use SwooleTW\Http\Helpers\FW;
 use SwooleTW\Http\Task\QueueFactory;
 use SwooleTW\Http\Tests\TestCase;
