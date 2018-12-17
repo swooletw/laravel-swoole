@@ -27,14 +27,14 @@ class ConnectorFactory
      *
      * @const string
      */
-    public const QUEUE_CLASS = 'SwooleTW\Http\Coroutine\Connectors\MySqlConnector';
+    public const CONNECTOR_CLASS = 'SwooleTW\Http\Coroutine\Connectors\MySqlConnector';
 
     /**
      * Swoole connector path
      *
      * @const string
      */
-    public const QUEUE_CLASS_PATH = __DIR__ . '/MySqlConnector.php';
+    public const CONNECTOR_CLASS_PATH = __DIR__ . '/MySqlConnector.php';
 
     /**
      * @param string $version
@@ -69,11 +69,11 @@ class ConnectorFactory
      */
     public static function copy(string $stub, bool $rewrite = false): string
     {
-        if (!file_exists(static::QUEUE_CLASS_PATH) || $rewrite) {
-            copy($stub, static::QUEUE_CLASS_PATH);
+        if (!file_exists(static::CONNECTOR_CLASS_PATH) || $rewrite) {
+            copy($stub, static::CONNECTOR_CLASS_PATH);
         }
 
-        return static::QUEUE_CLASS;
+        return static::CONNECTOR_CLASS;
     }
 
     /**
@@ -81,12 +81,12 @@ class ConnectorFactory
      *
      * @return bool
      */
-    private static function isFileVersionMatch(string $version): bool
+    protected static function isFileVersionMatch(string $version): bool
     {
         try {
             $fileVersion = null;
-            if (class_exists(self::QUEUE_CLASS)) {
-                $ref = new \ReflectionClass(self::QUEUE_CLASS);
+            if (class_exists(self::CONNECTOR_CLASS)) {
+                $ref = new \ReflectionClass(self::CONNECTOR_CLASS);
                 if (preg_match(FW::VERSION_WITHOUT_BUG_FIX, $ref->getDocComment(), $result)) {
                     $fileVersion = Arr::first($result);
                 }

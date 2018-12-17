@@ -81,7 +81,7 @@ class QueueFactory
      *
      * @return bool
      */
-    private static function isFileVersionMatch(string $version): bool
+    protected static function isFileVersionMatch(string $version): bool
     {
         try {
             $fileVersion = null;
@@ -92,7 +92,7 @@ class QueueFactory
                 }
             }
 
-            return version_compare($fileVersion, $version, '=');
+            return version_compare($fileVersion, $version, '>=');
         } catch (\Exception $e) {
             return false;
         }
