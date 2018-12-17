@@ -7,8 +7,6 @@ use Illuminate\Support\Str;
 
 /**
  * Class OS
- *
- * @codeCoverageIgnore
  */
 final class OS
 {
