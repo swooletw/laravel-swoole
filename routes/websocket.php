@@ -1,5 +1,6 @@
 <?php
 
+
 use Illuminate\Http\Request;
 use SwooleTW\Http\Websocket\Facades\Websocket;
 
@@ -23,5 +24,3 @@ Websocket::on('disconnect', function ($websocket) {
 Websocket::on('example', function ($websocket, $data) {
     $websocket->emit('message', $data);
 });
-
-// Websocket::on('test', 'ExampleController@method');

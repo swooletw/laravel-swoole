@@ -2,8 +2,9 @@
 
 namespace SwooleTW\Http\Server\Resetters;
 
-use SwooleTW\Http\Server\Sandbox;
+
 use Illuminate\Contracts\Container\Container;
+use SwooleTW\Http\Server\Sandbox;
 
 interface ResetterContract
 {

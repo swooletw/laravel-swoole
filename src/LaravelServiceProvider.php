@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http;
 
+
 use SwooleTW\Http\Server\Manager;
 
 /**
@@ -28,6 +29,6 @@ class LaravelServiceProvider extends HttpServiceProvider
      */
     protected function bootRoutes()
     {
-        require __DIR__.'/../routes/laravel_routes.php';
+        require __DIR__ . '/../routes/laravel_routes.php';
     }
 }

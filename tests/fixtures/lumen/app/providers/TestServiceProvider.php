@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Tests\Fixtures\Lumen\App\Providers;
 
+
 use Illuminate\Support\ServiceProvider;
 
 class TestServiceProvider extends ServiceProvider

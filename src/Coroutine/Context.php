@@ -2,8 +2,9 @@
 
 namespace SwooleTW\Http\Coroutine;
 
-use Swoole\Coroutine;
+
 use Illuminate\Contracts\Container\Container;
+use Swoole\Coroutine;
 
 class Context
 {
@@ -31,6 +32,8 @@ class Context
 
     /**
      * Set app container by current coroutine id.
+     *
+     * @param \Illuminate\Contracts\Container\Container $app
      */
     public static function setApp(Container $app)
     {
@@ -39,6 +42,10 @@ class Context
 
     /**
      * Get data by current coroutine id.
+     *
+     * @param string $key
+     *
+     * @return mixed|null
      */
     public static function getData(string $key)
     {
@@ -47,6 +54,9 @@ class Context
 
     /**
      * Set data by current coroutine id.
+     *
+     * @param string $key
+     * @param $value
      */
     public static function setData(string $key, $value)
     {
@@ -55,6 +65,8 @@ class Context
 
     /**
      * Remove data by current coroutine id.
+     *
+     * @param string $key
      */
     public static function removeData(string $key)
     {
