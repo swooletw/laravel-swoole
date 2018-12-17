@@ -12,9 +12,9 @@
 */
 
 $app->get('socket.io', [
-    'as' => 'io.get', 'uses' => 'SocketIOController@upgrade'
+    'as' => 'io.get', 'uses' => 'SocketIOController@upgrade',
 ]);
 
 $app->post('socket.io', [
-    'as' => 'io.post', 'uses' => 'SocketIOController@reject'
+    'as' => 'io.post', 'uses' => 'SocketIOController@reject',
 ]);

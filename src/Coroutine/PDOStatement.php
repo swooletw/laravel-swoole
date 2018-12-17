@@ -9,21 +9,62 @@
 
 namespace SwooleTW\Http\Coroutine;
 
+
 use PDOStatement as BaseStatement;
-use SwooleTW\Http\Coroutine\PDO;
 use Swoole\Coroutine\MySQL\Statement;
 
+/**
+ * Class PDOStatement
+ */
 class PDOStatement extends BaseStatement
 {
+    /**
+     * @var \SwooleTW\Http\Coroutine\PDO
+     */
     private $parent;
+
+    /**
+     * @var \Swoole\Coroutine\MySQL\Statement|mixed
+     */
     public $statement;
+
+    /**
+     * @var int|mixed
+     */
     public $timeout;
+
+    /**
+     * @var array
+     */
     public $bindMap = [];
+
+    /**
+     * @var int
+     */
     public $cursor = -1;
+
+    /**
+     * @var int
+     */
     public $cursorOrientation = PDO::FETCH_ORI_NEXT;
+
+    /**
+     * @var array
+     */
     public $resultSet = [];
+
+    /**
+     * @var int
+     */
     public $fetchStyle = PDO::FETCH_BOTH;
 
+    /**
+     * PDOStatement constructor.
+     *
+     * @param \SwooleTW\Http\Coroutine\PDO $parent
+     * @param \Swoole\Coroutine\MySQL\Statement $statement
+     * @param array $driverOptions
+     */
     public function __construct(PDO $parent, Statement $statement, array $driverOptions = [])
     {
         $this->parent = $parent;
@@ -48,7 +89,7 @@ class PDOStatement extends BaseStatement
 
     public function bindParam($parameter, &$variable, $type = null, $maxlen = null, $driverdata = null)
     {
-        if (! is_string($parameter) && ! is_int($parameter)) {
+        if (!is_string($parameter) && !is_int($parameter)) {
             return false;
         }
 
@@ -60,15 +101,15 @@ class PDOStatement extends BaseStatement
 
     public function bindValue($parameter, $variable, $type = null)
     {
-        if (! is_string($parameter) && ! is_int($parameter)) {
+        if (!is_string($parameter) && !is_int($parameter)) {
             return false;
         }
 
         if (is_object($variable)) {
-            if (! method_exists($variable, '__toString')) {
+            if (!method_exists($variable, '__toString')) {
                 return false;
             } else {
-                $variable = (string) $variable;
+                $variable = (string)$variable;
             }
         }
 
@@ -86,14 +127,14 @@ class PDOStatement extends BaseStatement
 
     public function execute($inputParameters = null)
     {
-        if (! empty($inputParameters)) {
+        if (!empty($inputParameters)) {
             foreach ($inputParameters as $key => $value) {
                 $this->bindParam($key, $value);
             }
         }
 
         $inputParameters = [];
-        if (! empty($this->statement->bindKeyMap)) {
+        if (!empty($this->statement->bindKeyMap)) {
             foreach ($this->statement->bindKeyMap as $nameKey => $numKey) {
                 $inputParameters[$numKey] = $this->bindMap[$nameKey];
             }
@@ -108,9 +149,11 @@ class PDOStatement extends BaseStatement
         return $ok;
     }
 
-    public function setFetchMode($fetchStyle, $params = null)
+    public function setFetchMode($fetchStyle, $params = null, array $ctorarfg = [])
     {
         $this->fetchStyle = $fetchStyle;
+
+        return true;
     }
 
     private function __executeWhenStringQueryEmpty()
@@ -137,13 +180,9 @@ class PDOStatement extends BaseStatement
         return $temp;
     }
 
-    private function transStyle(
-        $rawData,
-        $fetchStyle = null,
-        $fetchArgument = null,
-        $ctorArgs = null
-    ) {
-        if (! is_array($rawData)) {
+    private function transStyle($rawData, $fetchStyle = null, $fetchArgument = null, $ctorArgs = null)
+    {
+        if (!is_array($rawData)) {
             return false;
         }
         if (empty($rawData)) {
@@ -151,7 +190,8 @@ class PDOStatement extends BaseStatement
         }
 
         $fetchStyle = is_null($fetchStyle) ? $this->fetchStyle : $fetchStyle;
-        $ctorArgs = is_null($ctorArgs) ? [] : $ctorArgs;
+        // TODO Use it if needed
+        #$ctorArgs = is_null($ctorArgs) ? [] : $ctorArgs;
 
         $resultSet = [];
         switch ($fetchStyle) {
@@ -166,7 +206,7 @@ class PDOStatement extends BaseStatement
                 break;
             case PDO::FETCH_OBJ:
                 foreach ($rawData as $row) {
-                    $resultSet[] = (object) $row;
+                    $resultSet[] = (object)$row;
                 }
                 break;
             case PDO::FETCH_NUM:
@@ -182,16 +222,12 @@ class PDOStatement extends BaseStatement
         return $resultSet;
     }
 
-    public function fetch(
-        $fetchStyle = null,
-        $cursorOrientation = null,
-        $cursorOffset = null,
-        $fetchArgument = null
-    ) {
+    public function fetch($fetchStyle = null, $cursorOrientation = null, $cursorOffset = null, $fetchArgument = null)
+    {
         $this->__executeWhenStringQueryEmpty();
 
-        $cursorOrientation = is_null($cursorOrientation) ? PDO::FETCH_ORI_NEXT : $cursorOrientation;
-        $cursorOffset = is_null($cursorOffset) ? 0 : (int) $cursorOffset;
+        $cursorOrientation = \is_null($cursorOrientation) ? PDO::FETCH_ORI_NEXT : $cursorOrientation;
+        $cursorOffset = \is_null($cursorOffset) ? 0 : (int)$cursorOffset;
 
         switch ($cursorOrientation) {
             case PDO::FETCH_ORI_ABS:
@@ -222,16 +258,15 @@ class PDOStatement extends BaseStatement
     /**
      * Returns a single column from the next row of a result set or FALSE if there are no more rows.
      *
-     * @param int $column_number
-     * 0-indexed number of the column you wish to retrieve from the row.
-     * If no value is supplied, PDOStatement::fetchColumn() fetches the first column.
+     * @param int|null $columnNumber
      *
      * @return bool|mixed
      */
     public function fetchColumn($columnNumber = null)
     {
-        $columnNumber = is_null($columnNumber) ? 0 : $columnNumber;
+        $columnNumber = \is_null($columnNumber) ? 0 : $columnNumber;
         $this->__executeWhenStringQueryEmpty();
+
         return $this->fetch(PDO::FETCH_COLUMN, PDO::FETCH_ORI_NEXT, 0, $columnNumber);
     }
 

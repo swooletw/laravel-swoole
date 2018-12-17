@@ -2,20 +2,22 @@
 
 namespace SwooleTW\Http\Coroutine;
 
+
 use Closure;
-use Illuminate\Support\Str;
-use Illuminate\Database\QueryException;
 use Illuminate\Database\MySqlConnection as BaseConnection;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Str;
 
 class MySqlConnection extends BaseConnection
 {
     /**
      * Handle a query exception that occurred during query execution.
      *
-     * @param  \Illuminate\Database\QueryException  $e
-     * @param  string    $query
-     * @param  array     $bindings
-     * @param  \Closure  $callback
+     * @param  \Illuminate\Database\QueryException $e
+     * @param  string $query
+     * @param  array $bindings
+     * @param  \Closure $callback
+     *
      * @return mixed
      *
      * @throws \Illuminate\Database\QueryException

@@ -2,13 +2,13 @@
 
 namespace SwooleTW\Http\Websocket;
 
-use InvalidArgumentException;
+
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Pipeline\Pipeline as PipelineContract;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
-use SwooleTW\Http\Websocket\Authenticatable;
-use Illuminate\Contracts\Container\Container;
+use InvalidArgumentException;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
-use Illuminate\Contracts\Pipeline\Pipeline as PipelineContract;
 
 class Websocket
 {
@@ -56,14 +56,14 @@ class Websocket
     /**
      * Pipeline instance.
      *
-     * @var PipelineContract
+     * @var \Illuminate\Contracts\Pipeline\Pipeline
      */
     protected $pipeline;
 
     /**
      * Room adapter.
      *
-     * @var RoomContract
+     * @var \SwooleTW\Http\Websocket\Rooms\RoomContract
      */
     protected $room;
 
@@ -94,14 +94,15 @@ class Websocket
      * Set multiple recipients fd or room names.
      *
      * @param integer, string, array
+     *
      * @return $this
      */
-    public function to($values)
+    public function to($values): self
     {
         $values = is_string($values) || is_integer($values) ? func_get_args() : $values;
 
         foreach ($values as $value) {
-            if (! in_array($value, $this->to)) {
+            if (!in_array($value, $this->to)) {
                 $this->to[] = $value;
             }
         }
@@ -113,9 +114,10 @@ class Websocket
      * Join sender to multiple rooms.
      *
      * @param string, array $rooms
+     *
      * @return $this
      */
-    public function join($rooms)
+    public function join($rooms): self
     {
         $rooms = is_string($rooms) || is_integer($rooms) ? func_get_args() : $rooms;
 
@@ -127,10 +129,11 @@ class Websocket
     /**
      * Make sender leave multiple rooms.
      *
-     * @param string, array
+     * @param array $rooms
+     *
      * @return $this
      */
-    public function leave($rooms = [])
+    public function leave($rooms = []): self
     {
         $rooms = is_string($rooms) || is_integer($rooms) ? func_get_args() : $rooms;
 
@@ -144,12 +147,13 @@ class Websocket
      *
      * @param string
      * @param mixed
+     *
      * @return boolean
      */
-    public function emit(string $event, $data)
+    public function emit(string $event, $data): bool
     {
         $fds = $this->getFds();
-        $assigned = ! empty($this->to);
+        $assigned = !empty($this->to);
 
         // if no fds are found, but rooms are assigned
         // that means trying to emit to a non-existing room
@@ -166,8 +170,8 @@ class Websocket
                 'broadcast' => $this->isBroadcast,
                 'assigned' => $assigned,
                 'event' => $event,
-                'message' => $data
-            ]
+                'message' => $data,
+            ],
         ]);
 
         $this->reset();
@@ -179,6 +183,7 @@ class Websocket
      * An alias of `join` function.
      *
      * @param string
+     *
      * @return $this
      */
     public function in($room)
@@ -193,11 +198,12 @@ class Websocket
      *
      * @param string
      * @param callback
+     *
      * @return $this
      */
     public function on(string $event, $callback)
     {
-        if (! is_string($callback) && ! is_callable($callback)) {
+        if (!is_string($callback) && !is_callable($callback)) {
             throw new InvalidArgumentException(
                 'Invalid websocket callback. Must be a string or callable.'
             );
@@ -212,6 +218,7 @@ class Websocket
      * Check if this event name exists.
      *
      * @param string
+     *
      * @return boolean
      */
     public function eventExists(string $event)
@@ -224,11 +231,12 @@ class Websocket
      *
      * @param string
      * @param mixed
+     *
      * @return mixed
      */
     public function call(string $event, $data = null)
     {
-        if (! $this->eventExists($event)) {
+        if (!$this->eventExists($event)) {
             return null;
         }
 
@@ -243,7 +251,7 @@ class Websocket
 
         return App::call($this->callbacks[$event], [
             'websocket' => $this,
-            $dataKey => $data
+            $dataKey => $data,
         ]);
     }
 
@@ -251,6 +259,7 @@ class Websocket
      * Close current connection.
      *
      * @param integer
+     *
      * @return boolean
      */
     public function close(int $fd = null)
@@ -262,6 +271,7 @@ class Websocket
      * Set sender fd.
      *
      * @param integer
+     *
      * @return $this
      */
     public function setSender(int $fd)
@@ -320,6 +330,10 @@ class Websocket
 
     /**
      * Reset some data status.
+     *
+     * @param bool $force
+     *
+     * @return \SwooleTW\Http\Websocket\Websocket
      */
     public function reset($force = false)
     {
@@ -336,6 +350,10 @@ class Websocket
 
     /**
      * Get or set middleware.
+     *
+     * @param array|string|null $middleware
+     *
+     * @return array|\SwooleTW\Http\Websocket\Websocket
      */
     public function middleware($middleware = null)
     {
@@ -362,6 +380,8 @@ class Websocket
 
     /**
      * Set container to pipeline.
+     *
+     * @param \Illuminate\Contracts\Container\Container $container
      */
     public function setContainer(Container $container)
     {
@@ -377,6 +397,10 @@ class Websocket
 
     /**
      * Set pipeline.
+     *
+     * @param \Illuminate\Contracts\Pipeline\Pipeline $pipeline
+     *
+     * @return \SwooleTW\Http\Websocket\Websocket
      */
     public function setPipeline(PipelineContract $pipeline)
     {
@@ -396,7 +420,8 @@ class Websocket
     /**
      * Set the given request through the middleware.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Request
      */
     protected function setRequestThroughMiddleware($request)

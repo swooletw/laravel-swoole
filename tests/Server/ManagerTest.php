@@ -2,26 +2,26 @@
 
 namespace SwooleTW\Http\Tests\Server;
 
+
+use Illuminate\Container\Container;
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Support\Facades\Config;
 use Mockery as m;
-use Swoole\Table;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
+use Swoole\Table;
 use SwooleTW\Http\Server\Manager;
 use SwooleTW\Http\Server\Sandbox;
-use SwooleTW\Http\Tests\TestCase;
-use Illuminate\Container\Container;
-use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Table\SwooleTable;
-use Swoole\Http\Server as HttpServer;
-use Illuminate\Support\Facades\Config;
-use SwooleTW\Http\Websocket\Websocket;
+use SwooleTW\Http\Tests\TestCase;
+use SwooleTW\Http\Websocket\Facades\Websocket as WebsocketFacade;
 use SwooleTW\Http\Websocket\HandlerContract;
-use SwooleTW\Http\Websocket\Rooms\TableRoom;
+use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
-use Illuminate\Contracts\Debug\ExceptionHandler;
+use SwooleTW\Http\Websocket\Rooms\TableRoom;
 use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
-use SwooleTW\Http\Websocket\Facades\Websocket as WebsocketFacade;
+use SwooleTW\Http\Websocket\Websocket;
 
 class ManagerTest extends TestCase
 {
@@ -31,13 +31,13 @@ class ManagerTest extends TestCase
             'table_name' => [
                 'size' => 1024,
                 'columns' => [
-                    ['name' => 'column_name', 'type' => Table::TYPE_STRING, 'size' => 1024]
-                ]
-            ]
+                    ['name' => 'column_name', 'type' => Table::TYPE_STRING, 'size' => 1024],
+                ],
+            ],
         ],
         'swoole_http.providers' => [],
         'swoole_http.resetters' => [],
-        'swoole_http.pre_resolved' => ['foo']
+        'swoole_http.pre_resolved' => ['foo'],
     ];
 
     protected $websocketConfig = [
@@ -49,13 +49,13 @@ class ManagerTest extends TestCase
             'room_rows' => 10,
             'room_size' => 10,
             'client_rows' => 10,
-            'client_size' => 10
+            'client_size' => 10,
         ],
         'swoole_websocket.drivers.table' => TableRoom::class,
         'swoole_http.tables' => [],
         'swoole_http.providers' => [],
         'swoole_http.resetters' => [],
-        'swoole_http.server.public_path' => '/'
+        'swoole_http.server.public_path' => '/',
     ];
 
     public function testGetFramework()
@@ -127,7 +127,7 @@ class ManagerTest extends TestCase
     public function testOnWorkerStart()
     {
         $server = $this->getServer();
-        $manager = $this->getManager();
+        $this->getManager();
 
         $container = $this->getContainer($this->getServer(), $this->getConfig(true));
         $container->singleton('events', function () {
@@ -153,7 +153,7 @@ class ManagerTest extends TestCase
     public function testLoadApplication()
     {
         $server = $this->getServer();
-        $manager = $this->getManager();
+        $this->getManager();
 
         $container = $this->getContainer($this->getServer(), $this->getConfig());
         $container->singleton('events', function () {
@@ -164,7 +164,7 @@ class ManagerTest extends TestCase
         $manager = $this->getManager($container, $framework = 'laravel', $path);
         $manager->onWorkerStart($server);
 
-        $app = $manager->getApplication();
+        $manager->getApplication();
     }
 
     public function testOnTaskWorkerStart()
@@ -184,8 +184,8 @@ class ManagerTest extends TestCase
 
     public function testOnRequest()
     {
-        $server = $this->getServer();
-        $manager = $this->getManager();
+        $this->getServer();
+        $this->getManager();
 
         $container = $this->getContainer($this->getServer(), $this->getConfig(true));
         $container->singleton('events', function () {
@@ -196,6 +196,7 @@ class ManagerTest extends TestCase
             $websocket->shouldReceive('reset')
                 ->with(true)
                 ->once();
+
             return $websocket;
         });
         $container->singleton('swoole.sandbox', function () {
@@ -210,6 +211,7 @@ class ManagerTest extends TestCase
                 ->once();
             $sandbox->shouldReceive('disable')
                 ->once();
+
             return $sandbox;
         });
 
@@ -249,12 +251,14 @@ class ManagerTest extends TestCase
             $sandbox = m::mock(Sandbox::class);
             $sandbox->shouldReceive('disable')
                 ->once();
+
             return $sandbox;
         });
         $container->singleton(ExceptionHandler::class, function () {
             $handler = m::mock(ExceptionHandler::class);
             $handler->shouldReceive('render')
                 ->once();
+
             return $handler;
         });
 
@@ -339,6 +343,7 @@ class ManagerTest extends TestCase
             $handler->shouldReceive('report')
                 ->with($exception)
                 ->once();
+
             return $handler;
         });
         $manager = $this->getManager($container);
@@ -371,9 +376,10 @@ class ManagerTest extends TestCase
             $websocket->shouldReceive('setContainer')
                 ->with(m::type(Container::class))
                 ->once();
-             $websocket->shouldReceive('call')
+            $websocket->shouldReceive('call')
                 ->with('connect', m::type('Illuminate\Http\Request'))
                 ->once();
+
             return $websocket;
         });
         $container->singleton('swoole.sandbox', function () {
@@ -388,6 +394,7 @@ class ManagerTest extends TestCase
             $sandbox->shouldReceive('getApplication')
                 ->once()
                 ->andReturn(m::mock(Container::class));
+
             return $sandbox;
         });
 
@@ -417,7 +424,7 @@ class ManagerTest extends TestCase
             ->once()
             ->andReturn($payload = [
                 'event' => 'event',
-                'data' => 'data'
+                'data' => 'data',
             ]);
 
         $container = $this->getContainer();
@@ -437,6 +444,7 @@ class ManagerTest extends TestCase
             $websocket->shouldReceive('call')
                 ->with($payload['event'], $payload['data'])
                 ->once();
+
             return $websocket;
         });
         $container->singleton('swoole.sandbox', function () {
@@ -445,6 +453,7 @@ class ManagerTest extends TestCase
                 ->once();
             $sandbox->shouldReceive('disable')
                 ->once();
+
             return $sandbox;
         });
 
@@ -476,6 +485,7 @@ class ManagerTest extends TestCase
                 ->once();
             $websocket->shouldReceive('leave')
                 ->once();
+
             return $websocket;
         });
 
@@ -492,8 +502,9 @@ class ManagerTest extends TestCase
                 ->with($fd)
                 ->once()
                 ->andReturn([
-                    'websocket_status' => true
+                    'websocket_status' => true,
                 ]);
+
             return $server;
         });
 
@@ -511,7 +522,7 @@ class ManagerTest extends TestCase
             'broadcast' => 'broadcast',
             'assigned' => 'assigned',
             'event' => 'event',
-            'message' => 'message'
+            'message' => 'message',
         ];
 
         $manager = $this->getWebsocketManager();
@@ -531,7 +542,7 @@ class ManagerTest extends TestCase
         $data = [
             'fds' => [1, 2, 3],
             'event' => 'event',
-            'message' => 'message'
+            'message' => 'message',
         ];
 
         $parser = m::mock(Parser::class);
