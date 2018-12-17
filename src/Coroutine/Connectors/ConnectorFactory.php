@@ -1,52 +1,52 @@
 <?php
 
-namespace SwooleTW\Http\Task;
+namespace SwooleTW\Http\Coroutine\Connectors;
 
 
 use Illuminate\Contracts\Queue\Queue;
 use Illuminate\Support\Arr;
+use SwooleTW\Http\Coroutine\Connectors\MySqlConnector;
 use SwooleTW\Http\Helpers\FW;
 
 /**
- * Class QueueFactory
+ * Class ConnectorFactory
  *
  * TODO Abstract version factory for Connector and Queue
  */
-class QueueFactory
+class ConnectorFactory
 {
     /**
      * Version with breaking changes
      *
      * @const string
      */
-    public const CHANGE_VERSION = '5.7';
+    public const CHANGE_VERSION = '5.6';
 
     /**
-     * Swoole task queue class
+     * Swoole connector class
      *
      * @const string
      */
-    public const QUEUE_CLASS = 'SwooleTW\Http\Task\SwooleTaskQueue';
+    public const CONNECTOR_CLASS = 'SwooleTW\Http\Coroutine\Connectors\MySqlConnector';
 
     /**
-     * Swoole task queue path
+     * Swoole connector path
      *
      * @const string
      */
-    public const QUEUE_CLASS_PATH = __DIR__ . '/SwooleTaskQueue.php';
+    public const CONNECTOR_CLASS_PATH = __DIR__ . '/MySqlConnector.php';
 
     /**
-     * @param \Swoole\Http\Server $server
      * @param string $version
      *
-     * @return \Illuminate\Contracts\Queue\Queue
+     * @return \SwooleTW\Http\Coroutine\Connectors\MySqlConnector
      */
-    public static function make($server, string $version): Queue
+    public static function make(string $version): MySqlConnector
     {
         $isMatch = static::isFileVersionMatch($version);
         $class = static::copy(static::stub($version), !$isMatch);
 
-        return new $class($server);
+        return new $class();
     }
 
     /**
@@ -57,8 +57,8 @@ class QueueFactory
     public static function stub(string $version): string
     {
         return static::hasBreakingChanges($version)
-            ? __DIR__ . '/../../stubs/5.7/SwooleTaskQueue.stub'
-            : __DIR__ . '/../../stubs/5.6/SwooleTaskQueue.stub';
+            ? __DIR__ . '/../../../stubs/5.6/MySqlConnector.stub'
+            : __DIR__ . '/../../../stubs/5.5/MySqlConnector.stub';
     }
 
     /**
@@ -69,11 +69,11 @@ class QueueFactory
      */
     public static function copy(string $stub, bool $rewrite = false): string
     {
-        if (!file_exists(static::QUEUE_CLASS_PATH) || $rewrite) {
-            copy($stub, static::QUEUE_CLASS_PATH);
+        if (!file_exists(static::CONNECTOR_CLASS_PATH) || $rewrite) {
+            copy($stub, static::CONNECTOR_CLASS_PATH);
         }
 
-        return static::QUEUE_CLASS;
+        return static::CONNECTOR_CLASS;
     }
 
     /**
@@ -85,8 +85,8 @@ class QueueFactory
     {
         try {
             $fileVersion = null;
-            if (class_exists(self::QUEUE_CLASS)) {
-                $ref = new \ReflectionClass(self::QUEUE_CLASS);
+            if (class_exists(self::CONNECTOR_CLASS)) {
+                $ref = new \ReflectionClass(self::CONNECTOR_CLASS);
                 if (preg_match(FW::VERSION_WITHOUT_BUG_FIX, $ref->getDocComment(), $result)) {
                     $fileVersion = Arr::first($result);
                 }

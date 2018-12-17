@@ -7,8 +7,10 @@ use Illuminate\Support\ServiceProvider;
 use Swoole\Http\Server as HttpServer;
 use Swoole\Websocket\Server as WebsocketServer;
 use SwooleTW\Http\Commands\HttpServerCommand;
+use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
 use SwooleTW\Http\Coroutine\Connectors\MySqlConnector;
 use SwooleTW\Http\Coroutine\MySqlConnection;
+use SwooleTW\Http\Helpers\FW;
 use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Task\Connectors\SwooleTaskConnector;
 
@@ -163,6 +165,10 @@ abstract class HttpServiceProvider extends ServiceProvider
     {
         $this->app->extend('db', function ($db) {
             $db->extend('mysql-coroutine', function ($config, $name) {
+                $config['name'] = $name;
+                $connection = function () use ($config) {
+                    return ConnectorFactory::make(FW::version())->connect($config);
+                };
                 $config = $this->getMergedDatabaseConfig($config, $name);
 
                 $connection = new MySqlConnection(
