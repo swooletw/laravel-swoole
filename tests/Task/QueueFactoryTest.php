@@ -20,7 +20,7 @@ class QueueFactoryTest extends TestCase
 {
     public function testItHasNeededStubByVersion()
     {
-        $version = '5.7';
+        $version = FW::version();
 
         $search = version_compare($version, '5.7', '>=') ? '5.7' : '5.6';
         $stub = QueueFactory::stub($version);
@@ -38,31 +38,9 @@ class QueueFactoryTest extends TestCase
         $this->assertNotTrue(Str::contains($stub, $search));
     }
 
-    public function testItCanCopyNeededStubByVersion()
-    {
-        $version = '5.7';
-
-        $search = version_compare($version, '5.7', '>=') ? '5.7' : '5.6';
-        $stub = QueueFactory::stub($version);
-
-        $this->assertTrue(Str::contains($stub, $search));
-
-        QueueFactory::copy($stub, true);
-
-        $fileVersion = null;
-        $ref = new \ReflectionClass(QueueFactory::QUEUE_CLASS);
-        if (preg_match(FW::VERSION_WITHOUT_BUG_FIX, $ref->getDocComment(), $result)) {
-            $fileVersion = Arr::first($result);
-        }
-
-        $versionEquals = version_compare($fileVersion, $version, '>=');
-
-        $this->assertTrue($versionEquals);
-    }
-
     public function testItCanMakeNeededQueueByVersion()
     {
-        $version = '5.7';
+        $version = FW::version();
 
         $server = $this->getServer();
         $queue = QueueFactory::make($server, $version);

@@ -37,28 +37,6 @@ class ConnectorFactoryTest extends TestCase
         $this->assertNotTrue(Str::contains($stub, $search));
     }
 
-    public function testItCanCopyNeededStubByVersion()
-    {
-        $version = '5.6';
-
-        $search = version_compare($version, '5.6', '>=') ? '5.6' : '5.5';
-        $stub = ConnectorFactory::stub($version);
-
-        $this->assertTrue(Str::contains($stub, $search));
-
-        ConnectorFactory::copy($stub, true);
-
-        $fileVersion = null;
-        $ref = new \ReflectionClass(ConnectorFactory::CONNECTOR_CLASS);
-        if (preg_match(FW::VERSION_WITHOUT_BUG_FIX, $ref->getDocComment(), $result)) {
-            $fileVersion = Arr::first($result);
-        }
-
-        $versionEquals = version_compare($fileVersion, $version, '>=');
-
-        $this->assertTrue($versionEquals);
-    }
-
     public function testItCanMakeNeededQueueByVersion()
     {
         $version = FW::version();

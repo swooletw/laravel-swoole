@@ -92,7 +92,7 @@ class ConnectorFactory
                 }
             }
 
-            return version_compare($fileVersion, $version, '=');
+            return version_compare($fileVersion, $version, '>=');
         } catch (\Exception $e) {
             return false;
         }
