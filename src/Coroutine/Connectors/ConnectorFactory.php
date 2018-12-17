@@ -10,8 +10,6 @@ use SwooleTW\Http\Helpers\FW;
  * Class ConnectorFactory
  *
  * TODO Abstract version factory for Connector and Queue
- *
- * @codeCoverageIgnore
  */
 class ConnectorFactory
 {
