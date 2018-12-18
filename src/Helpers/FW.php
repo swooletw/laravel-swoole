@@ -30,14 +30,14 @@ final class FW
      *
      * @const string
      */
-    public const VERSION_FULL = '/(?:\d+\.?)+/i';
+    public const VERSION_FULL = '/\s*(?:\d+\.?)+/i';
 
     /**
      * Version without bugfix regular expression
      *
      * @const string
      */
-    public const VERSION_WITHOUT_BUG_FIX = '/(?:\d+\.?){2}/i';
+    public const VERSION_WITHOUT_BUG_FIX = '/\s*(?:\d+\.*?){2}/i';
 
     /**
      * Returns true if current Framework in types
