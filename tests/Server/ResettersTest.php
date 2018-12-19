@@ -2,22 +2,23 @@
 
 namespace SwooleTW\Http\Tests\Server;
 
-use Mockery as m;
-use Illuminate\Http\Request;
-use SwooleTW\Http\Server\Sandbox;
-use SwooleTW\Http\Tests\TestCase;
+
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
+use Mockery as m;
 use SwooleTW\Http\Server\Resetters\BindRequest;
-use SwooleTW\Http\Server\Resetters\ResetConfig;
-use SwooleTW\Http\Server\Resetters\ResetCookie;
-use SwooleTW\Http\Server\Resetters\ResetSession;
 use SwooleTW\Http\Server\Resetters\ClearInstances;
-use SwooleTW\Http\Server\Resetters\ResetProviders;
-use SwooleTW\Http\Server\Resetters\RebindViewContainer;
 use SwooleTW\Http\Server\Resetters\RebindKernelContainer;
 use SwooleTW\Http\Server\Resetters\RebindRouterContainer;
+use SwooleTW\Http\Server\Resetters\RebindViewContainer;
+use SwooleTW\Http\Server\Resetters\ResetConfig;
+use SwooleTW\Http\Server\Resetters\ResetCookie;
+use SwooleTW\Http\Server\Resetters\ResetProviders;
+use SwooleTW\Http\Server\Resetters\ResetSession;
+use SwooleTW\Http\Server\Sandbox;
+use SwooleTW\Http\Tests\TestCase;
 
 class ResettersTest extends TestCase
 {
@@ -233,7 +234,13 @@ class ResettersTest extends TestCase
     }
 }
 
-class TestProvider extends ServiceProvider {
-    public function register() {}
-    public function boot() {}
+class TestProvider extends ServiceProvider
+{
+    public function register()
+    {
+    }
+
+    public function boot()
+    {
+    }
 }

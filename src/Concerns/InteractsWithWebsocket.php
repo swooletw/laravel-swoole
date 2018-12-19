@@ -2,33 +2,43 @@
 
 namespace SwooleTW\Http\Concerns;
 
-use Throwable;
-use Swoole\Websocket\Frame;
-use Swoole\Websocket\Server;
+
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Pipeline\Pipeline;
-use SwooleTW\Http\Websocket\Parser;
-use Illuminate\Support\Facades\Facade;
-use SwooleTW\Http\Websocket\Websocket;
+use Illuminate\Support\Arr;
+use SwooleTW\Http\Exceptions\WebsocketNotSetInConfigException;
+use SwooleTW\Http\Helpers\Service;
 use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Websocket\HandlerContract;
+use SwooleTW\Http\Websocket\Parser;
+use SwooleTW\Http\Websocket\Push;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use SwooleTW\Http\Websocket\Websocket;
+use Throwable;
 
+/**
+ * Trait InteractsWithWebsocket
+ *
+ * @property \Illuminate\Contracts\Container\Container $container
+ * @property \Illuminate\Contracts\Container\Container $app
+ * @property array $types
+ */
 trait InteractsWithWebsocket
 {
     /**
      * @var boolean
      */
-    protected $isWebsocket = false;
+    protected $isServerWebsocket = false;
 
     /**
-     * @var SwooleTW\Http\Websocket\HandlerContract
+     * @var \SwooleTW\Http\Websocket\HandlerContract
      */
     protected $websocketHandler;
 
     /**
-     * @var SwooleTW\Http\Websocket\Parser
+     * @var \SwooleTW\Http\Websocket\Parser
      */
-    protected $parser;
+    protected $payloadParser;
 
     /**
      * Websocket server events.
@@ -40,34 +50,35 @@ trait InteractsWithWebsocket
     /**
      * "onOpen" listener.
      *
-     * @param \Swoole\Websocket\Server $server
      * @param \Swoole\Http\Request $swooleRequest
      */
-    public function onOpen($server, $swooleRequest)
+    public function onOpen($swooleRequest)
     {
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
+        $websocket = $this->app->make(Service::WEBSOCKET_ALIAS);
+        $sandbox = $this->app->make(Service::SANDBOX_ALIAS);
 
         try {
-            $this->app['swoole.websocket']->reset(true)->setSender($swooleRequest->fd);
+            $websocket->reset(true)->setSender($swooleRequest->fd);
             // set currnt request to sandbox
-            $this->app['swoole.sandbox']->setRequest($illuminateRequest);
+            $sandbox->setRequest($illuminateRequest);
             // enable sandbox
-            $this->app['swoole.sandbox']->enable();
+            $sandbox->enable();
             // check if socket.io connection established
-            if (! $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
+            if (!$this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
                 return;
             }
             // trigger 'connect' websocket event
-            if ($this->app['swoole.websocket']->eventExists('connect')) {
+            if ($websocket->eventExists('connect')) {
                 // set sandbox container to websocket pipeline
-                $this->app['swoole.websocket']->setContainer($this->app['swoole.sandbox']->getApplication());
-                $this->app['swoole.websocket']->call('connect', $illuminateRequest);
+                $websocket->setContainer($sandbox->getApplication());
+                $websocket->call('connect', $illuminateRequest);
             }
         } catch (Throwable $e) {
             $this->logServerError($e);
         } finally {
             // disable and recycle sandbox resource
-            $this->app['swoole.sandbox']->disable();
+            $sandbox->disable();
         }
     }
 
@@ -79,31 +90,33 @@ trait InteractsWithWebsocket
      */
     public function onMessage($server, $frame)
     {
+        // execute parser strategies and skip non-message packet
+        if ($this->payloadParser->execute($server, $frame)) {
+            return;
+        }
+
+        $websocket = $this->app->make(Service::WEBSOCKET_ALIAS);
+        $sandbox = $this->app->make(Service::SANDBOX_ALIAS);
+
         try {
-            // execute parser strategies and skip non-message packet
-            if ($this->parser->execute($server, $frame)) {
-                return;
-            }
-
             // decode raw message via parser
-            $payload = $this->parser->decode($frame);
+            $payload = $this->payloadParser->decode($frame);
 
-            $this->app['swoole.websocket']->reset(true)->setSender($frame->fd);
+            $websocket->reset(true)->setSender($frame->fd);
 
             // enable sandbox
-            $this->app['swoole.sandbox']->enable();
+            $sandbox->enable();
 
             // dispatch message to registered event callback
-            if ($this->app['swoole.websocket']->eventExists($payload['event'])) {
-                $this->app['swoole.websocket']->call($payload['event'], $payload['data']);
-            } else {
-                $this->websocketHandler->onMessage($frame);
-            }
+            ['event' => $event, 'data' => $data] = $payload;
+            $websocket->eventExists($event)
+                ? $websocket->call($event, $data)
+                : $this->websocketHandler->onMessage($frame);
         } catch (Throwable $e) {
             $this->logServerError($e);
         } finally {
             // disable and recycle sandbox resource
-            $this->app['swoole.sandbox']->disable();
+            $sandbox->disable();
         }
     }
 
@@ -116,20 +129,22 @@ trait InteractsWithWebsocket
      */
     public function onClose($server, $fd, $reactorId)
     {
-        if (! $this->isWebsocket($fd)) {
+        if (!$this->isServerWebsocket($fd) || !$server instanceof Websocket) {
             return;
         }
 
+        $websocket = $this->app->make(Service::WEBSOCKET_ALIAS);
+
         try {
-            $this->app['swoole.websocket']->reset(true)->setSender($fd);
+            $websocket->reset(true)->setSender($fd);
             // trigger 'disconnect' websocket event
-            if ($this->app['swoole.websocket']->eventExists('disconnect')) {
-                $this->app['swoole.websocket']->call('disconnect');
+            if ($websocket->eventExists('disconnect')) {
+                $websocket->call('disconnect');
             } else {
                 $this->websocketHandler->onClose($fd, $reactorId);
             }
             // leave all rooms
-            $this->app['swoole.websocket']->leave();
+            $websocket->leave();
         } catch (Throwable $e) {
             $this->logServerError($e);
         }
@@ -143,40 +158,37 @@ trait InteractsWithWebsocket
      */
     public function pushMessage($server, array $data)
     {
-        [$opcode, $sender, $fds, $broadcast, $assigned, $event, $message] = $this->normalizePushData($data);
-        $message = $this->parser->encode($event, $message);
+        $push = Push::new($data);
+        $payload = $this->payloadParser->encode($push->getEvent(), $push->getMessage());
 
         // attach sender if not broadcast
-        if (! $broadcast && $sender && ! in_array($sender, $fds)) {
-            $fds[] = $sender;
+        if (!$push->isBroadcast() && $push->getSender() && !$push->hasOwnDescriptor()) {
+            $push->addDescriptor($push->getSender());
         }
 
         // check if to broadcast all clients
-        if ($broadcast && empty($fds) && ! $assigned) {
-            foreach ($server->connections as $fd) {
-                if ($this->isWebsocket($fd)) {
-                    $fds[] = $fd;
-                }
-            }
+        if ($push->isBroadcastToAllDescriptors()) {
+            $push->mergeDescriptor($this->filterWebsocket($server->connections));
         }
 
         // push message to designated fds
-        foreach ($fds as $fd) {
-            if (($broadcast && $sender === (integer) $fd) || ! $server->exist($fd)) {
-                continue;
+        foreach ($push->getDescriptors() as $descriptor) {
+            if ($server->exist($descriptor) || !$push->isBroadcastToDescriptor((int)$descriptor)) {
+                $server->push($descriptor, $payload, $push->getOpcode());
             }
-            $server->push($fd, $message, $opcode);
         }
     }
 
     /**
      * Set frame parser for websocket.
      *
-     * @param \SwooleTW\Http\Websocket\Parser $parser
+     * @param \SwooleTW\Http\Websocket\Parser $payloadParser
+     *
+     * @return \SwooleTW\Http\Concerns\InteractsWithWebsocket
      */
-    public function setParser(Parser $parser)
+    public function setPayloadParser(Parser $payloadParser)
     {
-        $this->parser = $parser;
+        $this->payloadParser = $payloadParser;
 
         return $this;
     }
@@ -184,9 +196,9 @@ trait InteractsWithWebsocket
     /**
      * Get frame parser for websocket.
      */
-    public function getParser()
+    public function getPayloadParser()
     {
-        return $this->parser;
+        return $this->payloadParser;
     }
 
     /**
@@ -194,35 +206,58 @@ trait InteractsWithWebsocket
      */
     protected function prepareWebsocket()
     {
-        $isWebsocket = $this->container['config']->get('swoole_http.websocket.enabled');
-        $parser = $this->container['config']->get('swoole_websocket.parser');
+        $config = $this->container->make(Service::CONFIG_ALIAS);
+        $isWebsocket = $config->get('swoole_http.websocket.enabled');
+        $parser = $config->get('swoole_websocket.parser');
 
         if ($isWebsocket) {
-            array_push($this->events, ...$this->wsEvents);
-            $this->isWebsocket = true;
-            $this->setParser(new $parser);
+            $this->types = array_merge($this->types ?? [], $this->wsEvents);
+            $this->isServerWebsocket = true;
+            $this->setPayloadParser(new $parser);
         }
     }
 
     /**
      * Check if it's a websocket fd.
+     *
+     * @param int $fd
+     *
+     * @return bool
      */
-    protected function isWebsocket(int $fd)
+    protected function isServerWebsocket(int $fd): bool
     {
-        $info = $this->container['swoole.server']->connection_info($fd);
+        $info = $this->container->make(Service::SERVER_ALIAS)->connection_info($fd);
 
-        return array_key_exists('websocket_status', $info) && $info['websocket_status'];
+        return Arr::has($info, 'websocket_status') && Arr::get($info, 'websocket_status');
+    }
+
+    /**
+     * Returns all descriptors that are websocket
+     *
+     * @param array $descriptors
+     *
+     * @return array
+     */
+    protected function filterWebsocket(array $descriptors): array
+    {
+        $callback = function ($descriptor) {
+            return $this->isServerWebsocket($descriptor);
+        };
+
+        return collect($descriptors)->filter($callback)->toArray();
     }
 
     /**
      * Prepare websocket handler for onOpen and onClose callback.
+     *
+     * @throws \Exception
      */
     protected function prepareWebsocketHandler()
     {
-        $handlerClass = $this->container['config']->get('swoole_websocket.handler');
+        $handlerClass = $this->container->make(Service::CONFIG_ALIAS)->get('swoole_websocket.handler');
 
-        if (! $handlerClass) {
-            throw new Exception('Websocket handler is not set in swoole_websocket config');
+        if (!$handlerClass) {
+            throw new WebsocketNotSetInConfigException;
         }
 
         $this->setWebsocketHandler($this->app->make($handlerClass));
@@ -230,6 +265,10 @@ trait InteractsWithWebsocket
 
     /**
      * Set websocket handler.
+     *
+     * @param \SwooleTW\Http\Websocket\HandlerContract $handler
+     *
+     * @return \SwooleTW\Http\Concerns\InteractsWithWebsocket
      */
     public function setWebsocketHandler(HandlerContract $handler)
     {
@@ -240,35 +279,39 @@ trait InteractsWithWebsocket
 
     /**
      * Get websocket handler.
+     *
+     * @return \SwooleTW\Http\Websocket\HandlerContract
      */
-    public function getWebsocketHandler()
+    public function getWebsocketHandler(): HandlerContract
     {
         return $this->websocketHandler;
     }
 
     /**
-     * Get websocket handler for onOpen and onClose callback.
+     * @param string $class
+     * @param array $settings
+     *
+     * @return \SwooleTW\Http\Websocket\Rooms\RoomContract
      */
-    protected function getWebsocketRoom()
+    protected function createRoom(string $class, array $settings): RoomContract
     {
-        $driver = $this->container['config']->get('swoole_websocket.default');
-        $configs = $this->container['config']->get("swoole_websocket.settings.{$driver}");
-        $className = $this->container['config']->get("swoole_websocket.drivers.{$driver}");
-
-        $websocketRoom = new $className($configs);
-        $websocketRoom->prepare();
-
-        return $websocketRoom;
+        return new $class($settings);
     }
 
     /**
      * Bind room instance to Laravel app container.
      */
-    protected function bindRoom()
+    protected function bindRoom(): void
     {
-        $this->app->singleton(RoomContract::class, function ($app) {
-            return $this->getWebsocketRoom();
+        $this->app->singleton(RoomContract::class, function (Container $container) {
+            $config = $container->make(Service::CONFIG_ALIAS);
+            $driver = $config->get('swoole_websocket.default');
+            $settings = $config->get("swoole_websocket.settings.{$driver}");
+            $className = $config->get("swoole_websocket.drivers.{$driver}");
+
+            return $this->createRoom($className, $settings);
         });
+
         $this->app->alias(RoomContract::class, 'swoole.room');
     }
 
@@ -277,10 +320,11 @@ trait InteractsWithWebsocket
      */
     protected function bindWebsocket()
     {
-        $this->app->singleton(Websocket::class, function ($app) {
-            return new Websocket($app['swoole.room'], new Pipeline($app));
+        $this->app->singleton(Websocket::class, function (Container $app) {
+            return new Websocket($app->make(Service::ROOM_ALIAS), new Pipeline($app));
         });
-        $this->app->alias(Websocket::class, 'swoole.websocket');
+
+        $this->app->alias(Websocket::class, Service::WEBSOCKET_ALIAS);
     }
 
     /**
@@ -288,9 +332,9 @@ trait InteractsWithWebsocket
      */
     protected function loadWebsocketRoutes()
     {
-        $routePath = $this->container['config']->get('swoole_websocket.route_file');
+        $routePath = $this->container->make(Service::CONFIG_ALIAS)->get('swoole_websocket.route_file');
 
-        if (! file_exists($routePath)) {
+        if (!file_exists($routePath)) {
             $routePath = __DIR__ . '/../../routes/websocket.php';
         }
 
@@ -299,16 +343,20 @@ trait InteractsWithWebsocket
 
     /**
      * Normalize data for message push.
+     *
+     * @param array $data
+     *
+     * @return array
      */
     public function normalizePushData(array $data)
     {
-        $opcode = $data['opcode'] ?? 1;
-        $sender = $data['sender'] ?? 0;
-        $fds = $data['fds'] ?? [];
-        $broadcast = $data['broadcast'] ?? false;
-        $assigned = $data['assigned'] ?? false;
-        $event = $data['event'] ?? null;
-        $message = $data['message'] ?? null;
+        $opcode = Arr::get($data, 'opcode', 1);
+        $sender = Arr::get($data, 'sender', 0);
+        $fds = Arr::get($data, 'fds', []);
+        $broadcast = Arr::get($data, 'broadcast', false);
+        $assigned = Arr::get($data, 'assigned', false);
+        $event = Arr::get($data, 'event', null);
+        $message = Arr::get($data, 'message', null);
 
         return [$opcode, $sender, $fds, $broadcast, $assigned, $event, $message];
     }

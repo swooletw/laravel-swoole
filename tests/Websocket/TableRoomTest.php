@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Tests\Websocket;
 
+
 use Swoole\Table;
 use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\Rooms\TableRoom;
@@ -16,7 +17,7 @@ class TableRoomTest extends TestCase
             'room_rows' => 4096,
             'room_size' => 2048,
             'client_rows' => 8192,
-            'client_size' => 2048
+            'client_size' => 2048,
         ];
         $this->tableRoom = new TableRoom($config);
         $this->tableRoom->prepare();

@@ -21,5 +21,5 @@ return [
     ],
     'providers' => [
         SwooleTW\Http\Tests\Fixtures\Lumen\App\Providers\TestServiceProvider::class,
-    ]
+    ],
 ];

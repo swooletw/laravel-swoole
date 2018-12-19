@@ -2,17 +2,18 @@
 
 namespace SwooleTW\Http\Tests\Websocket;
 
-use Mockery as m;
-use Illuminate\Http\Request;
-use InvalidArgumentException;
-use Illuminate\Pipeline\Pipeline;
-use SwooleTW\Http\Tests\TestCase;
+
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Http\Request;
+use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
-use SwooleTW\Http\Websocket\Websocket;
+use InvalidArgumentException;
+use Mockery as m;
+use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use SwooleTW\Http\Websocket\Websocket;
 
 class WebsocketTest extends TestCase
 {
@@ -339,8 +340,8 @@ class WebsocketTest extends TestCase
                     'broadcast' => $broadcast,
                     'assigned' => true,
                     'event' => $event = 'event',
-                    'message' => $data = 'data'
-                ]
+                    'message' => $data = 'data',
+                ],
             ])
             ->once();
 
@@ -369,7 +370,6 @@ class WebsocketTest extends TestCase
 
         $websocket = $this->getWebsocket();
         $websocket->close($fd);
-
     }
 
     protected function getWebsocket(RoomContract $room = null, $pipeline = null)
