@@ -2,12 +2,13 @@
 
 namespace SwooleTW\Http\Tests\SocketIO;
 
-use Mockery as m;
-use Swoole\Websocket\Frame;
+
 use Illuminate\Http\Request;
-use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
+use Mockery as m;
+use Swoole\Websocket\Frame;
+use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 
 class WebsocketHandlerTest extends TestCase
@@ -31,6 +32,7 @@ class WebsocketHandlerTest extends TestCase
         $jsonEncode = false;
         $this->mockMethod('json_encode', function () use (&$jsonEncode) {
             $jsonEncode = true;
+
             return '{foo: "bar"}';
         }, 'SwooleTW\Http\Websocket\SocketIO');
 

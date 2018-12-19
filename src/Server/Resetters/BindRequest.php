@@ -2,11 +2,14 @@
 
 namespace SwooleTW\Http\Server\Resetters;
 
+
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use SwooleTW\Http\Server\Sandbox;
-use Illuminate\Contracts\Container\Container;
-use SwooleTW\Http\Server\Resetters\ResetterContract;
 
+/**
+ * Class BindRequest
+ */
 class BindRequest implements ResetterContract
 {
     /**
@@ -14,6 +17,8 @@ class BindRequest implements ResetterContract
      *
      * @param \Illuminate\Contracts\Container\Container $app
      * @param \SwooleTW\Http\Server\Sandbox $sandbox
+     *
+     * @return \Illuminate\Contracts\Container\Container
      */
     public function handle(Container $app, Sandbox $sandbox)
     {

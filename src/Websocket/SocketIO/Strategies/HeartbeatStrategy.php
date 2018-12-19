@@ -2,12 +2,16 @@
 
 namespace SwooleTW\Http\Websocket\SocketIO\Strategies;
 
+
 use SwooleTW\Http\Websocket\SocketIO\Packet;
 
 class HeartbeatStrategy
 {
     /**
      * If return value is true will skip decoding.
+     *
+     * @param \Swoole\WebSocket\Server $server
+     * @param \Swoole\WebSocket\Frame $frame
      *
      * @return boolean
      */

@@ -2,11 +2,12 @@
 
 namespace SwooleTW\Http\Tests\Transformers;
 
+
+use Illuminate\Http\Request as IlluminateRequest;
 use Mockery as m;
+use Swoole\Http\Request as SwooleRequest;
 use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Transformers\Request;
-use Swoole\Http\Request as SwooleRequest;
-use Illuminate\Http\Request as IlluminateRequest;
 
 class RequestTest extends TestCase
 {
@@ -34,12 +35,14 @@ class RequestTest extends TestCase
         $fileSize = false;
         $this->mockMethod('filesize', function () use (&$fileSize) {
             $fileSize = true;
+
             return 1;
         });
 
         $mimeContentType = false;
         $this->mockMethod('mime_content_type', function () use (&$mimeContentType) {
             $mimeContentType = true;
+
             return 'foo';
         });
 
@@ -74,6 +77,7 @@ class RequestTest extends TestCase
         $isFile = false;
         $this->mockMethod('is_file', function () use (&$isFile) {
             $isFile = true;
+
             return false;
         });
 
@@ -91,17 +95,23 @@ class RequestTest extends TestCase
 class SwooleRequestStub extends SwooleRequest
 {
     public $get = [];
+
     public $post = [];
+
     public $header = ['foo' => 'bar'];
+
     public $server = [
         'HTTP_CONTENT_LENGTH' => 0,
         'CONTENT_LENGTH' => 0,
         'HTTP_CONTENT_TYPE' => null,
         'CONTENT_TYPE' => null,
-        'request_uri' => 'foo.bar'
+        'request_uri' => 'foo.bar',
     ];
+
     public $cookie = [];
+
     public $files = [];
+
     public $fd = 1;
 
     function rawContent()

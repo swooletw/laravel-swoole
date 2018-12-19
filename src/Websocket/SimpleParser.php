@@ -2,8 +2,6 @@
 
 namespace SwooleTW\Http\Websocket;
 
-use Swoole\Websocket\Server;
-use SwooleTW\Http\Websocket\Parser;
 
 class SimpleParser extends Parser
 {
@@ -17,13 +15,14 @@ class SimpleParser extends Parser
      *
      * @param string $event
      * @param mixed $data
+     *
      * @return mixed
      */
     public function encode(string $event, $data)
     {
         return json_encode([
             'event' => $event,
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
@@ -32,6 +31,7 @@ class SimpleParser extends Parser
      * Define and return event name and payload data here.
      *
      * @param \Swoole\Websocket\Frame $frame
+     *
      * @return array
      */
     public function decode($frame)
@@ -40,7 +40,7 @@ class SimpleParser extends Parser
 
         return [
             'event' => $data['event'] ?? null,
-            'data' => $data['data'] ?? null
+            'data' => $data['data'] ?? null,
         ];
     }
 }

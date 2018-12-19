@@ -2,9 +2,9 @@
 
 namespace SwooleTW\Http\Server\Resetters;
 
-use SwooleTW\Http\Server\Sandbox;
+
 use Illuminate\Contracts\Container\Container;
-use SwooleTW\Http\Server\Resetters\ResetterContract;
+use SwooleTW\Http\Server\Sandbox;
 
 class ResetConfig implements ResetterContract
 {
@@ -13,6 +13,8 @@ class ResetConfig implements ResetterContract
      *
      * @param \Illuminate\Contracts\Container\Container $app
      * @param \SwooleTW\Http\Server\Sandbox $sandbox
+     *
+     * @return \Illuminate\Contracts\Container\Container
      */
     public function handle(Container $app, Sandbox $sandbox)
     {

@@ -2,11 +2,12 @@
 
 namespace SwooleTW\Http\Tests\SocketIO;
 
-use Mockery as m;
+
 use Illuminate\Http\Request;
-use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Support\Facades\Config;
+use Mockery as m;
 use SwooleTW\Http\Controllers\SocketIOController;
+use SwooleTW\Http\Tests\TestCase;
 
 class SocketIOControllerTest extends TestCase
 {
@@ -24,8 +25,9 @@ class SocketIOControllerTest extends TestCase
                 ->once()
                 ->with([
                     'code' => 0,
-                    'message' => 'Transport unknown'
+                    'message' => 'Transport unknown',
                 ], 400);
+
             return $response;
         });
 
@@ -66,6 +68,7 @@ class SocketIOControllerTest extends TestCase
         $base64Encode = false;
         $this->mockMethod('base64_encode', function () use (&$base64Encode) {
             $base64Encode = true;
+
             return 'payload';
         });
 
@@ -82,7 +85,7 @@ class SocketIOControllerTest extends TestCase
             'sid' => 'payload',
             'upgrades' => ['websocket'],
             'pingInterval' => 1,
-            'pingTimeout' => 1
+            'pingTimeout' => 1,
         ]);
         $expectedPayload = '97:0' . $expectedPayload . '2:40';
 
@@ -95,21 +98,20 @@ class SocketIOControllerTest extends TestCase
 
     public function testReject()
     {
-        $request = m::mock(Request::class);
-
         $this->mockMethod('response', function () {
             $response = m::mock('response');
             $response->shouldReceive('json')
                 ->once()
                 ->with([
                     'code' => 3,
-                    'message' => 'Bad request'
+                    'message' => 'Bad request',
                 ], 400);
+
             return $response;
         });
 
         $controller = new SocketIOController;
-        $controller->reject($request);
+        $controller->reject();
     }
 
     protected function mockMethod($name, \Closure $function, $namespace = null)
