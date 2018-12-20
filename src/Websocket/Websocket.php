@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket;
 
-
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Pipeline\Pipeline as PipelineContract;
 use Illuminate\Support\Facades\App;
@@ -102,7 +101,7 @@ class Websocket
         $values = is_string($values) || is_integer($values) ? func_get_args() : $values;
 
         foreach ($values as $value) {
-            if (!in_array($value, $this->to)) {
+            if (! in_array($value, $this->to)) {
                 $this->to[] = $value;
             }
         }
@@ -153,7 +152,7 @@ class Websocket
     public function emit(string $event, $data): bool
     {
         $fds = $this->getFds();
-        $assigned = !empty($this->to);
+        $assigned = ! empty($this->to);
 
         // if no fds are found, but rooms are assigned
         // that means trying to emit to a non-existing room
@@ -162,17 +161,19 @@ class Websocket
             return false;
         }
 
-        $result = App::make('swoole.server')->task([
-            'action' => static::PUSH_ACTION,
-            'data' => [
-                'sender' => $this->sender,
-                'fds' => $fds,
-                'broadcast' => $this->isBroadcast,
-                'assigned' => $assigned,
-                'event' => $event,
-                'message' => $data,
-            ],
-        ]);
+        $result = App::make('swoole.server')->task(
+            [
+                'action' => static::PUSH_ACTION,
+                'data' => [
+                    'sender' => $this->sender,
+                    'fds' => $fds,
+                    'broadcast' => $this->isBroadcast,
+                    'assigned' => $assigned,
+                    'event' => $event,
+                    'message' => $data,
+                ],
+            ]
+        );
 
         $this->reset();
 
@@ -203,7 +204,7 @@ class Websocket
      */
     public function on(string $event, $callback)
     {
-        if (!is_string($callback) && !is_callable($callback)) {
+        if (! is_string($callback) && ! is_callable($callback)) {
             throw new InvalidArgumentException(
                 'Invalid websocket callback. Must be a string or callable.'
             );
@@ -236,7 +237,7 @@ class Websocket
      */
     public function call(string $event, $data = null)
     {
-        if (!$this->eventExists($event)) {
+        if (! $this->eventExists($event)) {
             return null;
         }
 
@@ -249,10 +250,13 @@ class Websocket
             $data = $this->setRequestThroughMiddleware($data);
         }
 
-        return App::call($this->callbacks[$event], [
-            'websocket' => $this,
-            $dataKey => $data,
-        ]);
+        return App::call(
+            $this->callbacks[$event],
+            [
+                'websocket' => $this,
+                $dataKey => $data,
+            ]
+        );
     }
 
     /**

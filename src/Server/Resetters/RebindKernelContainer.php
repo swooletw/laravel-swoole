@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Server\Resetters;
 
-
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use SwooleTW\Http\Server\Sandbox;

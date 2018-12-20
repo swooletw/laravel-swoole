@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket;
 
-
 use Illuminate\Support\Facades\App;
 
 abstract class Parser
@@ -26,10 +25,13 @@ abstract class Parser
         $skip = false;
 
         foreach ($this->strategies as $strategy) {
-            $result = App::call($strategy . '@handle', [
-                'server' => $server,
-                'frame' => $frame,
-            ]);
+            $result = App::call(
+                $strategy.'@handle',
+                [
+                    'server' => $server,
+                    'frame' => $frame,
+                ]
+            );
             if ($result === true) {
                 $skip = true;
                 break;

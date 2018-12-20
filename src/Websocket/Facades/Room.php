@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket\Facades;
 
-
 use Illuminate\Support\Facades\Facade;
 
 /**

@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket\Middleware;
 
-
 use Closure;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
@@ -88,6 +87,6 @@ class StartSession
      */
     protected function sessionConfigured()
     {
-        return !is_null($this->manager->getSessionConfig()['driver'] ?? null);
+        return ! is_null($this->manager->getSessionConfig()['driver'] ?? null);
     }
 }

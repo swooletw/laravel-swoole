@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket\Rooms;
 
-
 use Illuminate\Support\Arr;
 use Predis\Client as RedisClient;
 use Predis\Pipeline\Pipeline;
@@ -58,7 +57,7 @@ class RedisRoom implements RoomContract
      */
     public function setRedis(?RedisClient $redis = null)
     {
-        if (!$redis) {
+        if (! $redis) {
             $server = Arr::get($this->config, 'server', []);
             $options = Arr::get($this->config, 'options', []);
 
@@ -203,7 +202,7 @@ class RedisRoom implements RoomContract
      */
     protected function checkTable(string $table)
     {
-        if (!in_array($table, [RoomContract::ROOMS_KEY, RoomContract::DESCRIPTORS_KEY])) {
+        if (! in_array($table, [RoomContract::ROOMS_KEY, RoomContract::DESCRIPTORS_KEY])) {
             throw new \InvalidArgumentException('Invalid table name.');
         }
     }

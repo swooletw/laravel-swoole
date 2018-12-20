@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket;
 
-
 use Illuminate\Http\Request;
 use Swoole\Websocket\Frame;
 

@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Helpers;
 
-
 /**
  * Class Service
  */

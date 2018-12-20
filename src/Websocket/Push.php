@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket;
 
-
 use Illuminate\Support\Arr;
 
 /**
@@ -64,8 +63,7 @@ class Push
         bool $assigned,
         string $event,
         string $message = null
-    )
-    {
+    ) {
         $this->opcode = $opcode;
         $this->sender = $sender;
         $this->descriptors = $descriptors;
@@ -190,7 +188,7 @@ class Push
      */
     public function isBroadcastToAllDescriptors(): bool
     {
-        return $this->isBroadcast() && !$this->isAssigned() && count($this->descriptors) > 0;
+        return $this->isBroadcast() && ! $this->isAssigned() && count($this->descriptors) > 0;
     }
 
     /**

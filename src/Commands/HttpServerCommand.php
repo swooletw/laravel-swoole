@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Commands;
 
-
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Swoole\Process;
@@ -95,8 +94,10 @@ class HttpServerCommand extends Command
         $this->info('Starting swoole http server...');
         $this->info("Swoole http server started: <http://{$host}:{$port}>");
         if ($this->isDaemon()) {
-            $this->info('> (You can run this command to ensure the ' .
-                'swoole_http_server process is running: ps aux|grep "swoole")');
+            $this->info(
+                '> (You can run this command to ensure the '.
+                'swoole_http_server process is running: ps aux|grep "swoole")'
+            );
         }
 
         $this->laravel->make('swoole.manager')->run();
@@ -109,7 +110,7 @@ class HttpServerCommand extends Command
     {
         $pid = $this->getCurrentPid();
 
-        if (!$this->isRunning($pid)) {
+        if (! $this->isRunning($pid)) {
             $this->error("Failed! There is no swoole_http_server process running.");
 
             return;
@@ -153,7 +154,7 @@ class HttpServerCommand extends Command
     {
         $pid = $this->getCurrentPid();
 
-        if (!$this->isRunning($pid)) {
+        if (! $this->isRunning($pid)) {
             $this->error("Failed! There is no swoole_http_server process running.");
 
             return;
@@ -163,7 +164,7 @@ class HttpServerCommand extends Command
 
         $isRunning = $this->killProcess($pid, SIGUSR1);
 
-        if (!$isRunning) {
+        if (! $isRunning) {
             $this->error('> failure');
 
             return;
@@ -220,8 +221,10 @@ class HttpServerCommand extends Command
     {
         $this->action = $this->argument('action');
 
-        if (!in_array($this->action, ['start', 'stop', 'restart', 'reload', 'infos'], true)) {
-            $this->error("Invalid argument '{$this->action}'. Expected 'start', 'stop', 'restart', 'reload' or 'infos'.");
+        if (! in_array($this->action, ['start', 'stop', 'restart', 'reload', 'infos'], true)) {
+            $this->error(
+                "Invalid argument '{$this->action}'. Expected 'start', 'stop', 'restart', 'reload' or 'infos'."
+            );
 
             return;
         }
@@ -236,7 +239,7 @@ class HttpServerCommand extends Command
      */
     protected function isRunning($pid)
     {
-        if (!$pid) {
+        if (! $pid) {
             return false;
         }
 
@@ -264,7 +267,7 @@ class HttpServerCommand extends Command
             $start = time();
 
             do {
-                if (!$this->isRunning($pid)) {
+                if (! $this->isRunning($pid)) {
                     break;
                 }
 
@@ -330,14 +333,18 @@ class HttpServerCommand extends Command
             $this->error("Swoole extension doesn't support Windows OS yet.");
 
             return;
-        } else if (!extension_loaded('swoole')) {
-            $this->error("Can't detect Swoole extension installed.");
+        } else {
+            if (! extension_loaded('swoole')) {
+                $this->error("Can't detect Swoole extension installed.");
 
-            return;
-        } else if (!version_compare(swoole_version(), '4.0.0', 'ge')) {
-            $this->error("Your Swoole version must be higher than 4.0 to use coroutine.");
+                return;
+            } else {
+                if (! version_compare(swoole_version(), '4.0.0', 'ge')) {
+                    $this->error("Your Swoole version must be higher than 4.0 to use coroutine.");
 
-            return;
+                    return;
+                }
+            }
         }
     }
 }

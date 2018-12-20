@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Coroutine;
 
-
 use Illuminate\Contracts\Container\Container;
 use Swoole\Coroutine;
 

@@ -9,7 +9,6 @@
 
 namespace SwooleTW\Http\Coroutine;
 
-
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Arr;
@@ -75,7 +74,7 @@ class PDO extends BasePDO
     {
         $this->client->connect($options);
 
-        if (!$this->client->connected) {
+        if (! $this->client->connected) {
             $message = $this->client->connect_error ?: $this->client->error;
             $errorCode = $this->client->connect_errno ?: $this->client->errno;
 
@@ -131,7 +130,7 @@ class PDO extends BasePDO
      */
     public static function checkDriver(string $driver)
     {
-        if (!in_array($driver, static::getAvailableDrivers())) {
+        if (! in_array($driver, static::getAvailableDrivers())) {
             throw new \InvalidArgumentException("{$driver} driver is not supported yet.");
         }
     }
@@ -253,13 +252,11 @@ class PDO extends BasePDO
         if (strpos($statement, ':') !== false) {
             $i = 0;
             $bindKeyMap = [];
-            $statement = preg_replace_callback(
-                '/:([a-zA-Z_]\w*?)\b/',
-                function ($matches) use (&$i, &$bindKeyMap) {
-                    $bindKeyMap[$matches[1]] = $i++;
+            $statement = preg_replace_callback('/:([a-zA-Z_]\w*?)\b/', function ($matches) use (&$i, &$bindKeyMap) {
+                $bindKeyMap[$matches[1]] = $i++;
 
-                    return '?';
-                }, $statement);
+                return '?';
+            }, $statement);
         }
 
         $stmtObj = $this->client->prepare($statement);
@@ -312,7 +309,8 @@ class PDO extends BasePDO
      */
     public function quote($string, $paramtype = null)
     {
-        throw new \BadMethodCallException(<<<TXT
+        throw new \BadMethodCallException(
+            <<<TXT
 If you are using this function to build SQL statements,
 you are strongly recommended to use PDO::prepare() to prepare SQL statements
 with bound parameters instead of using PDO::quote() to interpolate user input into an SQL statement.

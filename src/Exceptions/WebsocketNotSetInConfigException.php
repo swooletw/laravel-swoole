@@ -2,9 +2,7 @@
 
 namespace SwooleTW\Http\Exceptions;
 
-
 use Exception;
-use Throwable;
 
 class WebsocketNotSetInConfigException extends Exception
 {

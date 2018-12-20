@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Concerns;
 
-
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Arr;
@@ -65,7 +64,7 @@ trait InteractsWithWebsocket
             // enable sandbox
             $sandbox->enable();
             // check if socket.io connection established
-            if (!$this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
+            if (! $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
                 return;
             }
             // trigger 'connect' websocket event
@@ -129,7 +128,7 @@ trait InteractsWithWebsocket
      */
     public function onClose($server, $fd, $reactorId)
     {
-        if (!$this->isServerWebsocket($fd) || !$server instanceof Websocket) {
+        if (! $this->isServerWebsocket($fd) || ! $server instanceof Websocket) {
             return;
         }
 
@@ -162,7 +161,7 @@ trait InteractsWithWebsocket
         $payload = $this->payloadParser->encode($push->getEvent(), $push->getMessage());
 
         // attach sender if not broadcast
-        if (!$push->isBroadcast() && $push->getSender() && !$push->hasOwnDescriptor()) {
+        if (! $push->isBroadcast() && $push->getSender() && ! $push->hasOwnDescriptor()) {
             $push->addDescriptor($push->getSender());
         }
 
@@ -173,7 +172,7 @@ trait InteractsWithWebsocket
 
         // push message to designated fds
         foreach ($push->getDescriptors() as $descriptor) {
-            if ($server->exist($descriptor) || !$push->isBroadcastToDescriptor((int)$descriptor)) {
+            if ($server->exist($descriptor) || ! $push->isBroadcastToDescriptor((int)$descriptor)) {
                 $server->push($descriptor, $payload, $push->getOpcode());
             }
         }
@@ -256,7 +255,7 @@ trait InteractsWithWebsocket
     {
         $handlerClass = $this->container->make(Service::CONFIG_ALIAS)->get('swoole_websocket.handler');
 
-        if (!$handlerClass) {
+        if (! $handlerClass) {
             throw new WebsocketNotSetInConfigException;
         }
 
@@ -334,8 +333,8 @@ trait InteractsWithWebsocket
     {
         $routePath = $this->container->make(Service::CONFIG_ALIAS)->get('swoole_websocket.route_file');
 
-        if (!file_exists($routePath)) {
-            $routePath = __DIR__ . '/../../routes/websocket.php';
+        if (! file_exists($routePath)) {
+            $routePath = __DIR__.'/../../routes/websocket.php';
         }
 
         return require $routePath;

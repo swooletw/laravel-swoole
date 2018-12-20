@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Table;
 
-
 use Swoole\Table;
 
 class SwooleTable

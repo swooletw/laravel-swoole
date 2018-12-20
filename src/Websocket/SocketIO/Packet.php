@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket\SocketIO;
 
-
 /**
  * Class Packet
  */
@@ -115,7 +114,7 @@ class Packet
     {
         $type = $packet[0] ?? null;
 
-        if (!array_key_exists($type, static::$socketTypes)) {
+        if (! array_key_exists($type, static::$socketTypes)) {
             return null;
         }
 

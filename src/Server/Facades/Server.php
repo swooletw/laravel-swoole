@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Server\Facades;
 
-
 use Illuminate\Support\Facades\Facade;
 
 class Server extends Facade

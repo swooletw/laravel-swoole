@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket\Middleware;
 
-
 use Closure;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;

@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket\SocketIO;
 
-
 use SwooleTW\Http\Websocket\Parser;
 use SwooleTW\Http\Websocket\SocketIO\Strategies\HeartbeatStrategy;
 
@@ -28,12 +27,12 @@ class SocketIOParser extends Parser
      */
     public function encode(string $event, $data)
     {
-        $packet = Packet::MESSAGE . Packet::EVENT;
+        $packet = Packet::MESSAGE.Packet::EVENT;
         $shouldEncode = is_array($data) || is_object($data);
         $data = $shouldEncode ? json_encode($data) : $data;
         $format = $shouldEncode ? '["%s",%s]' : '["%s","%s"]';
 
-        return $packet . sprintf($format, $event, $data);
+        return $packet.sprintf($format, $event, $data);
     }
 
     /**

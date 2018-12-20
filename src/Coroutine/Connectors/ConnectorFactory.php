@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Coroutine\Connectors;
 
-
 use Illuminate\Support\Arr;
 use SwooleTW\Http\Helpers\FW;
 
@@ -30,7 +29,7 @@ class ConnectorFactory
      *
      * @const string
      */
-    public const CONNECTOR_CLASS_PATH = __DIR__ . '/MySqlConnector.php';
+    public const CONNECTOR_CLASS_PATH = __DIR__.'/MySqlConnector.php';
 
     /**
      * @param string $version
@@ -40,7 +39,7 @@ class ConnectorFactory
     public static function make(string $version): MySqlConnector
     {
         $isMatch = static::isFileVersionMatch($version);
-        $class = static::copy(static::stub($version), !$isMatch);
+        $class = static::copy(static::stub($version), ! $isMatch);
 
         return new $class();
     }
@@ -53,8 +52,8 @@ class ConnectorFactory
     public static function stub(string $version): string
     {
         return static::hasBreakingChanges($version)
-            ? __DIR__ . '/../../../stubs/5.6/MySqlConnector.stub'
-            : __DIR__ . '/../../../stubs/5.5/MySqlConnector.stub';
+            ? __DIR__.'/../../../stubs/5.6/MySqlConnector.stub'
+            : __DIR__.'/../../../stubs/5.5/MySqlConnector.stub';
     }
 
     /**
@@ -65,7 +64,7 @@ class ConnectorFactory
      */
     public static function copy(string $stub, bool $rewrite = false): string
     {
-        if (!file_exists(static::CONNECTOR_CLASS_PATH) || $rewrite) {
+        if (! file_exists(static::CONNECTOR_CLASS_PATH) || $rewrite) {
             copy($stub, static::CONNECTOR_CLASS_PATH);
         }
 

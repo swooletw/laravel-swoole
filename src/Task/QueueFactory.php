@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Task;
 
-
 use Illuminate\Contracts\Queue\Queue;
 use Illuminate\Support\Arr;
 use SwooleTW\Http\Helpers\FW;
@@ -31,7 +30,7 @@ class QueueFactory
      *
      * @const string
      */
-    public const QUEUE_CLASS_PATH = __DIR__ . '/SwooleTaskQueue.php';
+    public const QUEUE_CLASS_PATH = __DIR__.'/SwooleTaskQueue.php';
 
     /**
      * @param \Swoole\Http\Server $server
@@ -42,7 +41,7 @@ class QueueFactory
     public static function make($server, string $version): Queue
     {
         $isMatch = static::isFileVersionMatch($version);
-        $class = static::copy(static::stub($version), !$isMatch);
+        $class = static::copy(static::stub($version), ! $isMatch);
 
         return new $class($server);
     }
@@ -55,8 +54,8 @@ class QueueFactory
     public static function stub(string $version): string
     {
         return static::hasBreakingChanges($version)
-            ? __DIR__ . '/../../stubs/5.7/SwooleTaskQueue.stub'
-            : __DIR__ . '/../../stubs/5.6/SwooleTaskQueue.stub';
+            ? __DIR__.'/../../stubs/5.7/SwooleTaskQueue.stub'
+            : __DIR__.'/../../stubs/5.6/SwooleTaskQueue.stub';
     }
 
     /**
@@ -67,7 +66,7 @@ class QueueFactory
      */
     public static function copy(string $stub, bool $rewrite = false): string
     {
-        if (!file_exists(static::QUEUE_CLASS_PATH) || $rewrite) {
+        if (! file_exists(static::QUEUE_CLASS_PATH) || $rewrite) {
             copy($stub, static::QUEUE_CLASS_PATH);
         }
 

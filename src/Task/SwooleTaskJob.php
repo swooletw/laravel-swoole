@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Task;
 
-
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Illuminate\Queue\Jobs\Job;

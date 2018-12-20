@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Server;
 
-
 use Exception;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -51,9 +50,20 @@ class Manager
      * @var array
      */
     protected $events = [
-        'start', 'shutDown', 'workerStart', 'workerStop', 'packet',
-        'bufferFull', 'bufferEmpty', 'task', 'finish', 'pipeMessage',
-        'workerError', 'managerStart', 'managerStop', 'request',
+        'start',
+        'shutDown',
+        'workerStart',
+        'workerStop',
+        'packet',
+        'bufferFull',
+        'bufferEmpty',
+        'task',
+        'finish',
+        'pipeMessage',
+        'workerError',
+        'managerStart',
+        'managerStop',
+        'request',
     ];
 
     /**
@@ -250,11 +260,13 @@ class Manager
                     $this->pushMessage($server, $data['data'] ?? []);
                 }
                 // push async task to queue
-            } else if (is_string($data)) {
-                $decoded = \json_decode($data, true);
+            } else {
+                if (is_string($data)) {
+                    $decoded = \json_decode($data, true);
 
-                if (JSON_ERROR_NONE === \json_last_error() && isset($decoded['job'])) {
-                    (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
+                    if (JSON_ERROR_NONE === \json_last_error() && isset($decoded['job'])) {
+                        (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
+                    }
                 }
             }
         } catch (Throwable $e) {
@@ -396,7 +408,7 @@ class Manager
      */
     public function logServerError(Throwable $e)
     {
-        if (!$e instanceof Exception) {
+        if (! $e instanceof Exception) {
             $e = new FatalThrowableError($e);
         }
 

@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Concerns;
 
-
 use Illuminate\Contracts\Console\Application as ConsoleApp;
 use Swoole\Table;
 use SwooleTW\Http\Table\SwooleTable;
@@ -57,7 +56,7 @@ trait InteractsWithSwooleTable
      */
     protected function bindSwooleTable()
     {
-        if (!$this->app instanceof ConsoleApp) {
+        if (! $this->app instanceof ConsoleApp) {
             $this->app->singleton(SwooleTable::class, function () {
                 return $this->currentTable;
             });

@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket\Middleware;
 
-
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Factory as Auth;

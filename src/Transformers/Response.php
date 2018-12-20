@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Transformers;
 
-
 use Illuminate\Http\Response as IlluminateResponse;
 use Swoole\Http\Response as SwooleResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -67,7 +66,7 @@ class Response
         $illuminateResponse = $this->getIlluminateResponse();
 
         /* RFC2616 - 14.18 says all Responses need to have a Date */
-        if (!$illuminateResponse->headers->has('Date')) {
+        if (! $illuminateResponse->headers->has('Date')) {
             $illuminateResponse->setDate(\DateTime::createFromFormat('U', time()));
         }
 
@@ -90,9 +89,12 @@ class Response
         foreach ($illuminateResponse->headers->getCookies() as $cookie) {
             // may need to consider rawcookie
             $this->swooleResponse->cookie(
-                $cookie->getName(), $cookie->getValue(),
-                $cookie->getExpiresTime(), $cookie->getPath(),
-                $cookie->getDomain(), $cookie->isSecure(),
+                $cookie->getName(),
+                $cookie->getValue(),
+                $cookie->getExpiresTime(),
+                $cookie->getPath(),
+                $cookie->getDomain(),
+                $cookie->isSecure(),
                 $cookie->isHttpOnly()
             );
         }
@@ -108,10 +110,12 @@ class Response
         if ($illuminateResponse instanceof StreamedResponse && property_exists($illuminateResponse, 'output')) {
             // TODO Add Streamed Response with output
             $this->swooleResponse->end($illuminateResponse->output);
-        } else if ($illuminateResponse instanceof BinaryFileResponse) {
-            $this->swooleResponse->sendfile($illuminateResponse->getFile()->getPathname());
         } else {
-            $this->swooleResponse->end($illuminateResponse->getContent());
+            if ($illuminateResponse instanceof BinaryFileResponse) {
+                $this->swooleResponse->sendfile($illuminateResponse->getFile()->getPathname());
+            } else {
+                $this->swooleResponse->end($illuminateResponse->getContent());
+            }
         }
     }
 
@@ -142,7 +146,7 @@ class Response
      */
     protected function setIlluminateResponse($illuminateResponse)
     {
-        if (!$illuminateResponse instanceof SymfonyResponse) {
+        if (! $illuminateResponse instanceof SymfonyResponse) {
             $content = (string)$illuminateResponse;
             $illuminateResponse = new IlluminateResponse($content);
         }

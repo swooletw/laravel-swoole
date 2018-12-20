@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Concerns;
 
-
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
@@ -34,8 +33,10 @@ trait WithApplication
         if ($this->framework === 'laravel') {
             $bootstrappers = $this->getBootstrappers();
             $this->app->bootstrapWith($bootstrappers);
-        } else if (is_null(Facade::getFacadeApplication())) {
-            $this->app->withFacades();
+        } else {
+            if (is_null(Facade::getFacadeApplication())) {
+                $this->app->withFacades();
+            }
         }
 
         $this->preResolveInstances();
@@ -57,7 +58,7 @@ trait WithApplication
      */
     public function getApplication()
     {
-        if (!$this->app instanceof Container) {
+        if (! $this->app instanceof Container) {
             $this->app = $this->loadApplication();
             $this->bootstrap();
         }
@@ -108,7 +109,7 @@ trait WithApplication
     {
         $framework = strtolower($framework);
 
-        if (!in_array($framework, ['laravel', 'lumen'])) {
+        if (! in_array($framework, ['laravel', 'lumen'])) {
             throw new FrameworkNotSupportException($framework);
         }
 

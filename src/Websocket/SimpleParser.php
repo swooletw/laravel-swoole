@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket;
 
-
 class SimpleParser extends Parser
 {
     /**
@@ -20,10 +19,12 @@ class SimpleParser extends Parser
      */
     public function encode(string $event, $data)
     {
-        return json_encode([
-            'event' => $event,
-            'data' => $data,
-        ]);
+        return json_encode(
+            [
+                'event' => $event,
+                'data' => $data,
+            ]
+        );
     }
 
     /**

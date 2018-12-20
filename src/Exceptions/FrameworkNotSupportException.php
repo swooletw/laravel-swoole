@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Exceptions;
 
-
 /**
  * Class FrameworkNotSupportException
  */

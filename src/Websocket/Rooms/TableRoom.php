@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Websocket\Rooms;
 
-
 use Swoole\Table;
 
 class TableRoom implements RoomContract
@@ -88,7 +87,7 @@ class TableRoom implements RoomContract
         foreach ($rooms as $room) {
             $fds = $this->getClients($room);
 
-            if (!in_array($fd, $fds)) {
+            if (! in_array($fd, $fds)) {
                 continue;
             }
 
@@ -178,9 +177,12 @@ class TableRoom implements RoomContract
     {
         $this->checkTable($table);
 
-        $this->$table->set($key, [
-            'value' => json_encode($value),
-        ]);
+        $this->$table->set(
+            $key,
+            [
+                'value' => json_encode($value),
+            ]
+        );
 
         return $this;
     }
@@ -209,7 +211,7 @@ class TableRoom implements RoomContract
      */
     protected function checkTable(string $table)
     {
-        if (!property_exists($this, $table) || !$this->$table instanceof Table) {
+        if (! property_exists($this, $table) || ! $this->$table instanceof Table) {
             throw new \InvalidArgumentException('Invalid table name.');
         }
     }

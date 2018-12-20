@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Server\Resetters;
 
-
 use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Server\Sandbox;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

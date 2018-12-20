@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Task\Connectors;
 
-
 use Illuminate\Queue\Connectors\ConnectorInterface;
 use SwooleTW\Http\Helpers\FW;
 use SwooleTW\Http\Task\QueueFactory;

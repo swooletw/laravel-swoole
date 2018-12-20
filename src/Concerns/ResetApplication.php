@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Concerns;
 
-
 use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Exceptions\SandboxException;
 use SwooleTW\Http\Server\Resetters\ResetterContract;
@@ -49,7 +48,7 @@ trait ResetApplication
         $providers = $this->config->get('swoole_http.providers', []);
 
         foreach ($providers as $provider) {
-            if (class_exists($provider) && !in_array($provider, $this->providers)) {
+            if (class_exists($provider) && ! in_array($provider, $this->providers)) {
                 $providerClass = new $provider($app);
                 $this->providers[$provider] = $providerClass;
             }
@@ -74,8 +73,8 @@ trait ResetApplication
 
         foreach ($resetters as $resetter) {
             $resetterClass = $app->make($resetter);
-            if (!$resetterClass instanceof ResetterContract) {
-                throw new SandboxException("{$resetter} must implement " . ResetterContract::class);
+            if (! $resetterClass instanceof ResetterContract) {
+                throw new SandboxException("{$resetter} must implement ".ResetterContract::class);
             }
             $this->resetters[$resetter] = $resetterClass;
         }

@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Transformers;
 
-
 use Illuminate\Http\Request as IlluminateRequest;
 use Swoole\Http\Request as SwooleRequest;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -29,7 +28,9 @@ class Request
      */
     public static function make(SwooleRequest $swooleRequest)
     {
-        list($get, $post, $cookie, $files, $server, $content)
+        list(
+            $get, $post, $cookie, $files, $server, $content
+            )
             = static::toIlluminateParameters($swooleRequest);
 
         return new static($get, $post, $cookie, $files, $server, $content);
@@ -158,8 +159,8 @@ class Request
             $key = str_replace('-', '_', $key);
             $key = strtoupper($key);
 
-            if (!in_array($key, ['REMOTE_ADDR', 'SERVER_PORT', 'HTTPS'])) {
-                $key = 'HTTP_' . $key;
+            if (! in_array($key, ['REMOTE_ADDR', 'SERVER_PORT', 'HTTPS'])) {
+                $key = 'HTTP_'.$key;
             }
 
             $__SERVER[$key] = $value;
@@ -185,8 +186,8 @@ class Request
             return null;
         }
 
-        $filename = $publicPath . $uri;
-        if (!is_file($filename) || filesize($filename) === 0) {
+        $filename = $publicPath.$uri;
+        if (! is_file($filename) || filesize($filename) === 0) {
             return null;
         }
 
@@ -194,8 +195,10 @@ class Request
         $mime = mime_content_type($filename);
         if ($extension === 'js') {
             $mime = 'text/javascript';
-        } else if ($extension === 'css') {
-            $mime = 'text/css';
+        } else {
+            if ($extension === 'css') {
+                $mime = 'text/css';
+            }
         }
         $swooleResponse->header('Content-Type', $mime);
         $swooleResponse->sendfile($filename);

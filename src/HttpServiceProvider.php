@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http;
 
-
 use Illuminate\Queue\Capsule\Manager;
 use Illuminate\Support\ServiceProvider;
 use Swoole\Http\Server as HttpServer;
@@ -74,11 +73,14 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->publishes([
-            __DIR__ . '/../config/swoole_http.php' => base_path('config/swoole_http.php'),
-            __DIR__ . '/../config/swoole_websocket.php' => base_path('config/swoole_websocket.php'),
-            __DIR__ . '/../routes/websocket.php' => base_path('routes/websocket.php'),
-        ], 'laravel-swoole');
+        $this->publishes(
+            [
+                __DIR__.'/../config/swoole_http.php' => base_path('config/swoole_http.php'),
+                __DIR__.'/../config/swoole_websocket.php' => base_path('config/swoole_websocket.php'),
+                __DIR__.'/../routes/websocket.php' => base_path('routes/websocket.php'),
+            ],
+            'laravel-swoole'
+        );
 
         if ($this->app->make(Service::CONFIG_ALIAS)->get('swoole_http.websocket.enabled')) {
             $this->bootRoutes();
@@ -90,8 +92,8 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function mergeConfigs()
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/swoole_http.php', 'swoole_http');
-        $this->mergeConfigFrom(__DIR__ . '/../config/swoole_websocket.php', 'swoole_websocket');
+        $this->mergeConfigFrom(__DIR__.'/../config/swoole_http.php', 'swoole_http');
+        $this->mergeConfigFrom(__DIR__.'/../config/swoole_websocket.php', 'swoole_websocket');
     }
 
     /**
@@ -107,9 +109,11 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function registerCommands()
     {
-        $this->commands([
-            HttpServerCommand::class,
-        ]);
+        $this->commands(
+            [
+                HttpServerCommand::class,
+            ]
+        );
     }
 
     /**
@@ -136,7 +140,7 @@ abstract class HttpServiceProvider extends ServiceProvider
         $options = $config->get('swoole_http.server.options');
 
         // only enable task worker in websocket mode and for queue driver
-        if ($config->get('queue.default') !== 'swoole' && !$this->isWebsocket) {
+        if ($config->get('queue.default') !== 'swoole' && ! $this->isWebsocket) {
             unset($config['task_worker_num']);
         }
 
@@ -158,6 +162,7 @@ abstract class HttpServiceProvider extends ServiceProvider
 
             return static::$server;
         });
+
         $this->app->alias(Server::class, Service::SERVER_ALIAS);
     }
 
