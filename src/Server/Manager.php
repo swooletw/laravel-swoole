@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Server;
 
+use Exception;
 use Throwable;
 use Swoole\Http\Server;
 use SwooleTW\Http\Server\Sandbox;
@@ -15,6 +16,7 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use SwooleTW\Http\Concerns\InteractsWithWebsocket;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
+use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 class Manager
 {
@@ -140,14 +142,15 @@ class Manager
     public function onWorkerStart($server)
     {
         $this->clearCache();
-        $this->setProcessName('worker process');
 
         $this->container['events']->fire('swoole.workerStart', func_get_args());
 
         // don't init laravel app in task workers
         if ($server->taskworker) {
+            $this->setProcessName('task process');
             return;
         }
+        $this->setProcessName('worker process');
 
         // clear events instance in case of repeated listeners in worker process
         Facade::clearResolvedInstance('events');
@@ -255,6 +258,7 @@ class Manager
     public function onFinish($server, $taskId, $data)
     {
         // task worker callback
+        $this->container['events']->fire('swoole.finish', func_get_args());
         return;
     }
 
@@ -385,6 +389,10 @@ class Manager
      */
     public function logServerError(Throwable $e)
     {
+        if (! $e instanceof Exception) {
+            $e = new FatalThrowableError($e);
+        }
+
         $this->container[ExceptionHandler::class]->report($e);
     }
 }

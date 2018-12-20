@@ -159,21 +159,51 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function registerDatabaseDriver()
     {
-        $this->app->resolving('db', function ($db) {
+        $this->app->extend('db', function ($db) {
             $db->extend('mysql-coroutine', function ($config, $name) {
-                $config['name'] = $name;
-                $connection = function () use ($config) {
-                    return (new MySqlConnector())->connect($config);
-                };
+                $config = $this->getMergedDatabaseConfig($config, $name);
 
-                return new MySqlConnection(
-                    $connection,
+                $connection = new MySqlConnection(
+                    $this->getNewMySqlConnection($config),
                     $config['database'],
                     $config['prefix'],
                     $config
                 );
+
+                if (isset($config['read'])) {
+                    $connection->setReadPdo($this->getNewMySqlConnection($config));
+                }
+
+                return $connection;
             });
+
+            return $db;
         });
+    }
+
+    /**
+     * Get mereged config for coroutine mysql.
+     */
+    protected function getMergedDatabaseConfig(array $config, string $name)
+    {
+        $config['name'] = $name;
+
+        if (isset($config['read'])) {
+            $config = array_merge($config, $config['read']);
+        }
+        if (isset($config['write'])) {
+            $config = array_merge($config, $config['write']);
+        }
+
+        return $config;
+    }
+
+    /**
+     * Get a new mysql connection.
+     */
+    protected function getNewMySqlConnection(array $config)
+    {
+        return (new MySqlConnector())->connect($config);
     }
 
     /**

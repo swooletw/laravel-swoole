@@ -99,6 +99,31 @@ class SandboxTest extends TestCase
         $this->assertTrue($sandbox->getSnapshot() instanceof Container);
     }
 
+    public function testGetCachedSnapshot()
+    {
+        $container = m::mock(Container::class);
+        $snapshot = m::mock(Container::class);
+        $snapshot->shouldReceive('offsetGet')
+            ->with('foo')
+            ->once()
+            ->andReturn($result = 'bar');
+
+        $sandbox = new Sandbox;
+        $sandbox->setBaseApp($container);
+        $sandbox->setSnapshot($snapshot);
+
+        $this->assertTrue($sandbox->getApplication() instanceof Container);
+        $this->assertEquals($result, $sandbox->getApplication()->foo);
+    }
+
+    public function testRunWithoutSnapshot()
+    {
+        $this->expectException(SandboxException::class);
+
+        $sandbox = new Sandbox;
+        $sandbox->run($request = m::mock(Request::class));
+    }
+
     public function testSetRequest()
     {
         $request = m::mock(Request::class);
