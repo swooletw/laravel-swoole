@@ -72,13 +72,12 @@ class SwooleTaskQueue extends Queue implements QueueContract
     /**
      * Create a typical, string based queue payload array.
      *
-     * @param string $job
-     * @param string $queue
-     * @param mixed $data
-     * @return array|void
-     * @throws Exception
+     * @param  string  $job
+     * @param  mixed  $data
+     *
+     * @throws Expcetion
      */
-    protected function createStringPayload($job, $queue, $data)
+    protected function createStringPayload($job, $data)
     {
         throw new Exception('Unsupported empty data');
     }
