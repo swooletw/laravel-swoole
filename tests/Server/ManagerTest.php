@@ -230,6 +230,8 @@ class ManagerTest extends TestCase
         $response->shouldReceive('status')
             ->once()
             ->andReturnSelf();
+        $response->shouldReceive('write')
+            ->andReturnSelf();
         $response->shouldReceive('end')
             ->once()
             ->andReturnSelf();
@@ -274,6 +276,8 @@ class ManagerTest extends TestCase
             ->andReturnSelf();
         $response->shouldReceive('status')
             ->once()
+            ->andReturnSelf();
+        $response->shouldReceive('write')
             ->andReturnSelf();
         $response->shouldReceive('end')
             ->once()
