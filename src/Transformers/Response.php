@@ -110,8 +110,21 @@ class Response
         } elseif ($illuminateResponse instanceof BinaryFileResponse) {
             $this->swooleResponse->sendfile($illuminateResponse->getFile()->getPathname());
         } else {
-            $this->swooleResponse->end($illuminateResponse->getContent());
+            $this->sendInChunk($illuminateResponse->getContent());
         }
+    }
+
+    /**
+     * Send content in chunk
+     *
+     * @param string $content
+     */
+    protected function sendInChunk($content)
+    {
+        foreach (str_split($content, 1024) as $v) {
+            $this->swooleResponse->write($v);
+        }
+        $this->swooleResponse->end();
     }
 
     /**
