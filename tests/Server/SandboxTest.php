@@ -2,21 +2,18 @@
 
 namespace SwooleTW\Http\Tests\Server;
 
-use Mockery as m;
-use RuntimeException;
-use Swoole\Coroutine;
-use ReflectionProperty;
-use Illuminate\Http\Request;
+
 use Illuminate\Config\Repository;
+use Illuminate\Container\Container;
+use Illuminate\Contracts\Container\Container as ContainerContract;
+use Illuminate\Http\Request;
+use Mockery as m;
+use SwooleTW\Http\Coroutine\Context;
+use SwooleTW\Http\Exceptions\SandboxException;
+use SwooleTW\Http\Server\Application;
+use SwooleTW\Http\Server\Resetters\ResetterContract;
 use SwooleTW\Http\Server\Sandbox;
 use SwooleTW\Http\Tests\TestCase;
-use Illuminate\Container\Container;
-use SwooleTW\Http\Coroutine\Context;
-use SwooleTW\Http\Server\Application;
-use Illuminate\Support\Facades\Facade;
-use SwooleTW\Http\Exceptions\SandboxException;
-use SwooleTW\Http\Server\Resetters\ResetterContract;
-use Illuminate\Contracts\Container\Container as ContainerContract;
 
 class SandboxTest extends TestCase
 {
@@ -168,7 +165,8 @@ class SandboxTest extends TestCase
     }
 }
 
-class TestResetter implements ResetterContract {
+class TestResetter implements ResetterContract
+{
     public function handle(ContainerContract $app, Sandbox $sandbox)
     {
         return 'foo';

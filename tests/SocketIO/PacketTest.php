@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Tests\SocketIO;
 
+
 use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\SocketIO\Packet;
 
@@ -33,35 +34,35 @@ class PacketTest extends TestCase
         $packet = '42["foo","bar"]';
         $this->assertSame([
             'event' => 'foo',
-            'data' => 'bar'
+            'data' => 'bar',
         ], Packet::getPayload($packet));
 
         $packet = '42["foo", "bar"]';
         $this->assertSame([
             'event' => 'foo',
-            'data' => 'bar'
+            'data' => 'bar',
         ], Packet::getPayload($packet));
 
         $packet = '42["foo",{"message":"test"}]';
         $this->assertSame([
             'event' => 'foo',
             'data' => [
-                'message' => 'test'
-            ]
+                'message' => 'test',
+            ],
         ], Packet::getPayload($packet));
 
         $packet = '42["foo", {"message":"test"}]';
         $this->assertSame([
             'event' => 'foo',
             'data' => [
-                'message' => 'test'
-            ]
+                'message' => 'test',
+            ],
         ], Packet::getPayload($packet));
 
         $packet = '42["foo"]';
         $this->assertSame([
             'event' => 'foo',
-            'data' => null
+            'data' => null,
         ], Packet::getPayload($packet));
     }
 

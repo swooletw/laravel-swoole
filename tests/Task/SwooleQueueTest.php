@@ -2,17 +2,18 @@
 
 namespace SwooleTW\Http\Tests\Task;
 
+
 use Mockery as m;
+use SwooleTW\Http\Helpers\FW;
+use SwooleTW\Http\Task\QueueFactory;
 use SwooleTW\Http\Tests\TestCase;
-use SwooleTW\Http\Task\SwooleTaskQueue;
 
 class SwooleQueueTest extends TestCase
 {
     public function testPushProperlyPushesJobOntoSwoole()
     {
         $server = $this->getServer();
-
-        $queue = new SwooleTaskQueue($server);
+        $queue = QueueFactory::make($server, FW::version());
         $server->shouldReceive('task')->once();
         $queue->push(new FakeJob);
     }

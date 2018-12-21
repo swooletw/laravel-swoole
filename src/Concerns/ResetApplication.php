@@ -19,7 +19,7 @@ trait ResetApplication
     protected $providers = [];
 
     /**
-     * @var array
+     * @var \SwooleTW\Http\Server\Resetters\ResetterContract[]|array
      */
     protected $resetters = [];
 
@@ -74,7 +74,7 @@ trait ResetApplication
         foreach ($resetters as $resetter) {
             $resetterClass = $app->make($resetter);
             if (! $resetterClass instanceof ResetterContract) {
-                throw new SandboxException("{$resetter} must implement " . ResetterContract::class);
+                throw new SandboxException("{$resetter} must implement ".ResetterContract::class);
             }
             $this->resetters[$resetter] = $resetterClass;
         }
@@ -90,6 +90,8 @@ trait ResetApplication
 
     /**
      * Reset Laravel/Lumen Application.
+     *
+     * @param \Illuminate\Contracts\Container\Container $app
      */
     public function resetApp(Container $app)
     {

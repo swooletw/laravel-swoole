@@ -10,18 +10,24 @@
 namespace SwooleTW\Http\Coroutine;
 
 use PDOStatement as BaseStatement;
-use SwooleTW\Http\Coroutine\PDO;
 use Swoole\Coroutine\MySQL\Statement;
 
 class PDOStatement extends BaseStatement
 {
     private $parent;
+
     public $statement;
+
     public $timeout;
+
     public $bindMap = [];
+
     public $cursor = -1;
+
     public $cursorOrientation = PDO::FETCH_ORI_NEXT;
+
     public $resultSet = [];
+
     public $fetchStyle = PDO::FETCH_BOTH;
 
     public function __construct(PDO $parent, Statement $statement, array $driverOptions = [])
@@ -68,7 +74,7 @@ class PDOStatement extends BaseStatement
             if (! method_exists($variable, '__toString')) {
                 return false;
             } else {
-                $variable = (string) $variable;
+                $variable = (string)$variable;
             }
         }
 
@@ -107,7 +113,7 @@ class PDOStatement extends BaseStatement
         $this->resultSet = ($ok = $result !== false) ? $result : [];
         $this->afterExecute();
 
-        if ($result === false){
+        if ($result === false) {
             throw new \PDOException($this->errorInfo(), $this->errorCode());
         }
 
@@ -172,7 +178,7 @@ class PDOStatement extends BaseStatement
                 break;
             case PDO::FETCH_OBJ:
                 foreach ($rawData as $row) {
-                    $resultSet[] = (object) $row;
+                    $resultSet[] = (object)$row;
                 }
                 break;
             case PDO::FETCH_NUM:
@@ -197,7 +203,7 @@ class PDOStatement extends BaseStatement
         $this->__executeWhenStringQueryEmpty();
 
         $cursorOrientation = is_null($cursorOrientation) ? PDO::FETCH_ORI_NEXT : $cursorOrientation;
-        $cursorOffset = is_null($cursorOffset) ? 0 : (int) $cursorOffset;
+        $cursorOffset = is_null($cursorOffset) ? 0 : (int)$cursorOffset;
 
         switch ($cursorOrientation) {
             case PDO::FETCH_ORI_ABS:
@@ -238,6 +244,7 @@ class PDOStatement extends BaseStatement
     {
         $columnNumber = is_null($columnNumber) ? 0 : $columnNumber;
         $this->__executeWhenStringQueryEmpty();
+
         return $this->fetch(PDO::FETCH_COLUMN, PDO::FETCH_ORI_NEXT, 0, $columnNumber);
     }
 

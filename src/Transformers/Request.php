@@ -4,13 +4,15 @@ namespace SwooleTW\Http\Transformers;
 
 use Illuminate\Http\Request as IlluminateRequest;
 use Swoole\Http\Request as SwooleRequest;
-use Swoole\Http\Response as SwooleResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
+/**
+ * Class Request
+ */
 class Request
 {
-    const BLACK_LIST = ['php', 'htaccess', 'config'];
+    private const BLACK_LIST = ['php', 'htaccess', 'config'];
 
     /**
      * @var \Illuminate\Http\Request
@@ -21,11 +23,14 @@ class Request
      * Make a request.
      *
      * @param \Swoole\Http\Request $swooleRequest
-     * @return \SwooleTW\Http\Server\Request
+     *
+     * @return \SwooleTW\Http\Transformers\Request
      */
     public static function make(SwooleRequest $swooleRequest)
     {
-        list($get, $post, $cookie, $files, $server, $content)
+        list(
+            $get, $post, $cookie, $files, $server, $content
+            )
             = static::toIlluminateParameters($swooleRequest);
 
         return new static($get, $post, $cookie, $files, $server, $content);
@@ -40,6 +45,7 @@ class Request
      * @param array $files
      * @param array $server
      * @param string $content
+     *
      * @throws \LogicException
      */
     public function __construct(array $get, array $post, array $cookie, array $files, array $server, $content = null)
@@ -56,8 +62,8 @@ class Request
      * @param array $files
      * @param array $server
      * @param string $content
-     * @return \Illuminate\Http\Request
-     * @throws \LogicException
+     *
+     * @return void
      */
     protected function createIlluminateRequest($get, $post, $cookie, $files, $server, $content = null)
     {
@@ -86,7 +92,7 @@ class Request
         $request = new SymfonyRequest($get, $post, [], $cookie, $files, $server, $content);
 
         if (0 === strpos($request->headers->get('CONTENT_TYPE'), 'application/x-www-form-urlencoded')
-            && in_array(strtoupper($request->server->get('REQUEST_METHOD', 'GET')), array('PUT', 'DELETE', 'PATCH'))
+            && in_array(strtoupper($request->server->get('REQUEST_METHOD', 'GET')), ['PUT', 'DELETE', 'PATCH'])
         ) {
             parse_str($request->getContent(), $data);
             $request->request = new ParameterBag($data);
@@ -115,6 +121,7 @@ class Request
      * Transforms request parameters.
      *
      * @param \Swoole\Http\Request $request
+     *
      * @return array
      */
     protected static function toIlluminateParameters(SwooleRequest $request)
@@ -136,6 +143,7 @@ class Request
      *
      * @param array $server
      * @param array $header
+     *
      * @return array
      */
     protected static function transformServerParameters(array $server, array $header)
@@ -152,7 +160,7 @@ class Request
             $key = strtoupper($key);
 
             if (! in_array($key, ['REMOTE_ADDR', 'SERVER_PORT', 'HTTPS'])) {
-                $key = 'HTTP_' . $key;
+                $key = 'HTTP_'.$key;
             }
 
             $__SERVER[$key] = $value;
@@ -166,28 +174,31 @@ class Request
      *
      * @param \Swoole\Http\Request $swooleRequest
      * @param \Swoole\Http\Response $swooleResponse
-     * @param string $path
-     * @return boolean
+     * @param string $publicPath
+     *
+     * @return boolean|null
      */
     public static function handleStatic($swooleRequest, $swooleResponse, string $publicPath)
     {
         $uri = $swooleRequest->server['request_uri'] ?? '';
         $extension = substr(strrchr($uri, '.'), 1);
         if ($extension && in_array($extension, static::BLACK_LIST)) {
-            return;
+            return null;
         }
 
-        $filename = $publicPath . $uri;
+        $filename = $publicPath.$uri;
         if (! is_file($filename) || filesize($filename) === 0) {
-            return;
+            return null;
         }
 
         $swooleResponse->status(200);
         $mime = mime_content_type($filename);
         if ($extension === 'js') {
             $mime = 'text/javascript';
-        } elseif ($extension === 'css') {
-            $mime = 'text/css';
+        } else {
+            if ($extension === 'css') {
+                $mime = 'text/css';
+            }
         }
         $swooleResponse->header('Content-Type', $mime);
         $swooleResponse->sendfile($filename);

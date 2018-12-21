@@ -25,7 +25,8 @@ class Response
      *
      * @param $illuminateResponse
      * @param \Swoole\Http\Response $swooleResponse
-     * @return \SwooleTW\Http\Server\Response
+     *
+     * @return \SwooleTW\Http\Transformers\Response
      */
     public static function make($illuminateResponse, SwooleResponse $swooleResponse)
     {
@@ -88,9 +89,12 @@ class Response
         foreach ($illuminateResponse->headers->getCookies() as $cookie) {
             // may need to consider rawcookie
             $this->swooleResponse->cookie(
-                $cookie->getName(), $cookie->getValue(),
-                $cookie->getExpiresTime(), $cookie->getPath(),
-                $cookie->getDomain(), $cookie->isSecure(),
+                $cookie->getName(),
+                $cookie->getValue(),
+                $cookie->getExpiresTime(),
+                $cookie->getPath(),
+                $cookie->getDomain(),
+                $cookie->isSecure(),
                 $cookie->isHttpOnly()
             );
         }
@@ -103,9 +107,8 @@ class Response
     {
         $illuminateResponse = $this->getIlluminateResponse();
 
-        if ($illuminateResponse instanceof StreamedResponse &&
-            property_exists($illuminateResponse, 'output')
-        ) {
+        if ($illuminateResponse instanceof StreamedResponse && property_exists($illuminateResponse, 'output')) {
+            // TODO Add Streamed Response with output
             $this->swooleResponse->end($illuminateResponse->output);
         } elseif ($illuminateResponse instanceof BinaryFileResponse) {
             $this->swooleResponse->sendfile($illuminateResponse->getFile()->getPathname());
@@ -129,7 +132,8 @@ class Response
 
     /**
      * @param \Swoole\Http\Response $swooleResponse
-     * @return \SwooleTW\Http\Server\Response
+     *
+     * @return \SwooleTW\Http\Transformers\Response
      */
     protected function setSwooleResponse(SwooleResponse $swooleResponse)
     {
@@ -148,12 +152,13 @@ class Response
 
     /**
      * @param mixed illuminateResponse
-     * @return \SwooleTW\Http\Server\Response
+     *
+     * @return \SwooleTW\Http\Transformers\Response
      */
     protected function setIlluminateResponse($illuminateResponse)
     {
         if (! $illuminateResponse instanceof SymfonyResponse) {
-            $content = (string) $illuminateResponse;
+            $content = (string)$illuminateResponse;
             $illuminateResponse = new IlluminateResponse($content);
         }
 

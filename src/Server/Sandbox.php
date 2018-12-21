@@ -2,18 +2,18 @@
 
 namespace SwooleTW\Http\Server;
 
-use Illuminate\Http\Request;
 use Illuminate\Container\Container;
-use SwooleTW\Http\Coroutine\Context;
-use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Support\Facades\Facade;
-use SwooleTW\Http\Concerns\ResetApplication;
-use SwooleTW\Http\Exceptions\SandboxException;
-use Laravel\Lumen\Application as LumenApplication;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Contracts\Config\Repository as ConfigContract;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Facade;
+use Laravel\Lumen\Application as LumenApplication;
+use SwooleTW\Http\Concerns\ResetApplication;
+use SwooleTW\Http\Coroutine\Context;
+use SwooleTW\Http\Exceptions\SandboxException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Sandbox
 {
@@ -145,6 +145,7 @@ class Sandbox
      * Run framework.
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     public function run(Request $request)
@@ -166,6 +167,7 @@ class Sandbox
      * Handle request for non-ob case.
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     protected function prepareResponse(Request $request)
@@ -183,6 +185,7 @@ class Sandbox
      * Handle request for ob output.
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     protected function prepareObResponse(Request $request)
@@ -200,7 +203,7 @@ class Sandbox
         } elseif ($response instanceof SymfonyResponse) {
             $content = $response->getContent();
         } elseif (! $isFile = $response instanceof BinaryFileResponse) {
-            $content = (string) $response;
+            $content = (string)$response;
         }
 
         // process terminating logics
@@ -211,7 +214,7 @@ class Sandbox
             if ($isStream) {
                 $response->output = ob_get_contents();
             } else {
-                $response->setContent(ob_get_contents() . $content);
+                $response->setContent(ob_get_contents().$content);
             }
         }
 
@@ -224,6 +227,7 @@ class Sandbox
      * Handle request through Laravel or Lumen.
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     protected function handleRequest(Request $request)

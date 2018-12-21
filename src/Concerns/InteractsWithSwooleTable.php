@@ -2,22 +2,29 @@
 
 namespace SwooleTW\Http\Concerns;
 
+use Illuminate\Contracts\Console\Application as ConsoleApp;
 use Swoole\Table;
 use SwooleTW\Http\Table\SwooleTable;
 
+/**
+ * Trait InteractsWithSwooleTable
+ *
+ * @property \Illuminate\Contracts\Container\Container $container
+ * @property \Illuminate\Contracts\Container\Container $app
+ */
 trait InteractsWithSwooleTable
 {
     /**
-     * @var \SwooleTW\Http\Server\Table
+     * @var \SwooleTW\Http\Table\SwooleTable
      */
-    protected $table;
+    protected $currentTable;
 
     /**
      * Register customized swoole talbes.
      */
     protected function createTables()
     {
-        $this->table = new SwooleTable;
+        $this->currentTable = new SwooleTable;
         $this->registerTables();
     }
 
@@ -26,7 +33,7 @@ trait InteractsWithSwooleTable
      */
     protected function registerTables()
     {
-        $tables = $this->container['config']->get('swoole_http.tables', []);
+        $tables = $this->container->make('config')->get('swoole_http.tables', []);
 
         foreach ($tables as $key => $value) {
             $table = new Table($value['size']);
@@ -40,7 +47,7 @@ trait InteractsWithSwooleTable
             }
             $table->create();
 
-            $this->table->add($key, $table);
+            $this->currentTable->add($key, $table);
         }
     }
 
@@ -49,9 +56,12 @@ trait InteractsWithSwooleTable
      */
     protected function bindSwooleTable()
     {
-        $this->app->singleton(SwooleTable::class, function () {
-            return $this->table;
-        });
-        $this->app->alias(SwooleTable::class, 'swoole.table');
+        if (! $this->app instanceof ConsoleApp) {
+            $this->app->singleton(SwooleTable::class, function () {
+                return $this->currentTable;
+            });
+
+            $this->app->alias(SwooleTable::class, 'swoole.table');
+        }
     }
 }

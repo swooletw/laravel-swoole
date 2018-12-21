@@ -2,10 +2,11 @@
 
 namespace SwooleTW\Http\Tests\Websocket\Middleware;
 
-use Mockery as m;
-use Illuminate\Http\Request;
-use SwooleTW\Http\Tests\TestCase;
+
 use Illuminate\Contracts\Auth\Factory as Auth;
+use Illuminate\Http\Request;
+use Mockery as m;
+use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\Middleware\Authenticate;
 
 class AuthenticateTest extends TestCase

@@ -3,10 +3,13 @@
 namespace SwooleTW\Http\Task;
 
 use Exception;
-use Swoole\Timer;
-use Illuminate\Queue\Queue;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
+use Illuminate\Queue\Queue;
+use Swoole\Timer;
 
+/**
+ * Class SwooleTaskQueue (5.7)
+ */
 class SwooleTaskQueue extends Queue implements QueueContract
 {
     /**
@@ -19,7 +22,7 @@ class SwooleTaskQueue extends Queue implements QueueContract
     /**
      * Create Async Task instance.
      *
-     * @param \Swoole\Http\Server  $swoole
+     * @param \Swoole\Http\Server $swoole
      */
     public function __construct($swoole)
     {
@@ -29,9 +32,10 @@ class SwooleTaskQueue extends Queue implements QueueContract
     /**
      * Push a new job onto the queue.
      *
-     * @param  string|object  $job
-     * @param  mixed   $data
-     * @param  string  $queue
+     * @param  string|object $job
+     * @param  mixed $data
+     * @param  string $queue
+     *
      * @return mixed
      */
     public function push($job, $data = '', $queue = null)
@@ -42,24 +46,25 @@ class SwooleTaskQueue extends Queue implements QueueContract
     /**
      * Push a raw payload onto the queue.
      *
-     * @param  string  $payload
-     * @param  string  $queue
-     * @param  array   $options
+     * @param  string $payload
+     * @param  string $queue
+     * @param  array $options
+     *
      * @return mixed
      */
     public function pushRaw($payload, $queue = null, array $options = [])
     {
-        //wiki https://wiki.swoole.com/wiki/page/134.html, task($data,$dst_worker_id), $dst_worker_id should be default -1
-        return $this->swoole->task($payload, (!is_numeric($queue) || $queue < 0) ? -1 : (int)$queue);
+        return $this->swoole->task($payload, ! is_numeric($queue) ? 1 : (int)$queue);
     }
 
     /**
      * Push a new job onto the queue after a delay.
      *
-     * @param  \DateTimeInterface|\DateInterval|int  $delay
-     * @param  string|object  $job
-     * @param  mixed   $data
-     * @param  string  $queue
+     * @param  \DateTimeInterface|\DateInterval|int $delay
+     * @param  string|object $job
+     * @param  mixed $data
+     * @param  string $queue
+     *
      * @return mixed
      */
     public function later($delay, $job, $data = '', $queue = null)
@@ -72,12 +77,13 @@ class SwooleTaskQueue extends Queue implements QueueContract
     /**
      * Create a typical, string based queue payload array.
      *
-     * @param  string  $job
-     * @param  mixed  $data
+     * @param  string $job
+     * @param  string $queue
+     * @param  mixed $data
      *
-     * @throws Expcetion
+     * @throws \Exception
      */
-    protected function createStringPayload($job, $data)
+    protected function createStringPayload($job, $queue, $data)
     {
         throw new Exception('Unsupported empty data');
     }
@@ -85,7 +91,8 @@ class SwooleTaskQueue extends Queue implements QueueContract
     /**
      * Get the size of the queue.
      *
-     * @param  string  $queue
+     * @param  string $queue
+     *
      * @return int
      */
     public function size($queue = null)
@@ -96,7 +103,8 @@ class SwooleTaskQueue extends Queue implements QueueContract
     /**
      * Pop the next job off of the queue.
      *
-     * @param  string  $queue
+     * @param  string $queue
+     *
      * @return \Illuminate\Contracts\Queue\Job|null
      */
     public function pop($queue = null)
