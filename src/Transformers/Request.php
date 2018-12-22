@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Transformers;
 
 use Illuminate\Http\Request as IlluminateRequest;
+use Illuminate\Http\Response as IlluminateResponse;
 use Swoole\Http\Request as SwooleRequest;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
@@ -12,7 +13,17 @@ use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
  */
 class Request
 {
-    private const BLACK_LIST = ['php', 'htaccess', 'config'];
+    /**
+     * Blacklisted extensions
+     *
+     * @const array
+     */
+    protected const EXTENSION_BLACKLIST = ['php', 'htaccess', 'config'];
+
+    /**
+     * Extension mime types
+     */
+    protected const EXTENSION_MIMES = ['js' => 'text/javascript', 'css' => 'text/css'];
 
     /**
      * @var \Illuminate\Http\Request
@@ -28,29 +39,17 @@ class Request
      */
     public static function make(SwooleRequest $swooleRequest)
     {
-        list(
-            $get, $post, $cookie, $files, $server, $content
-            )
-            = static::toIlluminateParameters($swooleRequest);
-
-        return new static($get, $post, $cookie, $files, $server, $content);
+        return new static(...static::toIlluminateParameters($swooleRequest));
     }
 
     /**
      * Request constructor.
      *
-     * @param array $get
-     * @param array $post
-     * @param array $cookie
-     * @param array $files
-     * @param array $server
-     * @param string $content
-     *
-     * @throws \LogicException
+     * @param array $params provides GET, POST, COOKIE, FILES, SERVER, CONTENT
      */
-    public function __construct(array $get, array $post, array $cookie, array $files, array $server, $content = null)
+    public function __construct(...$params)
     {
-        $this->createIlluminateRequest($get, $post, $cookie, $files, $server, $content);
+        $this->createIlluminateRequest(...$params);
     }
 
     /**
@@ -126,12 +125,12 @@ class Request
      */
     protected static function toIlluminateParameters(SwooleRequest $request)
     {
-        $get = isset($request->get) ? $request->get : [];
-        $post = isset($request->post) ? $request->post : [];
-        $cookie = isset($request->cookie) ? $request->cookie : [];
-        $files = isset($request->files) ? $request->files : [];
-        $header = isset($request->header) ? $request->header : [];
-        $server = isset($request->server) ? $request->server : [];
+        $get = $request->get ?? [];
+        $post = $request->post ?? [];
+        $cookie = $request->cookie ?? [];
+        $files = $request->files ?? [];
+        $header = $request->header ?? [];
+        $server = $request->server ?? [];
         $server = static::transformServerParameters($server, $header);
         $content = $request->rawContent();
 
@@ -160,7 +159,7 @@ class Request
             $key = strtoupper($key);
 
             if (! in_array($key, ['REMOTE_ADDR', 'SERVER_PORT', 'HTTPS'])) {
-                $key = 'HTTP_'.$key;
+                $key = 'HTTP_' . $key;
             }
 
             $__SERVER[$key] = $value;
@@ -176,32 +175,27 @@ class Request
      * @param \Swoole\Http\Response $swooleResponse
      * @param string $publicPath
      *
-     * @return boolean|null
+     * @return boolean
      */
     public static function handleStatic($swooleRequest, $swooleResponse, string $publicPath)
     {
         $uri = $swooleRequest->server['request_uri'] ?? '';
-        $extension = substr(strrchr($uri, '.'), 1);
-        if ($extension && in_array($extension, static::BLACK_LIST)) {
-            return null;
+        $extension = pathinfo($uri, PATHINFO_EXTENSION);
+        $fileName = $publicPath . $uri;
+
+        if ($extension && in_array($extension, static::EXTENSION_BLACKLIST)) {
+            return false;
         }
 
-        $filename = $publicPath.$uri;
-        if (! is_file($filename) || filesize($filename) === 0) {
-            return null;
+        if (! is_file($fileName) || ! filesize($fileName)) {
+            return false;
         }
 
-        $swooleResponse->status(200);
-        $mime = mime_content_type($filename);
-        if ($extension === 'js') {
-            $mime = 'text/javascript';
-        } else {
-            if ($extension === 'css') {
-                $mime = 'text/css';
-            }
-        }
-        $swooleResponse->header('Content-Type', $mime);
-        $swooleResponse->sendfile($filename);
+        $contentType = mime_content_type($fileName);
+
+        $swooleResponse->status(IlluminateResponse::HTTP_OK);
+        $swooleResponse->header('Content-Type', static::EXTENSION_MIMES[$contentType] ?? $contentType);
+        $swooleResponse->sendfile($fileName);
 
         return true;
     }

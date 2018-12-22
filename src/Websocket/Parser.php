@@ -26,7 +26,7 @@ abstract class Parser
 
         foreach ($this->strategies as $strategy) {
             $result = App::call(
-                $strategy.'@handle',
+                $strategy . '@handle',
                 [
                     'server' => $server,
                     'frame' => $frame,

@@ -118,7 +118,7 @@ class Packet
             return null;
         }
 
-        return (int)$type;
+        return (int) $type;
     }
 
     /**

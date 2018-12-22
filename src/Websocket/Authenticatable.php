@@ -35,7 +35,7 @@ trait Authenticatable
      */
     public function loginUsingId($userId)
     {
-        return $this->join(static::USER_PREFIX.$userId);
+        return $this->join(static::USER_PREFIX . $userId);
     }
 
     /**
@@ -49,7 +49,7 @@ trait Authenticatable
             return null;
         }
 
-        return $this->leave(static::USER_PREFIX.$userId);
+        return $this->leave(static::USER_PREFIX . $userId);
     }
 
     /**
@@ -84,7 +84,7 @@ trait Authenticatable
         $userIds = is_string($userIds) || is_integer($userIds) ? func_get_args() : $userIds;
 
         foreach ($userIds as $userId) {
-            $fds = $this->room->getClients(static::USER_PREFIX.$userId);
+            $fds = $this->room->getClients(static::USER_PREFIX . $userId);
             $this->to($fds);
         }
 
@@ -120,7 +120,7 @@ trait Authenticatable
      */
     public function isUserIdOnline($userId)
     {
-        return ! empty($this->room->getClients(static::USER_PREFIX.$userId));
+        return ! empty($this->room->getClients(static::USER_PREFIX . $userId));
     }
 
     /**
@@ -131,7 +131,7 @@ trait Authenticatable
     protected function checkUser($user)
     {
         if (! $user instanceOf AuthenticatableContract) {
-            throw new InvalidArgumentException('user object must implement '.AuthenticatableContract::class);
+            throw new InvalidArgumentException('user object must implement ' . AuthenticatableContract::class);
         }
     }
 }

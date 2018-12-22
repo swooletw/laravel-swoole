@@ -6,7 +6,9 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Arr;
 use SwooleTW\Http\Exceptions\WebsocketNotSetInConfigException;
-use SwooleTW\Http\Helpers\Service;
+use SwooleTW\Http\Helpers\Alias;
+use SwooleTW\Http\Server\Facades\Server;
+use SwooleTW\Http\Server\Sandbox;
 use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Websocket\HandlerContract;
 use SwooleTW\Http\Websocket\Parser;
@@ -54,8 +56,8 @@ trait InteractsWithWebsocket
     public function onOpen($swooleRequest)
     {
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
-        $websocket = $this->app->make(Service::WEBSOCKET_ALIAS);
-        $sandbox = $this->app->make(Service::SANDBOX_ALIAS);
+        $websocket = $this->app->make(Websocket::class);
+        $sandbox = $this->app->make(Sandbox::class);
 
         try {
             $websocket->reset(true)->setSender($swooleRequest->fd);
@@ -94,8 +96,8 @@ trait InteractsWithWebsocket
             return;
         }
 
-        $websocket = $this->app->make(Service::WEBSOCKET_ALIAS);
-        $sandbox = $this->app->make(Service::SANDBOX_ALIAS);
+        $websocket = $this->app->make(Websocket::class);
+        $sandbox = $this->app->make(Sandbox::class);
 
         try {
             // decode raw message via parser
@@ -132,7 +134,7 @@ trait InteractsWithWebsocket
             return;
         }
 
-        $websocket = $this->app->make(Service::WEBSOCKET_ALIAS);
+        $websocket = $this->app->make(Websocket::class);
 
         try {
             $websocket->reset(true)->setSender($fd);
@@ -172,7 +174,7 @@ trait InteractsWithWebsocket
 
         // push message to designated fds
         foreach ($push->getDescriptors() as $descriptor) {
-            if ($server->exist($descriptor) || ! $push->isBroadcastToDescriptor((int)$descriptor)) {
+            if ($server->exist($descriptor) || ! $push->isBroadcastToDescriptor((int) $descriptor)) {
                 $server->push($descriptor, $payload, $push->getOpcode());
             }
         }
@@ -205,7 +207,7 @@ trait InteractsWithWebsocket
      */
     protected function prepareWebsocket()
     {
-        $config = $this->container->make(Service::CONFIG_ALIAS);
+        $config = $this->container->make(Alias::CONFIG);
         $isWebsocket = $config->get('swoole_http.websocket.enabled');
         $parser = $config->get('swoole_websocket.parser');
 
@@ -225,7 +227,7 @@ trait InteractsWithWebsocket
      */
     protected function isServerWebsocket(int $fd): bool
     {
-        $info = $this->container->make(Service::SERVER_ALIAS)->connection_info($fd);
+        $info = $this->container->make(Server::class)->connection_info($fd);
 
         return Arr::has($info, 'websocket_status') && Arr::get($info, 'websocket_status');
     }
@@ -253,7 +255,7 @@ trait InteractsWithWebsocket
      */
     protected function prepareWebsocketHandler()
     {
-        $handlerClass = $this->container->make(Service::CONFIG_ALIAS)->get('swoole_websocket.handler');
+        $handlerClass = $this->container->make(Alias::CONFIG)->get('swoole_websocket.handler');
 
         if (! $handlerClass) {
             throw new WebsocketNotSetInConfigException;
@@ -303,7 +305,7 @@ trait InteractsWithWebsocket
     protected function bindRoom(): void
     {
         $this->app->singleton(RoomContract::class, function (Container $container) {
-            $config = $container->make(Service::CONFIG_ALIAS);
+            $config = $container->make(Alias::CONFIG);
             $driver = $config->get('swoole_websocket.default');
             $settings = $config->get("swoole_websocket.settings.{$driver}");
             $className = $config->get("swoole_websocket.drivers.{$driver}");
@@ -311,7 +313,7 @@ trait InteractsWithWebsocket
             return $this->createRoom($className, $settings);
         });
 
-        $this->app->alias(RoomContract::class, 'swoole.room');
+        $this->app->alias(RoomContract::class, Alias::ROOM);
     }
 
     /**
@@ -320,10 +322,10 @@ trait InteractsWithWebsocket
     protected function bindWebsocket()
     {
         $this->app->singleton(Websocket::class, function (Container $app) {
-            return new Websocket($app->make(Service::ROOM_ALIAS), new Pipeline($app));
+            return new Websocket($app->make(RoomContract::class), new Pipeline($app));
         });
 
-        $this->app->alias(Websocket::class, Service::WEBSOCKET_ALIAS);
+        $this->app->alias(Websocket::class, 'swoole.websocket');
     }
 
     /**
@@ -331,10 +333,10 @@ trait InteractsWithWebsocket
      */
     protected function loadWebsocketRoutes()
     {
-        $routePath = $this->container->make(Service::CONFIG_ALIAS)->get('swoole_websocket.route_file');
+        $routePath = $this->container->make(Alias::CONFIG)->get('swoole_websocket.route_file');
 
         if (! file_exists($routePath)) {
-            $routePath = __DIR__.'/../../routes/websocket.php';
+            $routePath = __DIR__ . '/../../routes/websocket.php';
         }
 
         return require $routePath;

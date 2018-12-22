@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use InvalidArgumentException;
 use Mockery as m;
+use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use SwooleTW\Http\Websocket\Websocket;
@@ -327,7 +328,7 @@ class WebsocketTest extends TestCase
             ->andReturn([3, 4, 5]);
 
         App::shouldReceive('make')
-            ->with('swoole.server')
+            ->with(Server::class)
             ->once()
             ->andReturnSelf();
 
@@ -360,7 +361,7 @@ class WebsocketTest extends TestCase
         $fd = 1;
 
         App::shouldReceive('make')
-            ->with('swoole.server')
+            ->with(Server::class)
             ->once()
             ->andReturnSelf();
 

@@ -55,7 +55,7 @@ class Push
      * @param string $event
      * @param string|null $message
      */
-    private function __construct(
+    protected function __construct(
         int $opcode,
         int $sender,
         array $descriptors,
@@ -63,7 +63,8 @@ class Push
         bool $assigned,
         string $event,
         string $message = null
-    ) {
+    )
+    {
         $this->opcode = $opcode;
         $this->sender = $sender;
         $this->descriptors = $descriptors;

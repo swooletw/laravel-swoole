@@ -30,7 +30,7 @@ class QueueFactory
      *
      * @const string
      */
-    public const QUEUE_CLASS_PATH = __DIR__.'/SwooleTaskQueue.php';
+    public const QUEUE_CLASS_PATH = __DIR__ . '/SwooleTaskQueue.php';
 
     /**
      * @param \Swoole\Http\Server $server
@@ -54,8 +54,8 @@ class QueueFactory
     public static function stub(string $version): string
     {
         return static::hasBreakingChanges($version)
-            ? __DIR__.'/../../stubs/5.7/SwooleTaskQueue.stub'
-            : __DIR__.'/../../stubs/5.6/SwooleTaskQueue.stub';
+            ? __DIR__ . '/../../stubs/5.7/SwooleTaskQueue.stub'
+            : __DIR__ . '/../../stubs/5.6/SwooleTaskQueue.stub';
     }
 
     /**

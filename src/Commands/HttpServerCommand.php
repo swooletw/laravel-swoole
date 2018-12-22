@@ -5,6 +5,7 @@ namespace SwooleTW\Http\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Swoole\Process;
+use SwooleTW\Http\Server\Manager;
 use Throwable;
 
 /**
@@ -95,12 +96,12 @@ class HttpServerCommand extends Command
         $this->info("Swoole http server started: <http://{$host}:{$port}>");
         if ($this->isDaemon()) {
             $this->info(
-                '> (You can run this command to ensure the '.
+                '> (You can run this command to ensure the ' .
                 'swoole_http_server process is running: ps aux|grep "swoole")'
             );
         }
 
-        $this->laravel->make('swoole.manager')->run();
+        $this->laravel->make(Manager::class)->run();
     }
 
     /**
@@ -292,7 +293,7 @@ class HttpServerCommand extends Command
         $path = $this->getPidPath();
 
         return $this->currentPid = file_exists($path)
-            ? (int)file_get_contents($path) ?? $this->removePidFile()
+            ? (int) file_get_contents($path) ?? $this->removePidFile()
             : null;
     }
 

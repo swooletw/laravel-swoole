@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Mockery as m;
 use Swoole\Websocket\Frame;
+use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 
@@ -37,7 +38,7 @@ class WebsocketHandlerTest extends TestCase
         }, 'SwooleTW\Http\Websocket\SocketIO');
 
         App::shouldReceive('make')
-            ->with('swoole.server')
+            ->with(Server::class)
             ->twice()
             ->andReturnSelf();
         App::shouldReceive('push')

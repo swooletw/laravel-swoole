@@ -201,7 +201,7 @@ class TableRoom implements RoomContract
 
         $value = $this->$table->get($key);
 
-        return $value ? json_decode($value['value'], true) : [];
+        return $value ? \json_decode($value['value'], true) : [];
     }
 
     /**

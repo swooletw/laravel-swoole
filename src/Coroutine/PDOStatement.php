@@ -74,7 +74,7 @@ class PDOStatement extends BaseStatement
             if (! method_exists($variable, '__toString')) {
                 return false;
             } else {
-                $variable = (string)$variable;
+                $variable = (string) $variable;
             }
         }
 
@@ -154,7 +154,8 @@ class PDOStatement extends BaseStatement
         $fetchStyle = null,
         $fetchArgument = null,
         $ctorArgs = null
-    ) {
+    )
+    {
         if (! is_array($rawData)) {
             return false;
         }
@@ -178,7 +179,7 @@ class PDOStatement extends BaseStatement
                 break;
             case PDO::FETCH_OBJ:
                 foreach ($rawData as $row) {
-                    $resultSet[] = (object)$row;
+                    $resultSet[] = (object) $row;
                 }
                 break;
             case PDO::FETCH_NUM:
@@ -199,11 +200,12 @@ class PDOStatement extends BaseStatement
         $cursorOrientation = null,
         $cursorOffset = null,
         $fetchArgument = null
-    ) {
+    )
+    {
         $this->__executeWhenStringQueryEmpty();
 
         $cursorOrientation = is_null($cursorOrientation) ? PDO::FETCH_ORI_NEXT : $cursorOrientation;
-        $cursorOffset = is_null($cursorOffset) ? 0 : (int)$cursorOffset;
+        $cursorOffset = is_null($cursorOffset) ? 0 : (int) $cursorOffset;
 
         switch ($cursorOrientation) {
             case PDO::FETCH_ORI_ABS:

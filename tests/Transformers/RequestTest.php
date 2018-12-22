@@ -69,7 +69,7 @@ class RequestTest extends TestCase
         $request->server['request_uri'] = 'foo.php';
 
         $result = Request::handleStatic($request, null, '/');
-        $this->assertNull($result);
+        $this->assertFalse($result);
     }
 
     public function testHandleStaticWithNoneFile()
@@ -82,7 +82,7 @@ class RequestTest extends TestCase
         });
 
         $result = Request::handleStatic(new SwooleRequestStub, null, '/');
-        $this->assertNull($result);
+        $this->assertFalse($result);
         $this->assertTrue($isFile);
     }
 

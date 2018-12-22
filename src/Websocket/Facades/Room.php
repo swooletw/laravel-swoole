@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Websocket\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use SwooleTW\Http\Helpers\Alias;
 
 /**
  * Class Room
@@ -16,6 +17,6 @@ class Room extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'swoole.room';
+        return Alias::ROOM;
     }
 }
