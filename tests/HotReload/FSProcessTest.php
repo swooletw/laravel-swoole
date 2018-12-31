@@ -13,7 +13,7 @@ class FSProcessTest extends TestCase
 {
     public function testItCanCreateHotReloadProcess()
     {
-        $process = new FSProcess('.php', true, base_path());
+        $process = new FSProcess('.php', true, __DIR__);
 
         $this->assertInstanceOf(FSProcess::class, $process);
         $this->assertInstanceOf(Process::class, $process->make());
@@ -21,7 +21,7 @@ class FSProcessTest extends TestCase
 
     public function testItCanCreateHotReloadProcessWithNeededConfiguration()
     {
-        $process = new FSProcess('.php', true, base_path());
+        $process = new FSProcess('.php', true, __DIR__);
         $ref = new \ReflectionClass($process);
         $configure = $ref->getMethod('configure');
         $configure->setAccessible(true);
