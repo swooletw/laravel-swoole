@@ -7,8 +7,6 @@ use Symfony\Component\Process\Process as AppProcess;
 
 /**
  * Class FSProcess
- *
- * @codeCoverageIgnore
  */
 class FSProcess
 {
@@ -22,7 +20,7 @@ class FSProcess
     /**
      * Watch recursively.
      *
-     * @var string
+     * @var bool
      */
     protected $recursively;
 
@@ -44,10 +42,10 @@ class FSProcess
      * FSProcess constructor.
      *
      * @param string $filter
-     * @param string $recursively
+     * @param bool $recursively
      * @param string $directory
      */
-    public function __construct(string $filter, string $recursively, string $directory)
+    public function __construct(string $filter, bool $recursively, string $directory)
     {
         $this->filter = $filter;
         $this->recursively = $recursively;
