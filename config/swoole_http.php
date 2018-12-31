@@ -15,7 +15,7 @@ return [
         'public_path' => base_path('public'),
         // Determine if to use swoole to respond request for static files
         'handle_static_files' => env('SWOOLE_HANDLE_STATIC', true),
-        'log' => env('SWOOLE_HTTP_LOG', true),
+        'access_log' => env('SWOOLE_HTTP_ACCESS_LOG', true),
         // You must add --enable-openssl while compiling Swoole
         // Put `SWOOLE_SOCK_TCP | SWOOLE_SSL` if you want to enable SSL
         'socket_type' => SWOOLE_SOCK_TCP,
@@ -61,7 +61,7 @@ return [
     'hot_reload' => [
         'enabled' => env('SWOOLE_HOT_RELOAD_ENABLE', false),
         'recursively' => env('SWOOLE_HOT_RELOAD_RECURSIVELY', true),
-        'directory' => env('SWOOLE_HOT_RELOAD_DIRECTORY', base_path('app')),
+        'directory' => env('SWOOLE_HOT_RELOAD_DIRECTORY', base_path()),
         'log' => env('SWOOLE_HOT_RELOAD_LOG', true),
         'filter' => env('SWOOLE_HOT_RELOAD_FILTER', '.php'),
     ],

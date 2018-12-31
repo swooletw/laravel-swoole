@@ -7,32 +7,34 @@ use Symfony\Component\Process\Process as AppProcess;
 
 /**
  * Class FSProcess
+ *
+ * @codeCoverageIgnore
  */
 class FSProcess
 {
     /**
-     * Observed files
+     * Observed files.
      *
      * @var array
      */
     protected $filter;
 
     /**
-     * Watch recursively
+     * Watch recursively.
      *
      * @var string
      */
     protected $recursively;
 
     /**
-     * Watch directory
+     * Watch directory.
      *
      * @var string
      */
     protected $directory;
 
     /**
-     * When locked event cannot do anything
+     * When locked event cannot do anything.
      *
      * @var bool
      */
@@ -54,7 +56,7 @@ class FSProcess
     }
 
     /**
-     * Make swoole process
+     * Make swoole process.
      *
      * @param callable|null $callback
      *
@@ -72,15 +74,20 @@ class FSProcess
         };
 
         return new SwooleProcess(function () use ($mcb) {
-            (new AppProcess($this->configure()))->run($mcb);
+            (new AppProcess($this->configure()))->setTimeout(0)->run($mcb);
         }, false, false);
     }
 
+    /**
+     * Configure process.
+     *
+     * @return array
+     */
     protected function configure(): array
     {
         return [
             'fswatch',
-            $this->recursively ? '-rtx' : 'tx',
+            $this->recursively ? '-rtx' : '-tx',
             '-e',
             '.*',
             '-i',

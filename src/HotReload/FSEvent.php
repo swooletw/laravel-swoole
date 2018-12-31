@@ -2,85 +2,98 @@
 
 namespace SwooleTW\Http\HotReload;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 
 /**
  * Class FSEvent
+ *
+ * @codeCoverageIgnore
  */
 class FSEvent
 {
     /**
-     * Event - Created
+     * Event - Created.
      *
      * @var string
      */
     public const Created = 'Created';
 
     /**
-     * Event - Updated
+     * Event - Updated.
      *
      * @var string
      */
     public const Updated = 'Updated';
 
     /**
-     * Event - Removed
+     * Event - Removed.
      *
      * @var string
      */
     public const Removed = 'Removed';
 
     /**
-     * Event - Renamed
+     * Event - Renamed.
      *
      * @var string
      */
     public const Renamed = 'Renamed';
 
     /**
-     * Event - OwnerModified
+     * Event - OwnerModified.
      *
      * @var string
      */
     public const OwnerModified = 'OwnerModified';
 
     /**
-     * Event - AttributeModified
+     * Event - AttributeModified.
      *
      * @var string
      */
     public const AttributeModified = 'AttributeModified';
 
     /**
-     * Event - MovedFrom
+     * Event - MovedFrom.
      *
      * @var string
      */
     public const MovedFrom = 'MovedFrom';
 
     /**
-     * Event - MovedTo
+     * Event - MovedTo.
      *
      * @var string
      */
     public const MovedTo = 'MovedTo';
 
     /**
-     * When event fired
+     * Possible event types.
+     *
+     * @var array
+     */
+    protected static $possibleTypes = [
+        self::Created, self::Updated, self::Removed, self::Renamed,
+        self::OwnerModified, self::AttributeModified, self::MovedFrom, self::MovedTo,
+    ];
+
+    /**
+     * When event fired.
      *
      * @var \Illuminate\Support\Carbon
      */
     protected $when;
 
     /**
-     * Directory or file path
+     * Directory or file path.
      *
      * @var string
      */
     protected $path;
 
     /**
-     * Event types
+     * Event types.
      *
      * @var array
      */
@@ -125,7 +138,15 @@ class FSEvent
     }
 
     /**
-     * Checks if event types has needed type(s)
+     * @return string
+     */
+    public function getType(): string
+    {
+        return Arr::first($this->types);
+    }
+
+    /**
+     * Checks if event types has needed type(s).
      *
      * @param string ...$types
      *
@@ -134,5 +155,15 @@ class FSEvent
     public function isType(string ...$types): bool
     {
         return count(array_intersect($this->types, $types)) > 0;
+    }
+
+    /**
+     * Get possible event types.
+     *
+     * @return array
+     */
+    public static function getPossibleTypes(): array
+    {
+        return self::$possibleTypes;
     }
 }

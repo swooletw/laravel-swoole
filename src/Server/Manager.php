@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Server;
 
 use Exception;
+use Illuminate\Console\OutputStyle;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Events\Dispatcher;
@@ -211,11 +212,14 @@ class Manager
 
             // set current request to sandbox
             $sandbox->setRequest($illuminateRequest);
+
             // enable sandbox
             $sandbox->enable();
 
             // handle request via laravel/lumen's dispatcher
             $illuminateResponse = $sandbox->run($illuminateRequest);
+
+            // send response
             Response::make($illuminateResponse, $swooleResponse)->send();
         } catch (Throwable $e) {
             try {

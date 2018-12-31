@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http;
 
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Arr;
@@ -13,6 +14,7 @@ use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
 use SwooleTW\Http\Coroutine\MySqlConnection;
 use SwooleTW\Http\Helpers\Alias;
 use SwooleTW\Http\Helpers\FW;
+use SwooleTW\Http\Middlewares\AccessLog;
 use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Task\Connectors\SwooleTaskConnector;
 
@@ -81,8 +83,15 @@ abstract class HttpServiceProvider extends ServiceProvider
             __DIR__ . '/../routes/websocket.php' => base_path('routes/websocket.php'),
         ], 'laravel-swoole');
 
-        if ($this->app->make(Alias::CONFIG)->get('swoole_http.websocket.enabled')) {
+        $config = $this->app->make(Alias::CONFIG);
+
+        if ($config->get('swoole_http.websocket.enabled')) {
             $this->bootRoutes();
+        }
+
+        if ($config->get('swoole_http.server.access_log')) {
+            $this->app->make(Kernel::class)->pushMiddleware(AccessLog::class);
+//            dd($this->app->make(Kernel::class));
         }
     }
 

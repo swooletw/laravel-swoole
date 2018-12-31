@@ -6,6 +6,8 @@ use Illuminate\Support\Carbon;
 
 /**
  * Class FSEventParser
+ *
+ * @codeCoverageIgnore
  */
 class FSEventParser
 {
@@ -26,6 +28,7 @@ class FSEventParser
             $date = Carbon::parse($matches[static::DATE]);
             $path = $matches[static::PATH];
             $events = explode(' ', $matches[static::EVENTS]);
+            $events = array_sort(array_intersect(FSEvent::getPossibleTypes(), $events));
 
             return new FSEvent($date, $path, $events);
         }

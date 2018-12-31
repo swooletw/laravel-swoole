@@ -3,13 +3,19 @@
 namespace SwooleTW\Http\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Console\OutputStyle;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Arr;
 use Swoole\Process;
 use SwooleTW\Http\Helpers\Alias;
 use SwooleTW\Http\HotReload\FSEvent;
+use SwooleTW\Http\HotReload\FSOutput;
 use SwooleTW\Http\HotReload\FSProcess;
+use SwooleTW\Http\Middlewares\AccessLog;
+use SwooleTW\Http\Server\AccessOutput;
 use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Server\Manager;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Throwable;
 
 /**
@@ -96,6 +102,7 @@ class HttpServerCommand extends Command
         $host = Arr::get($this->config, 'server.host');
         $port = Arr::get($this->config, 'server.port');
         $hotReloadEnabled = Arr::get($this->config, 'hot_reload.enabled');
+        $accessLogEnabled = Arr::get($this->config, 'server.access_log');
 
         $this->info('Starting swoole http server...');
         $this->info("Swoole http server started: <http://{$host}:{$port}>");
@@ -108,6 +115,10 @@ class HttpServerCommand extends Command
 
         $manager = $this->laravel->make(Manager::class);
         $server = $this->laravel->make(Server::class);
+
+        if ($accessLogEnabled) {
+            $this->registerAccessLog();
+        }
 
         if ($hotReloadEnabled) {
             $manager->addProcess($this->getHotReloadProcess($server));
@@ -256,7 +267,7 @@ class HttpServerCommand extends Command
         $log = Arr::get($this->config, 'hot_reload.log');
 
         $cb = function (FSEvent $event) use ($server, $log) {
-            $log ? $this->info($event->getPath()) : null;
+            $log ? $this->info(FSOutput::format($event)) : null;
             $server->reload();
         };
 
@@ -379,5 +390,23 @@ class HttpServerCommand extends Command
 
             exit(1);
         }
+    }
+
+    /**
+     * Register access log services.
+     */
+    protected function registerAccessLog()
+    {
+        $this->laravel->singleton(OutputStyle::class, function () {
+            return new OutputStyle($this->input, $this->output);
+        });
+
+        $this->laravel->singleton(AccessOutput::class, function () {
+            return new AccessOutput(new ConsoleOutput());
+        });
+
+        $this->laravel->singleton(AccessLog::class, function (Container $container) {
+            return new AccessLog($container->make(AccessOutput::class));
+        });
     }
 }
