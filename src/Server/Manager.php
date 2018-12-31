@@ -8,6 +8,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Str;
+use Swoole\Process;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
 use SwooleTW\Http\Concerns\InteractsWithWebsocket;
 use SwooleTW\Http\Concerns\WithApplication;
@@ -390,6 +391,16 @@ class Manager
         $name = sprintf('%s: %s for %s', $serverName, $process, $appName);
 
         swoole_set_process_name($name);
+    }
+
+    /**
+     * Add process to http server
+     *
+     * @param \Swoole\Process $process
+     */
+    public function addProcess(Process $process): void
+    {
+        $this->container->make(Server::class)->addProcess($process);
     }
 
     /**

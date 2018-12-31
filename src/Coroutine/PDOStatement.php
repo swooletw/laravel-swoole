@@ -236,7 +236,8 @@ class PDOStatement extends BaseStatement
     /**
      * Returns a single column from the next row of a result set or FALSE if there are no more rows.
      *
-     * @param int $column_number
+     * @param int|null $columnNumber
+     *
      * 0-indexed number of the column you wish to retrieve from the row.
      * If no value is supplied, PDOStatement::fetchColumn() fetches the first column.
      *

@@ -29,7 +29,8 @@
     "predis/predis": "^1.1",
     "ext-json": "*",
     "ext-fileinfo": "*",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "ext-pcntl": "*"
   },
   "require-dev": {
     "laravel/lumen-framework": "~5.3",

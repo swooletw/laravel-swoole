@@ -5,6 +5,10 @@ namespace SwooleTW\Http\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Swoole\Process;
+use SwooleTW\Http\Helpers\Alias;
+use SwooleTW\Http\HotReload\FSEvent;
+use SwooleTW\Http\HotReload\FSProcess;
+use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Server\Manager;
 use Throwable;
 
@@ -67,7 +71,7 @@ class HttpServerCommand extends Command
      */
     protected function loadConfigs()
     {
-        $this->config = $this->laravel->make('config')->get('swoole_http');
+        $this->config = $this->laravel->make(Alias::CONFIG)->get('swoole_http');
     }
 
     /**
@@ -91,6 +95,7 @@ class HttpServerCommand extends Command
 
         $host = Arr::get($this->config, 'server.host');
         $port = Arr::get($this->config, 'server.port');
+        $hotReloadEnabled = Arr::get($this->config, 'hot_reload.enabled');
 
         $this->info('Starting swoole http server...');
         $this->info("Swoole http server started: <http://{$host}:{$port}>");
@@ -101,7 +106,14 @@ class HttpServerCommand extends Command
             );
         }
 
-        $this->laravel->make(Manager::class)->run();
+        $manager = $this->laravel->make(Manager::class);
+        $server = $this->laravel->make(Server::class);
+
+        if ($hotReloadEnabled) {
+            $manager->addProcess($this->getHotReloadProcess($server));
+        }
+
+        $manager->run();
     }
 
     /**
@@ -232,6 +244,26 @@ class HttpServerCommand extends Command
     }
 
     /**
+     * @param \SwooleTW\Http\Server\Facades\Server $server
+     *
+     * @return \Swoole\Process
+     */
+    protected function getHotReloadProcess($server)
+    {
+        $recursively = Arr::get($this->config, 'hot_reload.recursively');
+        $directory = Arr::get($this->config, 'hot_reload.directory');
+        $filter = Arr::get($this->config, 'hot_reload.filter');
+        $log = Arr::get($this->config, 'hot_reload.log');
+
+        $cb = function (FSEvent $event) use ($server, $log) {
+            $log ? $this->info($event->getPath()) : null;
+            $server->reload();
+        };
+
+        return (new FSProcess($filter, $recursively, $directory))->make($cb);
+    }
+
+    /**
      * If Swoole process is running.
      *
      * @param int $pid
@@ -333,19 +365,19 @@ class HttpServerCommand extends Command
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             $this->error("Swoole extension doesn't support Windows OS yet.");
 
-            return;
-        } else {
-            if (! extension_loaded('swoole')) {
-                $this->error("Can't detect Swoole extension installed.");
+            exit(1);
+        }
 
-                return;
-            } else {
-                if (! version_compare(swoole_version(), '4.0.0', 'ge')) {
-                    $this->error("Your Swoole version must be higher than 4.0 to use coroutine.");
+        if (! extension_loaded('swoole')) {
+            $this->error("Can't detect Swoole extension installed.");
 
-                    return;
-                }
-            }
+            exit(1);
+        }
+
+        if (! version_compare(swoole_version(), '4.0.0', 'ge')) {
+            $this->error("Your Swoole version must be higher than 4.0 to use coroutine.");
+
+            exit(1);
         }
     }
 }

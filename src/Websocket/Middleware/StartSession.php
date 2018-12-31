@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use Illuminate\Session\SessionManager;
+use Illuminate\Support\Arr;
 
 /**
  * Class StartSession
@@ -42,9 +43,7 @@ class StartSession
     public function handle($request, Closure $next)
     {
         if ($this->sessionConfigured()) {
-            $request->setLaravelSession(
-                $session = $this->startSession($request)
-            );
+            $request->setLaravelSession($this->startSession($request));
         }
 
         return $next($request);
@@ -87,6 +86,6 @@ class StartSession
      */
     protected function sessionConfigured()
     {
-        return ! is_null($this->manager->getSessionConfig()['driver'] ?? null);
+        return Arr::get($this->manager->getSessionConfig(), 'session') !== null;
     }
 }

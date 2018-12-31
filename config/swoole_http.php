@@ -59,11 +59,11 @@ return [
     |--------------------------------------------------------------------------
     */
     'hot_reload' => [
-        'enabled' => env('SWOOLE_HOT_RELOAD_ENABLE', true),
-        'level' => env('SWOOLE_HOT_RELOAD_DEEP_LEVEL', 10),
-        'directory' => env('SWOOLE_HOT_RELOAD_DIRECTORY', base_path()),
+        'enabled' => env('SWOOLE_HOT_RELOAD_ENABLE', false),
+        'recursively' => env('SWOOLE_HOT_RELOAD_RECURSIVELY', true),
+        'directory' => env('SWOOLE_HOT_RELOAD_DIRECTORY', base_path('app')),
         'log' => env('SWOOLE_HOT_RELOAD_LOG', true),
-        'files' => ['*.php'],
+        'filter' => env('SWOOLE_HOT_RELOAD_FILTER', '.php'),
     ],
 
     /*

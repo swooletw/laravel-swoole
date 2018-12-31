@@ -4,6 +4,7 @@ namespace SwooleTW\Http\Tests\Server;
 
 
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Config;
 use Laravel\Lumen\Exceptions\Handler;
@@ -597,9 +598,11 @@ class ManagerTest extends TestCase
         $config = $config ?? $this->getConfig();
         $container = new Container;
 
-        $container->singleton('config', function () use ($config) {
+        $container->singleton(Repository::class, function () use ($config) {
             return $config;
         });
+        $container->alias(Repository::class, Alias::CONFIG);
+
         $container->singleton(Server::class, function () use ($server) {
             return $server;
         });
@@ -621,7 +624,7 @@ class ManagerTest extends TestCase
 
     protected function getConfig($websocket = false)
     {
-        $config = m::mock('config');
+        $config = m::mock(Repository::class);
         $settings = $websocket ? 'websocketConfig' : 'config';
         $callback = function ($key) use ($settings) {
             return $this->$settings[$key] ?? '';

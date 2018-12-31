@@ -63,7 +63,7 @@ class SandboxTest extends TestCase
 
         $container = m::mock(Container::class);
         $container->shouldReceive('make')
-            ->with('config')
+            ->with(\Illuminate\Contracts\Config\Repository::class)
             ->once()
             ->andReturn($config);
         $container->shouldReceive('make')

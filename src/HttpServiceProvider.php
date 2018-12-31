@@ -3,7 +3,7 @@
 namespace SwooleTW\Http;
 
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Queue\Capsule\Manager;
+use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 use Swoole\Http\Server as HttpServer;
@@ -199,11 +199,12 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function getMergedDatabaseConfig(array $config, string $name)
     {
-        $config = Arr::add($config, 'name', $name);
-        $config = array_merge($config, Arr::get($config, 'read', []));
-        $config = array_merge($config, Arr::get($config, 'write', []));
+        $newConfig = $config;
+        $newConfig = Arr::add($newConfig, 'name', $name);
+        $newConfig = array_merge($newConfig, Arr::get($newConfig, 'read', []));
+        $newConfig = array_merge($newConfig, Arr::get($newConfig, 'write', []));
 
-        return $config;
+        return $newConfig;
     }
 
     /**
@@ -223,7 +224,7 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function registerSwooleQueueDriver()
     {
-        $this->app->afterResolving(Alias::QUEUE, function (Manager $manager) {
+        $this->app->afterResolving(Alias::QUEUE, function (QueueManager $manager) {
             $manager->addConnector('swoole', function () {
                 return new SwooleTaskConnector($this->app->make(Server::class));
             });
