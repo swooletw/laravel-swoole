@@ -26,7 +26,7 @@ class FSEventParser
             $date = Carbon::parse($matches[static::DATE]);
             $path = $matches[static::PATH];
             $events = explode(' ', $matches[static::EVENTS]);
-            $events = array_sort(array_intersect(FSEvent::getPossibleTypes(), $events));
+            $events = array_sort(array_intersect(FSEvent::getPossibleTypes(), $events), SORT_ASC);
 
             return new FSEvent($date, $path, $events);
         }
