@@ -33,7 +33,7 @@ class FSProcessTest extends TestCase
             '.*',
             '-i',
             "\\.php$",
-            base_path(),
+            __DIR__,
         ];
 
         $this->assertInstanceOf(FSProcess::class, $process);
