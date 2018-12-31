@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Task;
 
-
 use Illuminate\Container\Container;
 use Mockery as m;
 use SwooleTW\Http\Task\SwooleTaskJob;

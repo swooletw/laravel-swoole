@@ -2,7 +2,7 @@
 
 namespace SwooleTW\Http\Tests\HotReload;
 
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 use SwooleTW\Http\HotReload\FSEvent;
 use SwooleTW\Http\Tests\TestCase;
 

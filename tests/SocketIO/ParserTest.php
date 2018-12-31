@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\SocketIO;
 
-
 use Illuminate\Support\Facades\App;
 use Mockery as m;
 use Swoole\Websocket\Frame;
@@ -25,7 +24,7 @@ class ParserTest extends TestCase
         $data = ['message' => 'test'];
         $this->assertSame('42["foo",{"message":"test"}]', $parser->encode($event, $data));
 
-        $data = (object)['message' => 'test'];
+        $data = (object) ['message' => 'test'];
         $this->assertSame('42["foo",{"message":"test"}]', $parser->encode($event, $data));
     }
 

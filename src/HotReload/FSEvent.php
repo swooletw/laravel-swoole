@@ -3,7 +3,7 @@
 namespace SwooleTW\Http\HotReload;
 
 use Illuminate\Support\Arr;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 
 /**
  * Class FSEvent
@@ -79,7 +79,7 @@ class FSEvent
     /**
      * When event fired.
      *
-     * @var \Illuminate\Support\Carbon
+     * @var \Carbon\Carbon
      */
     protected $when;
 
@@ -100,7 +100,7 @@ class FSEvent
     /**
      * Event constructor.
      *
-     * @param \Illuminate\Support\Carbon $when
+     * @param \Carbon\Carbon $when
      * @param string $path
      * @param array $types
      */
@@ -112,7 +112,7 @@ class FSEvent
     }
 
     /**
-     * @return \Illuminate\Support\Carbon
+     * @return \Carbon\Carbon
      */
     public function getWhen(): Carbon
     {

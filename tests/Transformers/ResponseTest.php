@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Transformers;
 
-
 use Illuminate\Http\Response as IlluminateResponse;
 use Swoole\Http\Response as SwooleResponse;
 use SwooleTW\Http\Tests\TestCase;

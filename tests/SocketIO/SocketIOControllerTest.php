@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\SocketIO;
 
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Mockery as m;
@@ -15,18 +14,18 @@ class SocketIOControllerTest extends TestCase
     {
         $request = m::mock(Request::class);
         $request->shouldReceive('input')
-            ->with('transport')
-            ->once()
-            ->andReturn('foo');
+                ->with('transport')
+                ->once()
+                ->andReturn('foo');
 
         $this->mockMethod('response', function () {
             $response = m::mock('response');
             $response->shouldReceive('json')
-                ->once()
-                ->with([
-                    'code' => 0,
-                    'message' => 'Transport unknown',
-                ], 400);
+                     ->once()
+                     ->with([
+                         'code' => 0,
+                         'message' => 'Transport unknown',
+                     ], 400);
 
             return $response;
         });
@@ -39,13 +38,13 @@ class SocketIOControllerTest extends TestCase
     {
         $request = m::mock(Request::class);
         $request->shouldReceive('input')
-            ->with('transport')
-            ->once()
-            ->andReturn('websocket');
+                ->with('transport')
+                ->once()
+                ->andReturn('websocket');
         $request->shouldReceive('has')
-            ->with('sid')
-            ->once()
-            ->andReturn(true);
+                ->with('sid')
+                ->once()
+                ->andReturn(true);
 
         $controller = new SocketIOController;
         $result = $controller->upgrade($request);
@@ -57,13 +56,13 @@ class SocketIOControllerTest extends TestCase
     {
         $request = m::mock(Request::class);
         $request->shouldReceive('input')
-            ->with('transport')
-            ->once()
-            ->andReturn('websocket');
+                ->with('transport')
+                ->once()
+                ->andReturn('websocket');
         $request->shouldReceive('has')
-            ->with('sid')
-            ->once()
-            ->andReturn(false);
+                ->with('sid')
+                ->once()
+                ->andReturn(false);
 
         $base64Encode = false;
         $this->mockMethod('base64_encode', function () use (&$base64Encode) {
@@ -73,13 +72,13 @@ class SocketIOControllerTest extends TestCase
         });
 
         Config::shouldReceive('get')
-            ->with('swoole_websocket.ping_interval')
-            ->once()
-            ->andReturn(1);
+              ->with('swoole_websocket.ping_interval')
+              ->once()
+              ->andReturn(1);
         Config::shouldReceive('get')
-            ->with('swoole_websocket.ping_timeout')
-            ->once()
-            ->andReturn(1);
+              ->with('swoole_websocket.ping_timeout')
+              ->once()
+              ->andReturn(1);
 
         $expectedPayload = json_encode([
             'sid' => 'payload',
@@ -101,11 +100,11 @@ class SocketIOControllerTest extends TestCase
         $this->mockMethod('response', function () {
             $response = m::mock('response');
             $response->shouldReceive('json')
-                ->once()
-                ->with([
-                    'code' => 3,
-                    'message' => 'Bad request',
-                ], 400);
+                     ->once()
+                     ->with([
+                         'code' => 3,
+                         'message' => 'Bad request',
+                     ], 400);
 
             return $response;
         });

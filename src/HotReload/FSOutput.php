@@ -4,8 +4,6 @@ namespace SwooleTW\Http\HotReload;
 
 /**
  * Class FSOutput
- *
- * @codeCoverageIgnore
  */
 class FSOutput
 {
@@ -18,8 +16,8 @@ class FSOutput
     {
         $item = is_dir($event->getPath()) ? 'Directory' : 'File';
         $events = implode(', ', $event->getTypes());
-        $time = $event->getWhen()->format('H:i:s');
+        $time = $event->getWhen()->format('Y.m.d H:i:s');
 
-        return sprintf('%s %s at %s', $item, $events, $time);
+        return sprintf('%s: %s %s at %s', $item, $event->getPath(), $events, $time);
     }
 }

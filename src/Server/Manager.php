@@ -3,7 +3,6 @@
 namespace SwooleTW\Http\Server;
 
 use Exception;
-use Illuminate\Console\OutputStyle;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Events\Dispatcher;

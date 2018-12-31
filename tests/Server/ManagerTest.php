@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Server;
 
-
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -139,8 +138,8 @@ class ManagerTest extends TestCase
         });
 
         Config::shouldReceive('get')
-            ->with('swoole_websocket.middleware', [])
-            ->once();
+              ->with('swoole_websocket.middleware', [])
+              ->once();
         WebsocketFacade::shouldReceive('on')->times(3);
 
         $manager = $this->getWebsocketManager($container);
@@ -198,23 +197,23 @@ class ManagerTest extends TestCase
         $container->singleton(Websocket::class, function () {
             $websocket = m::mock(Websocket::class);
             $websocket->shouldReceive('reset')
-                ->with(true)
-                ->once();
+                      ->with(true)
+                      ->once();
 
             return $websocket;
         });
         $container->singleton(Sandbox::class, function () {
             $sandbox = m::mock(Sandbox::class);
             $sandbox->shouldReceive('setRequest')
-                ->with(m::type('Illuminate\Http\Request'))
-                ->once();
+                    ->with(m::type('Illuminate\Http\Request'))
+                    ->once();
             $sandbox->shouldReceive('enable')
-                ->once();
+                    ->once();
             $sandbox->shouldReceive('run')
-                ->with(m::type('Illuminate\Http\Request'))
-                ->once();
+                    ->with(m::type('Illuminate\Http\Request'))
+                    ->once();
             $sandbox->shouldReceive('disable')
-                ->once();
+                    ->once();
 
             return $sandbox;
         });
@@ -227,21 +226,21 @@ class ManagerTest extends TestCase
 
         $request = m::mock(Request::class);
         $request->shouldReceive('rawcontent')
-            ->once()
-            ->andReturn([]);
+                ->once()
+                ->andReturn([]);
 
         $response = m::mock(Response::class);
         $response->shouldReceive('header')
-            ->twice()
-            ->andReturnSelf();
+                 ->twice()
+                 ->andReturnSelf();
         $response->shouldReceive('status')
-            ->once()
-            ->andReturnSelf();
+                 ->once()
+                 ->andReturnSelf();
         $response->shouldReceive('write')
-            ->andReturnSelf();
+                 ->andReturnSelf();
         $response->shouldReceive('end')
-            ->once()
-            ->andReturnSelf();
+                 ->once()
+                 ->andReturnSelf();
 
         $manager = $this->getWebsocketManager();
         $manager->setApplication($container);
@@ -258,7 +257,7 @@ class ManagerTest extends TestCase
         $container->singleton(Sandbox::class, function () {
             $sandbox = m::mock(Sandbox::class);
             $sandbox->shouldReceive('disable')
-                ->once();
+                    ->once();
 
             return $sandbox;
         });
@@ -268,7 +267,7 @@ class ManagerTest extends TestCase
         $container->singleton(ExceptionHandler::class, function () {
             $handler = m::mock(ExceptionHandler::class);
             $handler->shouldReceive('render')
-                ->once();
+                    ->once();
 
             return $handler;
         });
@@ -279,21 +278,21 @@ class ManagerTest extends TestCase
 
         $request = m::mock(Request::class);
         $request->shouldReceive('rawcontent')
-            ->once()
-            ->andReturn([]);
+                ->once()
+                ->andReturn([]);
 
         $response = m::mock(Response::class);
         $response->shouldReceive('header')
-            ->twice()
-            ->andReturnSelf();
+                 ->twice()
+                 ->andReturnSelf();
         $response->shouldReceive('status')
-            ->once()
-            ->andReturnSelf();
+                 ->once()
+                 ->andReturnSelf();
         $response->shouldReceive('write')
-            ->andReturnSelf();
+                 ->andReturnSelf();
         $response->shouldReceive('end')
-            ->once()
-            ->andReturnSelf();
+                 ->once()
+                 ->andReturnSelf();
 
         $manager = $this->getManager($container);
         $manager->setApplication($container);
@@ -354,8 +353,8 @@ class ManagerTest extends TestCase
         $container->singleton(ExceptionHandler::class, function () use ($exception) {
             $handler = m::mock(ExceptionHandler::class);
             $handler->shouldReceive('report')
-                ->with($exception)
-                ->once();
+                    ->with($exception)
+                    ->once();
 
             return $handler;
         });
@@ -368,45 +367,45 @@ class ManagerTest extends TestCase
     {
         $request = m::mock(Request::class);
         $request->shouldReceive('rawcontent')
-            ->once()
-            ->andReturn([]);
+                ->once()
+                ->andReturn([]);
         $request->fd = 1;
 
         $container = $this->getContainer();
         $container->singleton(Websocket::class, function () {
             $websocket = m::mock(Websocket::class);
             $websocket->shouldReceive('reset')
-                ->with(true)
-                ->once()
-                ->andReturnSelf();
+                      ->with(true)
+                      ->once()
+                      ->andReturnSelf();
             $websocket->shouldReceive('setSender')
-                ->with(1)
-                ->once();
+                      ->with(1)
+                      ->once();
             $websocket->shouldReceive('eventExists')
-                ->with('connect')
-                ->once()
-                ->andReturn(true);
+                      ->with('connect')
+                      ->once()
+                      ->andReturn(true);
             $websocket->shouldReceive('setContainer')
-                ->with(m::type(Container::class))
-                ->once();
+                      ->with(m::type(Container::class))
+                      ->once();
             $websocket->shouldReceive('call')
-                ->with('connect', m::type('Illuminate\Http\Request'))
-                ->once();
+                      ->with('connect', m::type('Illuminate\Http\Request'))
+                      ->once();
 
             return $websocket;
         });
         $container->singleton(Sandbox::class, function () {
             $sandbox = m::mock(Sandbox::class);
             $sandbox->shouldReceive('setRequest')
-                ->with(m::type('Illuminate\Http\Request'))
-                ->once();
+                    ->with(m::type('Illuminate\Http\Request'))
+                    ->once();
             $sandbox->shouldReceive('enable')
-                ->once();
+                    ->once();
             $sandbox->shouldReceive('disable')
-                ->once();
+                    ->once();
             $sandbox->shouldReceive('getApplication')
-                ->once()
-                ->andReturn(m::mock(Container::class));
+                    ->once()
+                    ->andReturn(m::mock(Container::class));
 
             return $sandbox;
         });
@@ -415,8 +414,8 @@ class ManagerTest extends TestCase
 
         $handler = m::mock(HandlerContract::class);
         $handler->shouldReceive('onOpen')
-            ->with(1, m::type('Illuminate\Http\Request'))
-            ->andReturn(true);
+                ->with(1, m::type('Illuminate\Http\Request'))
+                ->andReturn(true);
 
         $manager = $this->getWebsocketManager();
         $manager->setApplication($container);
@@ -431,43 +430,43 @@ class ManagerTest extends TestCase
 
         $parser = m::mock(Parser::class);
         $parser->shouldReceive('execute')
-            ->with('server', $frame)
-            ->once()
-            ->andReturn(false);
+               ->with('server', $frame)
+               ->once()
+               ->andReturn(false);
         $parser->shouldReceive('decode')
-            ->with($frame)
-            ->once()
-            ->andReturn($payload = [
-                'event' => 'event',
-                'data' => 'data',
-            ]);
+               ->with($frame)
+               ->once()
+               ->andReturn($payload = [
+                   'event' => 'event',
+                   'data' => 'data',
+               ]);
 
         $container = $this->getContainer();
         $container->singleton(Websocket::class, function () use ($payload) {
             $websocket = m::mock(Websocket::class);
             $websocket->shouldReceive('reset')
-                ->with(true)
-                ->once()
-                ->andReturnSelf();
+                      ->with(true)
+                      ->once()
+                      ->andReturnSelf();
             $websocket->shouldReceive('setSender')
-                ->with(1)
-                ->once();
+                      ->with(1)
+                      ->once();
             $websocket->shouldReceive('eventExists')
-                ->with($payload['event'])
-                ->once()
-                ->andReturn(true);
+                      ->with($payload['event'])
+                      ->once()
+                      ->andReturn(true);
             $websocket->shouldReceive('call')
-                ->with($payload['event'], $payload['data'])
-                ->once();
+                      ->with($payload['event'], $payload['data'])
+                      ->once();
 
             return $websocket;
         });
         $container->singleton(Sandbox::class, function () {
             $sandbox = m::mock(Sandbox::class);
             $sandbox->shouldReceive('enable')
-                ->once();
+                    ->once();
             $sandbox->shouldReceive('disable')
-                ->once();
+                    ->once();
 
             return $sandbox;
         });
@@ -487,21 +486,21 @@ class ManagerTest extends TestCase
         $app->singleton(Websocket::class, function () use ($fd) {
             $websocket = m::mock(Websocket::class);
             $websocket->shouldReceive('reset')
-                ->with(true)
-                ->once()
-                ->andReturnSelf();
+                      ->with(true)
+                      ->once()
+                      ->andReturnSelf();
             $websocket->shouldReceive('setSender')
-                ->with($fd)
-                ->once();
+                      ->with($fd)
+                      ->once();
             $websocket->shouldReceive('eventExists')
-                ->with('disconnect')
-                ->once()
-                ->andReturn(true);
+                      ->with('disconnect')
+                      ->once()
+                      ->andReturn(true);
             $websocket->shouldReceive('call')
-                ->with('disconnect')
-                ->once();
+                      ->with('disconnect')
+                      ->once();
             $websocket->shouldReceive('leave')
-                ->once();
+                      ->once();
 
             return $websocket;
         });
@@ -516,11 +515,11 @@ class ManagerTest extends TestCase
             $server->taskworker = false;
             $server->master_pid = -1;
             $server->shouldReceive('connection_info')
-                ->with($fd)
-                ->once()
-                ->andReturn([
-                    'websocket_status' => true,
-                ]);
+                   ->with($fd)
+                   ->once()
+                   ->andReturn([
+                       'websocket_status' => true,
+                   ]);
 
             return $server;
         });
@@ -566,16 +565,16 @@ class ManagerTest extends TestCase
 
         $parser = m::mock(Parser::class);
         $parser->shouldReceive('encode')
-            ->with($data['event'], $data['message'])
-            ->once()
-            ->andReturn(false);
+               ->with($data['event'], $data['message'])
+               ->once()
+               ->andReturn(false);
 
         $server = m::mock('server');
         $server->shouldReceive('exist')
-            ->times(count($data['fds']))
-            ->andReturn(true);
+               ->times(count($data['fds']))
+               ->andReturn(true);
         $server->shouldReceive('push')
-            ->times(count($data['fds']));
+               ->times(count($data['fds']));
 
         $manager = $this->getWebsocketManager();
         $manager->setPayloadParser($parser);
@@ -631,11 +630,11 @@ class ManagerTest extends TestCase
         };
 
         $config->shouldReceive('get')
-            ->with(m::type('string'), m::any())
-            ->andReturnUsing($callback);
+               ->with(m::type('string'), m::any())
+               ->andReturnUsing($callback);
         $config->shouldReceive('get')
-            ->with(m::type('string'))
-            ->andReturnUsing($callback);
+               ->with(m::type('string'))
+               ->andReturnUsing($callback);
 
         return $config;
     }
@@ -643,9 +642,9 @@ class ManagerTest extends TestCase
     protected function getEvent($name, $default = true)
     {
         $event = m::mock('event')
-            ->shouldReceive('fire')
-            ->with($name, m::any())
-            ->once();
+                  ->shouldReceive('fire')
+                  ->with($name, m::any())
+                  ->once();
 
         $event = $default ? $event->with($name, m::any()) : $event->with($name);
 

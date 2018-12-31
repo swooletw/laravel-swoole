@@ -1,6 +1,5 @@
 <?php
 
-
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Mockery as m;

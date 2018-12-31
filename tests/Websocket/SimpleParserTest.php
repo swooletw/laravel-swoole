@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Websocket;
 
-
 use Mockery as m;
 use Swoole\Websocket\Frame;
 use SwooleTW\Http\Tests\TestCase;

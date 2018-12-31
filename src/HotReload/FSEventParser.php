@@ -2,7 +2,7 @@
 
 namespace SwooleTW\Http\HotReload;
 
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 
 /**
  * Class FSEventParser

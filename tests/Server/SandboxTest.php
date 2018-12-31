@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Server;
 
-
 use Illuminate\Config\Repository;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\Container as ContainerContract;
@@ -53,23 +52,23 @@ class SandboxTest extends TestCase
 
         $config = m::mock(Repository::class);
         $config->shouldReceive('get')
-            ->with('swoole_http.providers', [])
-            ->once()
-            ->andReturn([$providerName]);
+               ->with('swoole_http.providers', [])
+               ->once()
+               ->andReturn([$providerName]);
         $config->shouldReceive('get')
-            ->with('swoole_http.resetters', [])
-            ->once()
-            ->andReturn([$resetterName]);
+               ->with('swoole_http.resetters', [])
+               ->once()
+               ->andReturn([$resetterName]);
 
         $container = m::mock(Container::class);
         $container->shouldReceive('make')
-            ->with(\Illuminate\Contracts\Config\Repository::class)
-            ->once()
-            ->andReturn($config);
+                  ->with(\Illuminate\Contracts\Config\Repository::class)
+                  ->once()
+                  ->andReturn($config);
         $container->shouldReceive('make')
-            ->with($resetterName)
-            ->once()
-            ->andReturn($resetter);
+                  ->with($resetterName)
+                  ->once()
+                  ->andReturn($resetter);
 
         $sandbox = new Sandbox;
         $sandbox->setBaseApp($container);
@@ -101,9 +100,9 @@ class SandboxTest extends TestCase
         $container = m::mock(Container::class);
         $snapshot = m::mock(Container::class);
         $snapshot->shouldReceive('offsetGet')
-            ->with('foo')
-            ->once()
-            ->andReturn($result = 'bar');
+                 ->with('foo')
+                 ->once()
+                 ->andReturn($result = 'bar');
 
         $sandbox = new Sandbox;
         $sandbox->setBaseApp($container);
@@ -154,12 +153,12 @@ class SandboxTest extends TestCase
     {
         $config = m::mock(Illuminate\Config\Repository::class);
         $config->shouldReceive('get')
-            ->andReturn([]);
+               ->andReturn([]);
         $container = m::mock(Container::class);
         $container->shouldReceive('offsetGet')
-            ->andReturn((object)[]);
+                  ->andReturn((object) []);
         $container->shouldReceive('make')
-            ->andReturn($config);
+                  ->andReturn($config);
 
         return $container;
     }

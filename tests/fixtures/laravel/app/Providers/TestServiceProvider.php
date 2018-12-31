@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Fixtures\Laravel\App\Providers;
 
-
 use Illuminate\Support\ServiceProvider;
 
 class TestServiceProvider extends ServiceProvider

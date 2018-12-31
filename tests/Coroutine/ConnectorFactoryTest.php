@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Coroutine;
 
-
 use Illuminate\Support\Str;
 use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
 use SwooleTW\Http\Helpers\FW;

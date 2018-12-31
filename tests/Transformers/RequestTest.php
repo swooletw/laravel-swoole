@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Transformers;
 
-
 use Illuminate\Http\Request as IlluminateRequest;
 use Mockery as m;
 use Swoole\Http\Request as SwooleRequest;
@@ -48,14 +47,14 @@ class RequestTest extends TestCase
 
         $response = m::mock('response');
         $response->shouldReceive('status')
-            ->with(200)
-            ->once();
+                 ->with(200)
+                 ->once();
         $response->shouldReceive('header')
-            ->with('Content-Type', 'foo')
-            ->once();
+                 ->with('Content-Type', 'foo')
+                 ->once();
         $response->shouldReceive('sendfile')
-            ->with('/foo.bar')
-            ->once();
+                 ->with('/foo.bar')
+                 ->once();
 
         Request::handleStatic(new SwooleRequestStub, $response, '/');
 

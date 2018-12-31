@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Websocket;
 
-
 use Swoole\Table;
 use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;

@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Task;
 
-
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
