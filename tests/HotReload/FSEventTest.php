@@ -16,7 +16,8 @@ class FSEventTest extends TestCase
         $date = Carbon::parse('Mon Dec 31 01:18:34 2018');
         $path = '/Some/Path/To/File/File.php';
         $events = explode(' ', 'Renamed OwnerModified IsFile');
-        $events = array_sort(array_intersect(FSEvent::getPossibleTypes(), $events), SORT_ASC);
+        $events = array_intersect(FSEvent::getPossibleTypes(), $events);
+        asort($events, SORT_ASC);
         $event = new FSEvent($date, $path, $events);
 
         $this->assertTrue(array_diff($event->getTypes(), [FSEvent::Renamed, FSEvent::OwnerModified]) === []);
