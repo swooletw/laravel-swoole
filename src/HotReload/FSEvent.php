@@ -7,8 +7,6 @@ use Illuminate\Support\Carbon;
 
 /**
  * Class FSEvent
- *
- * @codeCoverageIgnore
  */
 class FSEvent
 {

@@ -402,7 +402,7 @@ class HttpServerCommand extends Command
         });
 
         $this->laravel->singleton(AccessOutput::class, function () {
-            return new AccessOutput(new ConsoleOutput());
+            return new AccessOutput(new ConsoleOutput);
         });
 
         $this->laravel->singleton(AccessLog::class, function (Container $container) {

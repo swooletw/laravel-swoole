@@ -6,8 +6,6 @@ use Illuminate\Support\Carbon;
 
 /**
  * Class FSEventParser
- *
- * @codeCoverageIgnore
  */
 class FSEventParser
 {
