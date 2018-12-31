@@ -63,7 +63,7 @@ class FSProcess
     public function make(?callable $callback = null)
     {
         $mcb = function ($type, $buffer) use ($callback) {
-            if (AppProcess::OUT === $type && $event = FSEventParser::toEvent($buffer)) {
+            if (! $this->locked && AppProcess::OUT === $type && $event = FSEventParser::toEvent($buffer)) {
                 $this->locked = true;
                 ($callback) ? $callback($event) : null;
                 $this->locked = false;
