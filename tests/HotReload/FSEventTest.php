@@ -17,7 +17,7 @@ class FSEventTest extends TestCase
         $path = '/Some/Path/To/File/File.php';
         $events = explode(' ', 'Renamed OwnerModified IsFile');
         $events = array_intersect(FSEvent::getPossibleTypes(), $events);
-        asort($events, SORT_ASC);
+        asort($events);
         $event = new FSEvent($date, $path, $events);
 
         $this->assertTrue(array_diff($event->getTypes(), [FSEvent::Renamed, FSEvent::OwnerModified]) === []);
