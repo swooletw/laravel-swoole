@@ -29,8 +29,6 @@ class FSEventParser
             $events = array_intersect(FSEvent::getPossibleTypes(), $events);
             asort($events);
 
-            dd($events, $path, $date);
-
             return new FSEvent($date, $path, $events);
         }
 
