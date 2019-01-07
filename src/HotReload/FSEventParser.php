@@ -9,7 +9,7 @@ use Carbon\Carbon;
  */
 class FSEventParser
 {
-    protected const REGEX = '/^([\S+]{3}\s+[\S+]{3}\s+[\d+]{2}\s+[\d+]{2}:[\d+]{2}:{0,2}:[\d+]{2}:{0,2}\s+[\d+]{0,4})\s+(\/[\S+]*)\s+([\S+*\s+]*)/mi';
+    protected const REGEX = '/^([\S+]{3}\s+[\S+]{3}\s+[\d+]{1,2}\s+[\d+]{2}:[\d+]{2}:{0,2}:[\d+]{2}:{0,2}\s+[\d+]{0,4})\s*(\/[\S+]*)\s+([\S+*\s+]*)/mi';
 
     protected const DATE = 1;
     protected const PATH = 2;
@@ -28,6 +28,8 @@ class FSEventParser
             $events = explode(' ', $matches[static::EVENTS]);
             $events = array_intersect(FSEvent::getPossibleTypes(), $events);
             asort($events);
+
+            dd($events, $path, $date);
 
             return new FSEvent($date, $path, $events);
         }
