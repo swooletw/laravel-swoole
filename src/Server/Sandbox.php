@@ -31,6 +31,11 @@ class Sandbox
 
     /**
      * Constructor
+     *
+     * @param null $app
+     * @param null $framework
+     *
+     * @throws \SwooleTW\Http\Exceptions\SandboxException
      */
     public function __construct($app = null, $framework = null)
     {
@@ -45,6 +50,10 @@ class Sandbox
 
     /**
      * Set framework type.
+     *
+     * @param string $framework
+     *
+     * @return \SwooleTW\Http\Server\Sandbox
      */
     public function setFramework(string $framework)
     {
@@ -65,6 +74,8 @@ class Sandbox
      * Set a base application.
      *
      * @param \Illuminate\Container\Container
+     *
+     * @return \SwooleTW\Http\Server\Sandbox
      */
     public function setBaseApp(Container $app)
     {
@@ -77,6 +88,8 @@ class Sandbox
      * Set current request.
      *
      * @param \Illuminate\Http\Request
+     *
+     * @return \SwooleTW\Http\Server\Sandbox
      */
     public function setRequest(Request $request)
     {
@@ -89,6 +102,8 @@ class Sandbox
      * Set current snapshot.
      *
      * @param \Illuminate\Container\Container
+     *
+     * @return \SwooleTW\Http\Server\Sandbox
      */
     public function setSnapshot(Container $snapshot)
     {
@@ -99,6 +114,8 @@ class Sandbox
 
     /**
      * Initialize based on base app.
+     *
+     * @throws \SwooleTW\Http\Exceptions\SandboxException
      */
     public function initialize()
     {
@@ -147,6 +164,8 @@ class Sandbox
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\Response
+     * @throws \SwooleTW\Http\Exceptions\SandboxException
+     * @throws \ReflectionException
      */
     public function run(Request $request)
     {
@@ -169,6 +188,7 @@ class Sandbox
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\Response
+     * @throws \ReflectionException
      */
     protected function prepareResponse(Request $request)
     {
@@ -187,6 +207,7 @@ class Sandbox
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\Response
+     * @throws \ReflectionException
      */
     protected function prepareObResponse(Request $request)
     {
@@ -203,7 +224,7 @@ class Sandbox
         } elseif ($response instanceof SymfonyResponse) {
             $content = $response->getContent();
         } elseif (! $isFile = $response instanceof BinaryFileResponse) {
-            $content = (string)$response;
+            $content = (string) $response;
         }
 
         // process terminating logics
@@ -214,7 +235,7 @@ class Sandbox
             if ($isStream) {
                 $response->output = ob_get_contents();
             } else {
-                $response->setContent(ob_get_contents().$content);
+                $response->setContent(ob_get_contents() . $content);
             }
         }
 
@@ -258,29 +279,35 @@ class Sandbox
     /**
      * @param \Illuminate\Http\Request $request
      * @param \Illuminate\Http\Response $response
+     *
+     * @throws \ReflectionException
      */
     public function terminate(Request $request, $response)
     {
         if ($this->isLaravel()) {
             $this->getKernel()->terminate($request, $response);
-        } else {
-            $app = $this->getApplication();
-            $reflection = new \ReflectionObject($app);
 
-            $middleware = $reflection->getProperty('middleware');
-            $middleware->setAccessible(true);
+            return;
+        }
 
-            $callTerminableMiddleware = $reflection->getMethod('callTerminableMiddleware');
-            $callTerminableMiddleware->setAccessible(true);
+        $app = $this->getApplication();
+        $reflection = new \ReflectionObject($app);
 
-            if (count($middleware->getValue($app)) > 0) {
-                $callTerminableMiddleware->invoke($app, $response);
-            }
+        $middleware = $reflection->getProperty('middleware');
+        $middleware->setAccessible(true);
+
+        $callTerminableMiddleware = $reflection->getMethod('callTerminableMiddleware');
+        $callTerminableMiddleware->setAccessible(true);
+
+        if (count($middleware->getValue($app)) > 0) {
+            $callTerminableMiddleware->invoke($app, $response);
         }
     }
 
     /**
      * Set laravel snapshot to container and facade.
+     *
+     * @throws \SwooleTW\Http\Exceptions\SandboxException
      */
     public function enable()
     {
@@ -303,6 +330,8 @@ class Sandbox
 
     /**
      * Replace app's self bindings.
+     *
+     * @param \Illuminate\Container\Container $app
      */
     public function setInstance(Container $app)
     {

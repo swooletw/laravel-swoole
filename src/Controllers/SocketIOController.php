@@ -34,7 +34,7 @@ class SocketIOController
             ]
         );
 
-        return '97:0'.$payload.'2:40';
+        return '97:0' . $payload . '2:40';
     }
 
     public function reject()

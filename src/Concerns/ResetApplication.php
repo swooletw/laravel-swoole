@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Concerns;
 
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Exceptions\SandboxException;
 use SwooleTW\Http\Server\Resetters\ResetterContract;
@@ -28,7 +29,7 @@ trait ResetApplication
      */
     protected function setInitialConfig()
     {
-        $this->config = clone $this->getBaseApp()->make('config');
+        $this->config = clone $this->getBaseApp()->make(Repository::class);
     }
 
     /**
@@ -74,7 +75,7 @@ trait ResetApplication
         foreach ($resetters as $resetter) {
             $resetterClass = $app->make($resetter);
             if (! $resetterClass instanceof ResetterContract) {
-                throw new SandboxException("{$resetter} must implement ".ResetterContract::class);
+                throw new SandboxException("{$resetter} must implement " . ResetterContract::class);
             }
             $this->resetters[$resetter] = $resetterClass;
         }

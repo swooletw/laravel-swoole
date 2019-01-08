@@ -55,7 +55,7 @@ class DecryptCookies
      */
     public function disableFor($name)
     {
-        $this->except = array_merge($this->except, (array)$name);
+        $this->except = array_merge($this->except, (array) $name);
     }
 
     /**

@@ -240,8 +240,7 @@ class RedisRoom implements RoomContract
      */
     protected function cleanRooms(): void
     {
-        $keys = $this->redis->keys("{$this->prefix}*");
-        if (count($keys)) {
+        if (count($keys = $this->redis->keys("{$this->prefix}*"))) {
             $this->redis->del($keys);
         }
     }

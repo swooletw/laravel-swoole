@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Websocket\Middleware;
 
-
 use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
 use Illuminate\Http\Request;
 use Mockery as m;
@@ -34,11 +33,11 @@ class DecrpytCookiesTest extends TestCase
 
         $encrypter = m::mock(EncrypterContract::class);
         $encrypter->shouldReceive('decrypt')
-            ->once()
-            ->with('sasaya', false);
+                  ->once()
+                  ->with('sasaya', false);
         $encrypter->shouldReceive('decrypt')
-            ->once()
-            ->with('ccc', false);
+                  ->once()
+                  ->with('ccc', false);
 
         $middleware = $this->getMiddleware($encrypter);
         $middleware->disableFor('foo');

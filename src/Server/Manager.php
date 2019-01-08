@@ -5,12 +5,15 @@ namespace SwooleTW\Http\Server;
 use Exception;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Str;
+use Swoole\Process;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
 use SwooleTW\Http\Concerns\InteractsWithWebsocket;
 use SwooleTW\Http\Concerns\WithApplication;
 use SwooleTW\Http\Helpers\OS;
+use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Task\SwooleTaskJob;
 use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Transformers\Response;
@@ -88,7 +91,7 @@ class Manager
      */
     public function run()
     {
-        $this->container->make('swoole.server')->start();
+        $this->container->make(Server::class)->start();
     }
 
     /**
@@ -96,7 +99,7 @@ class Manager
      */
     public function stop()
     {
-        $this->container->make('swoole.server')->shutdown();
+        $this->container->make(Server::class)->shutdown();
     }
 
     /**
@@ -120,7 +123,7 @@ class Manager
                 $this->container->make('events')->fire("swoole.$event", func_get_args());
             };
 
-            $this->container->make('swoole.server')->on($event, $callback);
+            $this->container->make(Server::class)->on($event, $callback);
         }
     }
 
@@ -143,7 +146,7 @@ class Manager
     public function onManagerStart()
     {
         $this->setProcessName('manager process');
-        $this->container->make('events')->fire('swoole.managerStart', func_get_args());
+        $this->container->make(Dispatcher::class)->fire('swoole.managerStart', func_get_args());
     }
 
     /**
@@ -194,6 +197,7 @@ class Manager
         $this->app->make('events')->fire('swoole.request');
 
         $this->resetOnRequest();
+        $sandbox = $this->app->make(Sandbox::class);;
         $handleStatic = $this->container->make('config')->get('swoole_http.handle_static_files', true);
         $publicPath = $this->container->make('config')->get('swoole_http.server.public_path', base_path('public'));
 
@@ -206,25 +210,26 @@ class Manager
             $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
 
             // set current request to sandbox
-            $this->app->make('swoole.sandbox')->setRequest($illuminateRequest);
+            $sandbox->setRequest($illuminateRequest);
+
             // enable sandbox
-            $this->app->make('swoole.sandbox')->enable();
+            $sandbox->enable();
 
             // handle request via laravel/lumen's dispatcher
-            $illuminateResponse = $this->app->make('swoole.sandbox')->run($illuminateRequest);
-            $response = Response::make($illuminateResponse, $swooleResponse);
-            $response->send();
+            $illuminateResponse = $sandbox->run($illuminateRequest);
+
+            // send response
+            Response::make($illuminateResponse, $swooleResponse)->send();
         } catch (Throwable $e) {
             try {
                 $exceptionResponse = $this->app->make(ExceptionHandler::class)->render(null, $e);
-                $response = Response::make($exceptionResponse, $swooleResponse);
-                $response->send();
+                Response::make($exceptionResponse, $swooleResponse)->send();
             } catch (Throwable $e) {
                 $this->logServerError($e);
             }
         } finally {
             // disable and recycle sandbox resource
-            $this->app->make('swoole.sandbox')->disable();
+            $sandbox->disable();
         }
     }
 
@@ -235,7 +240,7 @@ class Manager
     {
         // Reset websocket data
         if ($this->isServerWebsocket) {
-            $this->app->make('swoole.websocket')->reset(true);
+            $this->app->make(Websocket::class)->reset(true);
         }
     }
 
@@ -339,7 +344,7 @@ class Manager
     protected function createPidFile()
     {
         $pidFile = $this->getPidFile();
-        $pid = $this->container['swoole.server']->master_pid;
+        $pid = $this->container->make(Server::class)->master_pid;
 
         file_put_contents($pidFile, $pid);
     }
@@ -389,6 +394,16 @@ class Manager
         $name = sprintf('%s: %s for %s', $serverName, $process, $appName);
 
         swoole_set_process_name($name);
+    }
+
+    /**
+     * Add process to http server
+     *
+     * @param \Swoole\Process $process
+     */
+    public function addProcess(Process $process): void
+    {
+        $this->container->make(Server::class)->addProcess($process);
     }
 
     /**

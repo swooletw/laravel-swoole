@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Swoole\Websocket\Frame;
+use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Websocket\HandlerContract;
 
 class WebsocketHandler implements HandlerContract
@@ -29,11 +30,11 @@ class WebsocketHandler implements HandlerContract
                     'pingTimeout' => Config::get('swoole_websocket.ping_timeout'),
                 ]
             );
-            $initPayload = Packet::OPEN.$payload;
-            $connectPayload = Packet::MESSAGE.Packet::CONNECT;
+            $initPayload = Packet::OPEN . $payload;
+            $connectPayload = Packet::MESSAGE . Packet::CONNECT;
 
-            App::make('swoole.server')->push($fd, $initPayload);
-            App::make('swoole.server')->push($fd, $connectPayload);
+            App::make(Server::class)->push($fd, $initPayload);
+            App::make(Server::class)->push($fd, $connectPayload);
 
             return true;
         }

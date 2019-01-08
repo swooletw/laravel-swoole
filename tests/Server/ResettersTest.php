@@ -2,12 +2,13 @@
 
 namespace SwooleTW\Http\Tests\Server;
 
-
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 use Mockery as m;
+use SwooleTW\Http\Helpers\Alias;
 use SwooleTW\Http\Server\Resetters\BindRequest;
 use SwooleTW\Http\Server\Resetters\ClearInstances;
 use SwooleTW\Http\Server\Resetters\RebindKernelContainer;
@@ -28,8 +29,8 @@ class ResettersTest extends TestCase
 
         $sandbox = m::mock(Sandbox::class);
         $sandbox->shouldReceive('getRequest')
-            ->once()
-            ->andReturn($request);
+                ->once()
+                ->andReturn($request);
 
         $container = new Container;
 
@@ -43,9 +44,9 @@ class ResettersTest extends TestCase
     {
         $sandbox = m::mock(Sandbox::class);
         $sandbox->shouldReceive('getConfig->get')
-            ->with('swoole_http.instances', [])
-            ->once()
-            ->andReturn(['foo']);
+                ->with('swoole_http.instances', [])
+                ->once()
+                ->andReturn(['foo']);
 
         $container = new Container;
         $container->instance('foo', m::mock('foo'));
@@ -60,8 +61,8 @@ class ResettersTest extends TestCase
     {
         $sandbox = m::mock(Sandbox::class);
         $sandbox->shouldReceive('isLaravel')
-            ->once()
-            ->andReturn(true);
+                ->once()
+                ->andReturn(true);
 
         $kernel = m::mock(Kernel::class);
 
@@ -80,11 +81,11 @@ class ResettersTest extends TestCase
 
         $sandbox = m::mock(Sandbox::class);
         $sandbox->shouldReceive('isLaravel')
-            ->once()
-            ->andReturn(true);
+                ->once()
+                ->andReturn(true);
         $sandbox->shouldReceive('getRequest')
-            ->once()
-            ->andReturn($request);
+                ->once()
+                ->andReturn($request);
 
         $router = m::mock('router');
 
@@ -94,14 +95,14 @@ class ResettersTest extends TestCase
         $route = m::mock('route');
         $route->controller = 'controller';
         $route->shouldReceive('setContainer')
-            ->once()
-            ->with($container);
+              ->once()
+              ->with($container);
 
         $routes = m::mock('routes');
         $routes->shouldReceive('match')
-            ->once()
-            ->with($request)
-            ->andReturn($route);
+               ->once()
+               ->with($request)
+               ->andReturn($route);
 
         $router->routes = $routes;
 
@@ -115,19 +116,19 @@ class ResettersTest extends TestCase
     {
         $sandbox = m::mock(Sandbox::class);
         $sandbox->shouldReceive('isLaravel')
-            ->once()
-            ->andReturn(false);
+                ->once()
+                ->andReturn(false);
 
         $router = m::mock('router');
 
         $container = m::mock(Container::class);
         $container->shouldReceive('offsetSet')
-            ->with('router', $router)
-            ->once()
-            ->andReturnSelf();
+                  ->with('router', $router)
+                  ->once()
+                  ->andReturnSelf();
         $container->shouldReceive('offsetGet')
-            ->with('router')
-            ->andReturn($router);
+                  ->with('router')
+                  ->andReturn($router);
         $container->router = $router;
 
         $this->mockMethod('property_exists', function () {
@@ -157,28 +158,28 @@ class ResettersTest extends TestCase
 
     public function testResetConfig()
     {
-        $config = m::mock('config');
+        $config = m::mock(Repository::class);
         $sandbox = m::mock(Sandbox::class);
         $sandbox->shouldReceive('getConfig')
-            ->once()
-            ->andReturn($config);
+                ->once()
+                ->andReturn($config);
 
         $container = new Container;
         $resetter = new ResetConfig;
         $app = $resetter->handle($container, $sandbox);
 
-        $this->assertSame(get_class($config), get_class($app->make('config')));
+        $this->assertSame(get_class($config), get_class($app->make(Alias::CONFIG)));
     }
 
     public function testResetCookie()
     {
         $cookies = m::mock('cookies');
         $cookies->shouldReceive('getQueuedCookies')
-            ->once()
-            ->andReturn(['foo']);
+                ->once()
+                ->andReturn(['foo']);
         $cookies->shouldReceive('unqueue')
-            ->once()
-            ->with('foo');
+                ->once()
+                ->with('foo');
 
         $sandbox = m::mock(Sandbox::class);
 
@@ -193,9 +194,9 @@ class ResettersTest extends TestCase
     {
         $session = m::mock('session');
         $session->shouldReceive('flush')
-            ->once();
+                ->once();
         $session->shouldReceive('regenerate')
-            ->once();
+                ->once();
 
         $sandbox = m::mock(Sandbox::class);
 
@@ -210,14 +211,14 @@ class ResettersTest extends TestCase
     {
         $provider = m::mock(TestProvider::class);
         $provider->shouldReceive('register')
-            ->once();
+                 ->once();
         $provider->shouldReceive('boot')
-            ->once();
+                 ->once();
 
         $sandbox = m::mock(Sandbox::class);
         $sandbox->shouldReceive('getProviders')
-            ->once()
-            ->andReturn([$provider]);
+                ->once()
+                ->andReturn([$provider]);
 
         $this->mockMethod('method_exists', function () {
             return true;

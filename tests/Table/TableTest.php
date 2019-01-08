@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Table;
 
-
 use Mockery as m;
 use Swoole\Table;
 use SwooleTW\Http\Table\SwooleTable;

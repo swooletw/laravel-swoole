@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Coroutine;
 
-
 use Illuminate\Container\Container;
 use Mockery as m;
 use SwooleTW\Http\Coroutine\Context;

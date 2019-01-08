@@ -2,8 +2,8 @@
 
 namespace SwooleTW\Http\Tests\Server;
 
-
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Config;
 use Laravel\Lumen\Exceptions\Handler;
@@ -11,6 +11,8 @@ use Mockery as m;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Table;
+use SwooleTW\Http\Helpers\Alias;
+use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Server\Manager;
 use SwooleTW\Http\Server\Sandbox;
 use SwooleTW\Http\Table\SwooleTable;
@@ -136,8 +138,8 @@ class ManagerTest extends TestCase
         });
 
         Config::shouldReceive('get')
-            ->with('swoole_websocket.middleware', [])
-            ->once();
+              ->with('swoole_websocket.middleware', [])
+              ->once();
         WebsocketFacade::shouldReceive('on')->times(3);
 
         $manager = $this->getWebsocketManager($container);
@@ -145,10 +147,10 @@ class ManagerTest extends TestCase
         $manager->onWorkerStart($server);
 
         $app = $manager->getApplication();
-        $this->assertTrue($app->make('swoole.sandbox') instanceof Sandbox);
+        $this->assertTrue($app->make(Sandbox::class) instanceof Sandbox);
         $this->assertTrue($app->make('swoole.table') instanceof SwooleTable);
         $this->assertTrue($app->make('swoole.room') instanceof RoomContract);
-        $this->assertTrue($app->make('swoole.websocket') instanceof Websocket);
+        $this->assertTrue($app->make(Websocket::class) instanceof Websocket);
     }
 
     public function testLoadApplication()
@@ -192,29 +194,31 @@ class ManagerTest extends TestCase
         $container->singleton('events', function () {
             return $this->getEvent('swoole.request', false);
         });
-        $container->singleton('swoole.websocket', function () {
+        $container->singleton(Websocket::class, function () {
             $websocket = m::mock(Websocket::class);
             $websocket->shouldReceive('reset')
-                ->with(true)
-                ->once();
+                      ->with(true)
+                      ->once();
 
             return $websocket;
         });
-        $container->singleton('swoole.sandbox', function () {
+        $container->singleton(Sandbox::class, function () {
             $sandbox = m::mock(Sandbox::class);
             $sandbox->shouldReceive('setRequest')
-                ->with(m::type('Illuminate\Http\Request'))
-                ->once();
+                    ->with(m::type('Illuminate\Http\Request'))
+                    ->once();
             $sandbox->shouldReceive('enable')
-                ->once();
+                    ->once();
             $sandbox->shouldReceive('run')
-                ->with(m::type('Illuminate\Http\Request'))
-                ->once();
+                    ->with(m::type('Illuminate\Http\Request'))
+                    ->once();
             $sandbox->shouldReceive('disable')
-                ->once();
+                    ->once();
 
             return $sandbox;
         });
+
+        $container->alias(Sandbox::class, 'swoole.sandbox');
 
         $this->mockMethod('base_path', function () {
             return '/';
@@ -222,21 +226,21 @@ class ManagerTest extends TestCase
 
         $request = m::mock(Request::class);
         $request->shouldReceive('rawcontent')
-            ->once()
-            ->andReturn([]);
+                ->once()
+                ->andReturn([]);
 
         $response = m::mock(Response::class);
         $response->shouldReceive('header')
-            ->twice()
-            ->andReturnSelf();
+                 ->twice()
+                 ->andReturnSelf();
         $response->shouldReceive('status')
-            ->once()
-            ->andReturnSelf();
+                 ->once()
+                 ->andReturnSelf();
         $response->shouldReceive('write')
-            ->andReturnSelf();
+                 ->andReturnSelf();
         $response->shouldReceive('end')
-            ->once()
-            ->andReturnSelf();
+                 ->once()
+                 ->andReturnSelf();
 
         $manager = $this->getWebsocketManager();
         $manager->setApplication($container);
@@ -250,17 +254,20 @@ class ManagerTest extends TestCase
         $container->singleton('events', function () {
             return $this->getEvent('swoole.request', false);
         });
-        $container->singleton('swoole.sandbox', function () {
+        $container->singleton(Sandbox::class, function () {
             $sandbox = m::mock(Sandbox::class);
             $sandbox->shouldReceive('disable')
-                ->once();
+                    ->once();
 
             return $sandbox;
         });
+
+        $container->alias(Sandbox::class, 'swoole.sandbox');
+
         $container->singleton(ExceptionHandler::class, function () {
             $handler = m::mock(ExceptionHandler::class);
             $handler->shouldReceive('render')
-                ->once();
+                    ->once();
 
             return $handler;
         });
@@ -271,21 +278,21 @@ class ManagerTest extends TestCase
 
         $request = m::mock(Request::class);
         $request->shouldReceive('rawcontent')
-            ->once()
-            ->andReturn([]);
+                ->once()
+                ->andReturn([]);
 
         $response = m::mock(Response::class);
         $response->shouldReceive('header')
-            ->twice()
-            ->andReturnSelf();
+                 ->twice()
+                 ->andReturnSelf();
         $response->shouldReceive('status')
-            ->once()
-            ->andReturnSelf();
+                 ->once()
+                 ->andReturnSelf();
         $response->shouldReceive('write')
-            ->andReturnSelf();
+                 ->andReturnSelf();
         $response->shouldReceive('end')
-            ->once()
-            ->andReturnSelf();
+                 ->once()
+                 ->andReturnSelf();
 
         $manager = $this->getManager($container);
         $manager->setApplication($container);
@@ -346,8 +353,8 @@ class ManagerTest extends TestCase
         $container->singleton(ExceptionHandler::class, function () use ($exception) {
             $handler = m::mock(ExceptionHandler::class);
             $handler->shouldReceive('report')
-                ->with($exception)
-                ->once();
+                    ->with($exception)
+                    ->once();
 
             return $handler;
         });
@@ -360,53 +367,55 @@ class ManagerTest extends TestCase
     {
         $request = m::mock(Request::class);
         $request->shouldReceive('rawcontent')
-            ->once()
-            ->andReturn([]);
+                ->once()
+                ->andReturn([]);
         $request->fd = 1;
 
         $container = $this->getContainer();
-        $container->singleton('swoole.websocket', function () {
+        $container->singleton(Websocket::class, function () {
             $websocket = m::mock(Websocket::class);
             $websocket->shouldReceive('reset')
-                ->with(true)
-                ->once()
-                ->andReturnSelf();
+                      ->with(true)
+                      ->once()
+                      ->andReturnSelf();
             $websocket->shouldReceive('setSender')
-                ->with(1)
-                ->once();
+                      ->with(1)
+                      ->once();
             $websocket->shouldReceive('eventExists')
-                ->with('connect')
-                ->once()
-                ->andReturn(true);
+                      ->with('connect')
+                      ->once()
+                      ->andReturn(true);
             $websocket->shouldReceive('setContainer')
-                ->with(m::type(Container::class))
-                ->once();
+                      ->with(m::type(Container::class))
+                      ->once();
             $websocket->shouldReceive('call')
-                ->with('connect', m::type('Illuminate\Http\Request'))
-                ->once();
+                      ->with('connect', m::type('Illuminate\Http\Request'))
+                      ->once();
 
             return $websocket;
         });
-        $container->singleton('swoole.sandbox', function () {
+        $container->singleton(Sandbox::class, function () {
             $sandbox = m::mock(Sandbox::class);
             $sandbox->shouldReceive('setRequest')
-                ->with(m::type('Illuminate\Http\Request'))
-                ->once();
+                    ->with(m::type('Illuminate\Http\Request'))
+                    ->once();
             $sandbox->shouldReceive('enable')
-                ->once();
+                    ->once();
             $sandbox->shouldReceive('disable')
-                ->once();
+                    ->once();
             $sandbox->shouldReceive('getApplication')
-                ->once()
-                ->andReturn(m::mock(Container::class));
+                    ->once()
+                    ->andReturn(m::mock(Container::class));
 
             return $sandbox;
         });
 
+        $container->alias(Sandbox::class, 'swoole.sandbox');
+
         $handler = m::mock(HandlerContract::class);
         $handler->shouldReceive('onOpen')
-            ->with(1, m::type('Illuminate\Http\Request'))
-            ->andReturn(true);
+                ->with(1, m::type('Illuminate\Http\Request'))
+                ->andReturn(true);
 
         $manager = $this->getWebsocketManager();
         $manager->setApplication($container);
@@ -421,46 +430,48 @@ class ManagerTest extends TestCase
 
         $parser = m::mock(Parser::class);
         $parser->shouldReceive('execute')
-            ->with('server', $frame)
-            ->once()
-            ->andReturn(false);
+               ->with('server', $frame)
+               ->once()
+               ->andReturn(false);
         $parser->shouldReceive('decode')
-            ->with($frame)
-            ->once()
-            ->andReturn($payload = [
-                'event' => 'event',
-                'data' => 'data',
-            ]);
+               ->with($frame)
+               ->once()
+               ->andReturn($payload = [
+                   'event' => 'event',
+                   'data' => 'data',
+               ]);
 
         $container = $this->getContainer();
-        $container->singleton('swoole.websocket', function () use ($payload) {
+        $container->singleton(Websocket::class, function () use ($payload) {
             $websocket = m::mock(Websocket::class);
             $websocket->shouldReceive('reset')
-                ->with(true)
-                ->once()
-                ->andReturnSelf();
+                      ->with(true)
+                      ->once()
+                      ->andReturnSelf();
             $websocket->shouldReceive('setSender')
-                ->with(1)
-                ->once();
+                      ->with(1)
+                      ->once();
             $websocket->shouldReceive('eventExists')
-                ->with($payload['event'])
-                ->once()
-                ->andReturn(true);
+                      ->with($payload['event'])
+                      ->once()
+                      ->andReturn(true);
             $websocket->shouldReceive('call')
-                ->with($payload['event'], $payload['data'])
-                ->once();
+                      ->with($payload['event'], $payload['data'])
+                      ->once();
 
             return $websocket;
         });
-        $container->singleton('swoole.sandbox', function () {
+        $container->singleton(Sandbox::class, function () {
             $sandbox = m::mock(Sandbox::class);
             $sandbox->shouldReceive('enable')
-                ->once();
+                    ->once();
             $sandbox->shouldReceive('disable')
-                ->once();
+                    ->once();
 
             return $sandbox;
         });
+
+        $container->alias(Sandbox::class, 'swoole.sandbox');
 
         $manager = $this->getWebsocketManager();
         $manager->setApplication($container);
@@ -472,24 +483,24 @@ class ManagerTest extends TestCase
     {
         $fd = 1;
         $app = $this->getContainer();
-        $app->singleton('swoole.websocket', function () use ($fd) {
+        $app->singleton(Websocket::class, function () use ($fd) {
             $websocket = m::mock(Websocket::class);
             $websocket->shouldReceive('reset')
-                ->with(true)
-                ->once()
-                ->andReturnSelf();
+                      ->with(true)
+                      ->once()
+                      ->andReturnSelf();
             $websocket->shouldReceive('setSender')
-                ->with($fd)
-                ->once();
+                      ->with($fd)
+                      ->once();
             $websocket->shouldReceive('eventExists')
-                ->with('disconnect')
-                ->once()
-                ->andReturn(true);
+                      ->with('disconnect')
+                      ->once()
+                      ->andReturn(true);
             $websocket->shouldReceive('call')
-                ->with('disconnect')
-                ->once();
+                      ->with('disconnect')
+                      ->once();
             $websocket->shouldReceive('leave')
-                ->once();
+                      ->once();
 
             return $websocket;
         });
@@ -498,20 +509,22 @@ class ManagerTest extends TestCase
         $server->shouldReceive('on');
 
         $container = $this->getContainer($server);
-        $container->singleton('swoole.server', function () use ($fd) {
+        $container->singleton(Server::class, function () use ($fd) {
             $server = m::mock('server');
             $server->shouldReceive('on');
             $server->taskworker = false;
             $server->master_pid = -1;
             $server->shouldReceive('connection_info')
-                ->with($fd)
-                ->once()
-                ->andReturn([
-                    'websocket_status' => true,
-                ]);
+                   ->with($fd)
+                   ->once()
+                   ->andReturn([
+                       'websocket_status' => true,
+                   ]);
 
             return $server;
         });
+
+        $container->alias(Server::class, Alias::SERVER);
 
         $manager = $this->getWebsocketManager($container);
         $manager->setApplication($app);
@@ -552,16 +565,16 @@ class ManagerTest extends TestCase
 
         $parser = m::mock(Parser::class);
         $parser->shouldReceive('encode')
-            ->with($data['event'], $data['message'])
-            ->once()
-            ->andReturn(false);
+               ->with($data['event'], $data['message'])
+               ->once()
+               ->andReturn(false);
 
         $server = m::mock('server');
         $server->shouldReceive('exist')
-            ->times(count($data['fds']))
-            ->andReturn(true);
+               ->times(count($data['fds']))
+               ->andReturn(true);
         $server->shouldReceive('push')
-            ->times(count($data['fds']));
+               ->times(count($data['fds']));
 
         $manager = $this->getWebsocketManager();
         $manager->setPayloadParser($parser);
@@ -584,12 +597,15 @@ class ManagerTest extends TestCase
         $config = $config ?? $this->getConfig();
         $container = new Container;
 
-        $container->singleton('config', function () use ($config) {
+        $container->singleton(Repository::class, function () use ($config) {
             return $config;
         });
-        $container->singleton('swoole.server', function () use ($server) {
+        $container->alias(Repository::class, Alias::CONFIG);
+
+        $container->singleton(Server::class, function () use ($server) {
             return $server;
         });
+        $container->alias(Server::class, Alias::SERVER);
         $container->singleton(ExceptionHandler::class, Handler::class);
 
         return $container;
@@ -607,18 +623,18 @@ class ManagerTest extends TestCase
 
     protected function getConfig($websocket = false)
     {
-        $config = m::mock('config');
+        $config = m::mock(Repository::class);
         $settings = $websocket ? 'websocketConfig' : 'config';
         $callback = function ($key) use ($settings) {
             return $this->$settings[$key] ?? '';
         };
 
         $config->shouldReceive('get')
-            ->with(m::type('string'), m::any())
-            ->andReturnUsing($callback);
+               ->with(m::type('string'), m::any())
+               ->andReturnUsing($callback);
         $config->shouldReceive('get')
-            ->with(m::type('string'))
-            ->andReturnUsing($callback);
+               ->with(m::type('string'))
+               ->andReturnUsing($callback);
 
         return $config;
     }
@@ -626,9 +642,9 @@ class ManagerTest extends TestCase
     protected function getEvent($name, $default = true)
     {
         $event = m::mock('event')
-            ->shouldReceive('fire')
-            ->with($name, m::any())
-            ->once();
+                  ->shouldReceive('fire')
+                  ->with($name, m::any())
+                  ->once();
 
         $event = $default ? $event->with($name, m::any()) : $event->with($name);
 

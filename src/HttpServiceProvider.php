@@ -2,15 +2,19 @@
 
 namespace SwooleTW\Http;
 
-use Illuminate\Queue\Capsule\Manager;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Database\DatabaseManager;
+use Illuminate\Queue\QueueManager;
+use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 use Swoole\Http\Server as HttpServer;
 use Swoole\Websocket\Server as WebsocketServer;
 use SwooleTW\Http\Commands\HttpServerCommand;
 use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
 use SwooleTW\Http\Coroutine\MySqlConnection;
+use SwooleTW\Http\Helpers\Alias;
 use SwooleTW\Http\Helpers\FW;
-use SwooleTW\Http\Helpers\Service;
+use SwooleTW\Http\Middlewares\AccessLog;
 use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Task\Connectors\SwooleTaskConnector;
 
@@ -73,17 +77,21 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->publishes(
-            [
-                __DIR__.'/../config/swoole_http.php' => base_path('config/swoole_http.php'),
-                __DIR__.'/../config/swoole_websocket.php' => base_path('config/swoole_websocket.php'),
-                __DIR__.'/../routes/websocket.php' => base_path('routes/websocket.php'),
-            ],
-            'laravel-swoole'
-        );
+        $this->publishes([
+            __DIR__ . '/../config/swoole_http.php' => base_path('config/swoole_http.php'),
+            __DIR__ . '/../config/swoole_websocket.php' => base_path('config/swoole_websocket.php'),
+            __DIR__ . '/../routes/websocket.php' => base_path('routes/websocket.php'),
+        ], 'laravel-swoole');
 
-        if ($this->app->make(Service::CONFIG_ALIAS)->get('swoole_http.websocket.enabled')) {
+        $config = $this->app->make(Alias::CONFIG);
+
+        if ($config->get('swoole_http.websocket.enabled')) {
             $this->bootRoutes();
+        }
+
+        if ($config->get('swoole_http.server.access_log')) {
+            $this->app->make(Kernel::class)->pushMiddleware(AccessLog::class);
+//            dd($this->app->make(Kernel::class));
         }
     }
 
@@ -92,8 +100,8 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function mergeConfigs()
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/swoole_http.php', 'swoole_http');
-        $this->mergeConfigFrom(__DIR__.'/../config/swoole_websocket.php', 'swoole_websocket');
+        $this->mergeConfigFrom(__DIR__ . '/../config/swoole_http.php', 'swoole_http');
+        $this->mergeConfigFrom(__DIR__ . '/../config/swoole_websocket.php', 'swoole_websocket');
     }
 
     /**
@@ -101,7 +109,7 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function setIsWebsocket()
     {
-        $this->isWebsocket = $this->app->make(Service::CONFIG_ALIAS)->get('swoole_http.websocket.enabled');
+        $this->isWebsocket = $this->app->make(Alias::CONFIG)->get('swoole_http.websocket.enabled');
     }
 
     /**
@@ -109,11 +117,9 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function registerCommands()
     {
-        $this->commands(
-            [
-                HttpServerCommand::class,
-            ]
-        );
+        $this->commands([
+            HttpServerCommand::class,
+        ]);
     }
 
     /**
@@ -122,7 +128,7 @@ abstract class HttpServiceProvider extends ServiceProvider
     protected function createSwooleServer()
     {
         $server = $this->isWebsocket ? WebsocketServer::class : HttpServer::class;
-        $config = $this->app->make(Service::CONFIG_ALIAS);
+        $config = $this->app->make(Alias::CONFIG);
         $host = $config->get('swoole_http.server.host');
         $port = $config->get('swoole_http.server.port');
         $socketType = $config->get('swoole_http.server.socket_type', SWOOLE_SOCK_TCP);
@@ -136,7 +142,7 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function configureSwooleServer()
     {
-        $config = $this->app->make(Service::CONFIG_ALIAS);
+        $config = $this->app->make(Alias::CONFIG);
         $options = $config->get('swoole_http.server.options');
 
         // only enable task worker in websocket mode and for queue driver
@@ -162,8 +168,7 @@ abstract class HttpServiceProvider extends ServiceProvider
 
             return static::$server;
         });
-
-        $this->app->alias(Server::class, Service::SERVER_ALIAS);
+        $this->app->alias(Server::class, Alias::SERVER);
     }
 
     /**
@@ -171,18 +176,18 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function registerDatabaseDriver()
     {
-        $this->app->extend('db', function ($db) {
+        $this->app->extend(DatabaseManager::class, function (DatabaseManager $db) {
             $db->extend('mysql-coroutine', function ($config, $name) {
                 $config = $this->getMergedDatabaseConfig($config, $name);
 
                 $connection = new MySqlConnection(
                     $this->getNewMySqlConnection($config),
-                    $config['database'],
-                    $config['prefix'],
+                    Arr::get($config, 'database'),
+                    Arr::get($config, 'prefix'),
                     $config
                 );
 
-                if (isset($config['read'])) {
+                if (Arr::has($config, 'read')) {
                     $connection->setReadPdo($this->getNewMySqlConnection($config));
                 }
 
@@ -203,16 +208,12 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function getMergedDatabaseConfig(array $config, string $name)
     {
-        $config['name'] = $name;
+        $newConfig = $config;
+        $newConfig = Arr::add($newConfig, 'name', $name);
+        $newConfig = array_merge($newConfig, Arr::get($newConfig, 'read', []));
+        $newConfig = array_merge($newConfig, Arr::get($newConfig, 'write', []));
 
-        if (isset($config['read'])) {
-            $config = array_merge($config, $config['read']);
-        }
-        if (isset($config['write'])) {
-            $config = array_merge($config, $config['write']);
-        }
-
-        return $config;
+        return $newConfig;
     }
 
     /**
@@ -232,7 +233,7 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function registerSwooleQueueDriver()
     {
-        $this->app->afterResolving('queue', function (Manager $manager) {
+        $this->app->afterResolving(Alias::QUEUE, function (QueueManager $manager) {
             $manager->addConnector('swoole', function () {
                 return new SwooleTaskConnector($this->app->make(Server::class));
             });

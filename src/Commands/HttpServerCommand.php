@@ -3,8 +3,19 @@
 namespace SwooleTW\Http\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Console\OutputStyle;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Arr;
 use Swoole\Process;
+use SwooleTW\Http\Helpers\Alias;
+use SwooleTW\Http\HotReload\FSEvent;
+use SwooleTW\Http\HotReload\FSOutput;
+use SwooleTW\Http\HotReload\FSProcess;
+use SwooleTW\Http\Middlewares\AccessLog;
+use SwooleTW\Http\Server\AccessOutput;
+use SwooleTW\Http\Server\Facades\Server;
+use SwooleTW\Http\Server\Manager;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Throwable;
 
 /**
@@ -66,7 +77,7 @@ class HttpServerCommand extends Command
      */
     protected function loadConfigs()
     {
-        $this->config = $this->laravel->make('config')->get('swoole_http');
+        $this->config = $this->laravel->make(Alias::CONFIG)->get('swoole_http');
     }
 
     /**
@@ -90,17 +101,30 @@ class HttpServerCommand extends Command
 
         $host = Arr::get($this->config, 'server.host');
         $port = Arr::get($this->config, 'server.port');
+        $hotReloadEnabled = Arr::get($this->config, 'hot_reload.enabled');
+        $accessLogEnabled = Arr::get($this->config, 'server.access_log');
 
         $this->info('Starting swoole http server...');
         $this->info("Swoole http server started: <http://{$host}:{$port}>");
         if ($this->isDaemon()) {
             $this->info(
-                '> (You can run this command to ensure the '.
+                '> (You can run this command to ensure the ' .
                 'swoole_http_server process is running: ps aux|grep "swoole")'
             );
         }
 
-        $this->laravel->make('swoole.manager')->run();
+        $manager = $this->laravel->make(Manager::class);
+        $server = $this->laravel->make(Server::class);
+
+        if ($accessLogEnabled) {
+            $this->registerAccessLog();
+        }
+
+        if ($hotReloadEnabled) {
+            $manager->addProcess($this->getHotReloadProcess($server));
+        }
+
+        $manager->run();
     }
 
     /**
@@ -231,6 +255,26 @@ class HttpServerCommand extends Command
     }
 
     /**
+     * @param \SwooleTW\Http\Server\Facades\Server $server
+     *
+     * @return \Swoole\Process
+     */
+    protected function getHotReloadProcess($server)
+    {
+        $recursively = Arr::get($this->config, 'hot_reload.recursively');
+        $directory = Arr::get($this->config, 'hot_reload.directory');
+        $filter = Arr::get($this->config, 'hot_reload.filter');
+        $log = Arr::get($this->config, 'hot_reload.log');
+
+        $cb = function (FSEvent $event) use ($server, $log) {
+            $log ? $this->info(FSOutput::format($event)) : null;
+            $server->reload();
+        };
+
+        return (new FSProcess($filter, $recursively, $directory))->make($cb);
+    }
+
+    /**
      * If Swoole process is running.
      *
      * @param int $pid
@@ -292,7 +336,7 @@ class HttpServerCommand extends Command
         $path = $this->getPidPath();
 
         return $this->currentPid = file_exists($path)
-            ? (int)file_get_contents($path) ?? $this->removePidFile()
+            ? (int) file_get_contents($path) ?? $this->removePidFile()
             : null;
     }
 
@@ -332,19 +376,37 @@ class HttpServerCommand extends Command
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             $this->error("Swoole extension doesn't support Windows OS yet.");
 
-            return;
-        } else {
-            if (! extension_loaded('swoole')) {
-                $this->error("Can't detect Swoole extension installed.");
-
-                return;
-            } else {
-                if (! version_compare(swoole_version(), '4.0.0', 'ge')) {
-                    $this->error("Your Swoole version must be higher than 4.0 to use coroutine.");
-
-                    return;
-                }
-            }
+            exit(1);
         }
+
+        if (! extension_loaded('swoole')) {
+            $this->error("Can't detect Swoole extension installed.");
+
+            exit(1);
+        }
+
+        if (! version_compare(swoole_version(), '4.0.0', 'ge')) {
+            $this->error("Your Swoole version must be higher than 4.0 to use coroutine.");
+
+            exit(1);
+        }
+    }
+
+    /**
+     * Register access log services.
+     */
+    protected function registerAccessLog()
+    {
+        $this->laravel->singleton(OutputStyle::class, function () {
+            return new OutputStyle($this->input, $this->output);
+        });
+
+        $this->laravel->singleton(AccessOutput::class, function () {
+            return new AccessOutput(new ConsoleOutput);
+        });
+
+        $this->laravel->singleton(AccessLog::class, function (Container $container) {
+            return new AccessLog($container->make(AccessOutput::class));
+        });
     }
 }

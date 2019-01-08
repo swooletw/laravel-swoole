@@ -158,7 +158,7 @@ class Response
     protected function setIlluminateResponse($illuminateResponse)
     {
         if (! $illuminateResponse instanceof SymfonyResponse) {
-            $content = (string)$illuminateResponse;
+            $content = (string) $illuminateResponse;
             $illuminateResponse = new IlluminateResponse($content);
         }
 

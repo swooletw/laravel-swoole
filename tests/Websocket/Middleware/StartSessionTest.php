@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Websocket\Middleware;
 
-
 use SwooleTW\Http\Tests\TestCase;
 
 class StartSessionTest extends TestCase

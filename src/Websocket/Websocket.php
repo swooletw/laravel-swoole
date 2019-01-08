@@ -7,8 +7,12 @@ use Illuminate\Contracts\Pipeline\Pipeline as PipelineContract;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use InvalidArgumentException;
+use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
+/**
+ * Class Websocket
+ */
 class Websocket
 {
     use Authenticatable;
@@ -67,10 +71,17 @@ class Websocket
     protected $room;
 
     /**
+     * DI Container.
+     *
+     * @var \Illuminate\Contracts\Container\Container
+     */
+    protected $container;
+
+    /**
      * Websocket constructor.
      *
-     * @var RoomContract $room
-     * @var PipelineContract $pipeline
+     * @param \SwooleTW\Http\Websocket\Rooms\RoomContract $room
+     * @param \Illuminate\Contracts\Pipeline\Pipeline $pipeline
      */
     public function __construct(RoomContract $room, PipelineContract $pipeline)
     {
@@ -161,23 +172,21 @@ class Websocket
             return false;
         }
 
-        $result = App::make('swoole.server')->task(
-            [
-                'action' => static::PUSH_ACTION,
-                'data' => [
-                    'sender' => $this->sender,
-                    'fds' => $fds,
-                    'broadcast' => $this->isBroadcast,
-                    'assigned' => $assigned,
-                    'event' => $event,
-                    'message' => $data,
-                ],
-            ]
-        );
+        $result = App::make(Server::class)->task([
+            'action' => static::PUSH_ACTION,
+            'data' => [
+                'sender' => $this->sender,
+                'fds' => $fds,
+                'broadcast' => $this->isBroadcast,
+                'assigned' => $assigned,
+                'event' => $event,
+                'message' => $data,
+            ],
+        ]);
 
         $this->reset();
 
-        return $result === false ? false : true;
+        return $result !== false;
     }
 
     /**
@@ -250,13 +259,10 @@ class Websocket
             $data = $this->setRequestThroughMiddleware($data);
         }
 
-        return App::call(
-            $this->callbacks[$event],
-            [
-                'websocket' => $this,
-                $dataKey => $data,
-            ]
-        );
+        return App::call($this->callbacks[$event], [
+            'websocket' => $this,
+            $dataKey => $data,
+        ]);
     }
 
     /**
@@ -268,7 +274,7 @@ class Websocket
      */
     public function close(int $fd = null)
     {
-        return App::make('swoole.server')->close($fd ?: $this->sender);
+        return App::make(Server::class)->close($fd ?: $this->sender);
     }
 
     /**

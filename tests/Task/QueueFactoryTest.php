@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Task;
 
-
 use Illuminate\Support\Str;
 use Mockery as m;
 use SwooleTW\Http\Helpers\FW;

@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Task;
 
-
 use Mockery as m;
 use SwooleTW\Http\Helpers\FW;
 use SwooleTW\Http\Task\QueueFactory;

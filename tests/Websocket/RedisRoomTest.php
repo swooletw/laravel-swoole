@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\Websocket;
 
-
 use Mockery as m;
 use Predis\Client as RedisClient;
 use SwooleTW\Http\Tests\TestCase;
@@ -14,11 +13,11 @@ class RedisRoomTest extends TestCase
     {
         $redis = $this->getRedis();
         $redis->shouldReceive('keys')
-            ->once()
-            ->andReturn($keys = ['foo', 'bar']);
+              ->once()
+              ->andReturn($keys = ['foo', 'bar']);
         $redis->shouldReceive('del')
-            ->with($keys)
-            ->once();
+              ->with($keys)
+              ->once();
 
         $redisRoom = new RedisRoom([]);
         $redisRoom->prepare($redis);
@@ -39,7 +38,7 @@ class RedisRoomTest extends TestCase
     {
         $redis = $this->getRedis();
         $redis->shouldReceive('pipeline')
-            ->once();
+              ->once();
         $redisRoom = $this->getRedisRoom($redis);
 
         $redisRoom->addValue(1, ['foo', 'bar'], 'fds');
@@ -49,7 +48,7 @@ class RedisRoomTest extends TestCase
     {
         $redis = $this->getRedis();
         $redis->shouldReceive('pipeline')
-            ->times(3);
+              ->times(3);
         $redisRoom = $this->getRedisRoom($redis);
 
         $redisRoom->add(1, ['foo', 'bar']);
@@ -59,7 +58,7 @@ class RedisRoomTest extends TestCase
     {
         $redis = $this->getRedis();
         $redis->shouldReceive('pipeline')
-            ->twice();
+              ->twice();
         $redisRoom = $this->getRedisRoom($redis);
 
         $redisRoom->add(1, 'foo');
@@ -69,7 +68,7 @@ class RedisRoomTest extends TestCase
     {
         $redis = $this->getRedis();
         $redis->shouldReceive('pipeline')
-            ->times(3);
+              ->times(3);
         $redisRoom = $this->getRedisRoom($redis);
 
         $redisRoom->delete(1, ['foo', 'bar']);
@@ -79,7 +78,7 @@ class RedisRoomTest extends TestCase
     {
         $redis = $this->getRedis();
         $redis->shouldReceive('pipeline')
-            ->twice();
+              ->twice();
         $redisRoom = $this->getRedisRoom($redis);
 
         $redisRoom->delete(1, 'foo');
@@ -89,8 +88,8 @@ class RedisRoomTest extends TestCase
     {
         $redis = $this->getRedis();
         $redis->shouldReceive('smembers')
-            ->with('swoole:fds:1')
-            ->once();
+              ->with('swoole:fds:1')
+              ->once();
         $redisRoom = $this->getRedisRoom($redis);
 
         $redisRoom->getRooms(1);
@@ -100,8 +99,8 @@ class RedisRoomTest extends TestCase
     {
         $redis = $this->getRedis();
         $redis->shouldReceive('smembers')
-            ->with('swoole:rooms:foo')
-            ->once();
+              ->with('swoole:rooms:foo')
+              ->once();
         $redisRoom = $this->getRedisRoom($redis);
 
         $redisRoom->getClients('foo');

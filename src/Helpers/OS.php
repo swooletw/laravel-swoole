@@ -21,7 +21,7 @@ final class OS
      *
      * @const string
      */
-    public const LINUX = 'linux';
+    public const LINUX = 'lin';
 
     /**
      * Linux
@@ -39,7 +39,7 @@ final class OS
      */
     public static function is(string ...$types): bool
     {
-        return \in_array(static::current(), $types, true);
+        return Str::contains(static::current(), $types);
     }
 
     /**
@@ -49,6 +49,6 @@ final class OS
      */
     public static function current(): string
     {
-        return Str::lower(PHP_OS);
+        return Str::substr(Str::lower(PHP_OS), 0, 3);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http\Tests\SocketIO;
 
-
 use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\SocketIO\Packet;
 

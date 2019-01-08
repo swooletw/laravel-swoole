@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http;
 
+use SwooleTW\Http\Helpers\Alias;
 use SwooleTW\Http\Server\Manager;
 
 /**
@@ -16,9 +17,11 @@ class LumenServiceProvider extends HttpServiceProvider
      */
     protected function registerManager()
     {
-        $this->app->singleton('swoole.manager', function ($app) {
+        $this->app->singleton(Manager::class, function ($app) {
             return new Manager($app, 'lumen');
         });
+
+        $this->app->alias(Manager::class, Alias::MANAGER);
     }
 
     /**
@@ -32,11 +35,11 @@ class LumenServiceProvider extends HttpServiceProvider
 
         if (property_exists($app, 'router')) {
             $app->router->group(['namespace' => 'SwooleTW\Http\Controllers'], function ($app) {
-                require __DIR__.'/../routes/lumen_routes.php';
+                require __DIR__ . '/../routes/lumen_routes.php';
             });
         } else {
             $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
-                require __DIR__.'/../routes/lumen_routes.php';
+                require __DIR__ . '/../routes/lumen_routes.php';
             });
         }
     }

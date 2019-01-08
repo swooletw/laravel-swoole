@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http;
 
+use SwooleTW\Http\Helpers\Alias;
 use SwooleTW\Http\Server\Manager;
 
 /**
@@ -16,9 +17,11 @@ class LaravelServiceProvider extends HttpServiceProvider
      */
     protected function registerManager()
     {
-        $this->app->singleton('swoole.manager', function ($app) {
+        $this->app->singleton(Manager::class, function ($app) {
             return new Manager($app, 'laravel');
         });
+
+        $this->app->alias(Manager::class, Alias::MANAGER);
     }
 
     /**
@@ -28,6 +31,6 @@ class LaravelServiceProvider extends HttpServiceProvider
      */
     protected function bootRoutes()
     {
-        require __DIR__.'/../routes/laravel_routes.php';
+        require __DIR__ . '/../routes/laravel_routes.php';
     }
 }

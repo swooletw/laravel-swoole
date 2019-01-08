@@ -61,7 +61,7 @@ class PDO extends BasePDO
      */
     protected function setClient($client = null)
     {
-        $this->client = $client ?: new \Swoole\Coroutine\Mysql();
+        $this->client = $client ?: new \Swoole\Coroutine\Mysql;
     }
 
     /**

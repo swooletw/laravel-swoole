@@ -29,7 +29,7 @@ class ConnectorFactory
      *
      * @const string
      */
-    public const CONNECTOR_CLASS_PATH = __DIR__.'/MySqlConnector.php';
+    public const CONNECTOR_CLASS_PATH = __DIR__ . '/MySqlConnector.php';
 
     /**
      * @param string $version
@@ -41,7 +41,7 @@ class ConnectorFactory
         $isMatch = static::isFileVersionMatch($version);
         $class = static::copy(static::stub($version), ! $isMatch);
 
-        return new $class();
+        return new $class;
     }
 
     /**
@@ -52,8 +52,8 @@ class ConnectorFactory
     public static function stub(string $version): string
     {
         return static::hasBreakingChanges($version)
-            ? __DIR__.'/../../../stubs/5.6/MySqlConnector.stub'
-            : __DIR__.'/../../../stubs/5.5/MySqlConnector.stub';
+            ? __DIR__ . '/../../../stubs/5.6/MySqlConnector.stub'
+            : __DIR__ . '/../../../stubs/5.5/MySqlConnector.stub';
     }
 
     /**

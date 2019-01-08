@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Server\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use SwooleTW\Http\Helpers\Alias;
 
 class Sandbox extends Facade
 {
@@ -13,6 +14,6 @@ class Sandbox extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'swoole.sandbox';
+        return Alias::SANDBOX;
     }
 }

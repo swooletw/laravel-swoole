@@ -6,7 +6,7 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Exceptions\FrameworkNotSupportException;
-use SwooleTW\Http\Helpers\Service;
+use SwooleTW\Http\Helpers\Alias;
 
 /**
  * Trait WithApplication
@@ -149,7 +149,7 @@ trait WithApplication
      */
     protected function preResolveInstances()
     {
-        $resolves = $this->container->make(Service::CONFIG_ALIAS)->get('swoole_http.pre_resolved', []);
+        $resolves = $this->container->make(Alias::CONFIG)->get('swoole_http.pre_resolved', []);
 
         foreach ($resolves as $abstract) {
             if ($this->getApplication()->offsetExists($abstract)) {
