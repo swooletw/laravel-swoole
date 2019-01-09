@@ -2,9 +2,9 @@
 
 namespace SwooleTW\Http\Task;
 
-use Illuminate\Contracts\Queue\Queue;
 use Illuminate\Support\Arr;
 use SwooleTW\Http\Helpers\FW;
+use SwooleTW\Http\Task\SwooleTaskQueue;
 
 /**
  * Class QueueFactory
@@ -36,9 +36,9 @@ class QueueFactory
      * @param \Swoole\Http\Server $server
      * @param string $version
      *
-     * @return \Illuminate\Contracts\Queue\Queue
+     * @return \SwooleTW\Http\Task\SwooleTaskQueue
      */
-    public static function make($server, string $version): Queue
+    public static function make($server, string $version): SwooleTaskQueue
     {
         $isMatch = static::isFileVersionMatch($version);
         $class = static::copy(static::stub($version), ! $isMatch);
