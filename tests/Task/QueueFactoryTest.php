@@ -48,7 +48,6 @@ class QueueFactoryTest extends TestCase
     protected function getServer()
     {
         $server = m::mock('server');
-//        $server->shouldReceive('on');
         $server->taskworker = false;
         $server->master_pid = -1;
 
