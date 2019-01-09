@@ -51,9 +51,10 @@ trait InteractsWithWebsocket
     /**
      * "onOpen" listener.
      *
+     * @param \Swoole\Websocket\Server $server
      * @param \Swoole\Http\Request $swooleRequest
      */
-    public function onOpen($swooleRequest)
+    public function onOpen($server, $swooleRequest)
     {
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
         $websocket = $this->app->make(Websocket::class);
@@ -212,7 +213,7 @@ trait InteractsWithWebsocket
         $parser = $config->get('swoole_websocket.parser');
 
         if ($isWebsocket) {
-            $this->types = array_merge($this->types ?? [], $this->wsEvents);
+            $this->events = array_merge($this->events ?? [], $this->wsEvents);
             $this->isServerWebsocket = true;
             $this->setPayloadParser(new $parser);
         }

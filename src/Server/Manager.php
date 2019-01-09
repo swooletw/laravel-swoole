@@ -5,7 +5,6 @@ namespace SwooleTW\Http\Server;
 use Exception;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
-use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Str;
 use Swoole\Process;
@@ -146,7 +145,7 @@ class Manager
     public function onManagerStart()
     {
         $this->setProcessName('manager process');
-        $this->container->make(Dispatcher::class)->fire('swoole.managerStart', func_get_args());
+        $this->container->make('events')->fire('swoole.managerStart', func_get_args());
     }
 
     /**
@@ -197,7 +196,7 @@ class Manager
         $this->app->make('events')->fire('swoole.request');
 
         $this->resetOnRequest();
-        $sandbox = $this->app->make(Sandbox::class);;
+        $sandbox = $this->app->make(Sandbox::class);
         $handleStatic = $this->container->make('config')->get('swoole_http.handle_static_files', true);
         $publicPath = $this->container->make('config')->get('swoole_http.server.public_path', base_path('public'));
 
@@ -264,7 +263,7 @@ class Manager
                     && $data['action'] === Websocket::PUSH_ACTION) {
                     $this->pushMessage($server, $data['data'] ?? []);
                 }
-                // push async task to queue
+            // push async task to queue
             } else {
                 if (is_string($data)) {
                     $decoded = \json_decode($data, true);

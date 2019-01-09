@@ -420,7 +420,7 @@ class ManagerTest extends TestCase
         $manager = $this->getWebsocketManager();
         $manager->setApplication($container);
         $manager->setWebsocketHandler($handler);
-        $manager->onOpen($request);
+        $manager->onOpen(m::mock('server'), $request);
     }
 
     public function testOnMessage()
