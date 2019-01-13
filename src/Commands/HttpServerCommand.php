@@ -2,21 +2,20 @@
 
 namespace SwooleTW\Http\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Console\OutputStyle;
-use Illuminate\Contracts\Container\Container;
-use Illuminate\Support\Arr;
+use Throwable;
 use Swoole\Process;
-use SwooleTW\Http\Helpers\Alias;
+use Illuminate\Support\Arr;
+use Illuminate\Console\Command;
+use SwooleTW\Http\Server\Manager;
+use Illuminate\Console\OutputStyle;
 use SwooleTW\Http\HotReload\FSEvent;
+use SwooleTW\Http\Server\AccessOutput;
 use SwooleTW\Http\HotReload\FSOutput;
 use SwooleTW\Http\HotReload\FSProcess;
 use SwooleTW\Http\Middlewares\AccessLog;
-use SwooleTW\Http\Server\AccessOutput;
 use SwooleTW\Http\Server\Facades\Server;
-use SwooleTW\Http\Server\Manager;
+use Illuminate\Contracts\Container\Container;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use Throwable;
 
 /**
  * @codeCoverageIgnore
@@ -77,7 +76,7 @@ class HttpServerCommand extends Command
      */
     protected function loadConfigs()
     {
-        $this->config = $this->laravel->make(Alias::CONFIG)->get('swoole_http');
+        $this->config = $this->laravel->make('config')->get('swoole_http');
     }
 
     /**

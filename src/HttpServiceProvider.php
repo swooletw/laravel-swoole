@@ -2,21 +2,20 @@
 
 namespace SwooleTW\Http;
 
-use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Database\DatabaseManager;
-use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Arr;
-use Illuminate\Support\ServiceProvider;
-use Swoole\Http\Server as HttpServer;
-use Swoole\Websocket\Server as WebsocketServer;
-use SwooleTW\Http\Commands\HttpServerCommand;
-use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
-use SwooleTW\Http\Coroutine\MySqlConnection;
-use SwooleTW\Http\Helpers\Alias;
 use SwooleTW\Http\Helpers\FW;
+use Illuminate\Queue\QueueManager;
+use Illuminate\Contracts\Http\Kernel;
+use Swoole\Http\Server as HttpServer;
+use Illuminate\Support\ServiceProvider;
 use SwooleTW\Http\Middlewares\AccessLog;
 use SwooleTW\Http\Server\Facades\Server;
+use Illuminate\Database\DatabaseManager;
+use SwooleTW\Http\Coroutine\MySqlConnection;
+use SwooleTW\Http\Commands\HttpServerCommand;
+use Swoole\Websocket\Server as WebsocketServer;
 use SwooleTW\Http\Task\Connectors\SwooleTaskConnector;
+use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
 
 /**
  * @codeCoverageIgnore
@@ -83,7 +82,7 @@ abstract class HttpServiceProvider extends ServiceProvider
             __DIR__ . '/../routes/websocket.php' => base_path('routes/websocket.php'),
         ], 'laravel-swoole');
 
-        $config = $this->app->make(Alias::CONFIG);
+        $config = $this->app->make('config');
 
         if ($config->get('swoole_http.websocket.enabled')) {
             $this->bootRoutes();
@@ -91,7 +90,6 @@ abstract class HttpServiceProvider extends ServiceProvider
 
         if ($config->get('swoole_http.server.access_log')) {
             $this->app->make(Kernel::class)->pushMiddleware(AccessLog::class);
-//            dd($this->app->make(Kernel::class));
         }
     }
 
@@ -109,7 +107,8 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function setIsWebsocket()
     {
-        $this->isWebsocket = $this->app->make(Alias::CONFIG)->get('swoole_http.websocket.enabled');
+        $this->isWebsocket = $this->app->make('config')
+            ->get('swoole_http.websocket.enabled');
     }
 
     /**
@@ -128,7 +127,7 @@ abstract class HttpServiceProvider extends ServiceProvider
     protected function createSwooleServer()
     {
         $server = $this->isWebsocket ? WebsocketServer::class : HttpServer::class;
-        $config = $this->app->make(Alias::CONFIG);
+        $config = $this->app->make('config');
         $host = $config->get('swoole_http.server.host');
         $port = $config->get('swoole_http.server.port');
         $socketType = $config->get('swoole_http.server.socket_type', SWOOLE_SOCK_TCP);
@@ -142,7 +141,7 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function configureSwooleServer()
     {
-        $config = $this->app->make(Alias::CONFIG);
+        $config = $this->app->make('config');
         $options = $config->get('swoole_http.server.options');
 
         // only enable task worker in websocket mode and for queue driver
@@ -168,7 +167,7 @@ abstract class HttpServiceProvider extends ServiceProvider
 
             return static::$server;
         });
-        $this->app->alias(Server::class, Alias::SERVER);
+        $this->app->alias(Server::class, 'swoole.server');
     }
 
     /**
@@ -233,7 +232,7 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function registerSwooleQueueDriver()
     {
-        $this->app->afterResolving(Alias::QUEUE, function (QueueManager $manager) {
+        $this->app->afterResolving('queue', function (QueueManager $manager) {
             $manager->addConnector('swoole', function () {
                 return new SwooleTaskConnector($this->app->make(Server::class));
             });

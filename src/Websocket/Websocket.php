@@ -93,7 +93,7 @@ class Websocket
     /**
      * Set broadcast to true.
      */
-    public function broadcast()
+    public function broadcast(): self
     {
         $this->isBroadcast = true;
 
@@ -343,7 +343,7 @@ class Websocket
      *
      * @param bool $force
      *
-     * @return \SwooleTW\Http\Websocket\Websocket
+     * @return $this
      */
     public function reset($force = false)
     {
@@ -392,6 +392,8 @@ class Websocket
      * Set container to pipeline.
      *
      * @param \Illuminate\Contracts\Container\Container $container
+     *
+     * @return $this
      */
     public function setContainer(Container $container)
     {
@@ -403,6 +405,8 @@ class Websocket
 
         $resetPipeline = $closure->bindTo($pipeline, $pipeline);
         $resetPipeline();
+
+        return $this;
     }
 
     /**
@@ -410,7 +414,7 @@ class Websocket
      *
      * @param \Illuminate\Contracts\Pipeline\Pipeline $pipeline
      *
-     * @return \SwooleTW\Http\Websocket\Websocket
+     * @return $this
      */
     public function setPipeline(PipelineContract $pipeline)
     {

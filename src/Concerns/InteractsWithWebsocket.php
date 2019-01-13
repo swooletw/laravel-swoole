@@ -2,20 +2,19 @@
 
 namespace SwooleTW\Http\Concerns;
 
-use Illuminate\Contracts\Container\Container;
-use Illuminate\Pipeline\Pipeline;
-use Illuminate\Support\Arr;
-use SwooleTW\Http\Exceptions\WebsocketNotSetInConfigException;
-use SwooleTW\Http\Helpers\Alias;
-use SwooleTW\Http\Server\Facades\Server;
-use SwooleTW\Http\Server\Sandbox;
-use SwooleTW\Http\Transformers\Request;
-use SwooleTW\Http\Websocket\HandlerContract;
-use SwooleTW\Http\Websocket\Parser;
-use SwooleTW\Http\Websocket\Push;
-use SwooleTW\Http\Websocket\Rooms\RoomContract;
-use SwooleTW\Http\Websocket\Websocket;
 use Throwable;
+use Illuminate\Support\Arr;
+use Illuminate\Pipeline\Pipeline;
+use SwooleTW\Http\Server\Sandbox;
+use SwooleTW\Http\Websocket\Push;
+use SwooleTW\Http\Websocket\Parser;
+use SwooleTW\Http\Websocket\Websocket;
+use SwooleTW\Http\Transformers\Request;
+use SwooleTW\Http\Server\Facades\Server;
+use SwooleTW\Http\Websocket\HandlerContract;
+use Illuminate\Contracts\Container\Container;
+use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use SwooleTW\Http\Exceptions\WebsocketNotSetInConfigException;
 
 /**
  * Trait InteractsWithWebsocket
@@ -208,7 +207,7 @@ trait InteractsWithWebsocket
      */
     protected function prepareWebsocket()
     {
-        $config = $this->container->make(Alias::CONFIG);
+        $config = $this->container->make('config');
         $isWebsocket = $config->get('swoole_http.websocket.enabled');
         $parser = $config->get('swoole_websocket.parser');
 
@@ -256,7 +255,7 @@ trait InteractsWithWebsocket
      */
     protected function prepareWebsocketHandler()
     {
-        $handlerClass = $this->container->make(Alias::CONFIG)->get('swoole_websocket.handler');
+        $handlerClass = $this->container->make('config')->get('swoole_websocket.handler');
 
         if (! $handlerClass) {
             throw new WebsocketNotSetInConfigException;
@@ -306,7 +305,7 @@ trait InteractsWithWebsocket
     protected function bindRoom(): void
     {
         $this->app->singleton(RoomContract::class, function (Container $container) {
-            $config = $container->make(Alias::CONFIG);
+            $config = $container->make('config');
             $driver = $config->get('swoole_websocket.default');
             $settings = $config->get("swoole_websocket.settings.{$driver}");
             $className = $config->get("swoole_websocket.drivers.{$driver}");
@@ -314,7 +313,7 @@ trait InteractsWithWebsocket
             return $this->createRoom($className, $settings);
         });
 
-        $this->app->alias(RoomContract::class, Alias::ROOM);
+        $this->app->alias(RoomContract::class, 'swoole.room');
     }
 
     /**
@@ -334,7 +333,8 @@ trait InteractsWithWebsocket
      */
     protected function loadWebsocketRoutes()
     {
-        $routePath = $this->container->make(Alias::CONFIG)->get('swoole_websocket.route_file');
+        $routePath = $this->container->make('config')
+            ->get('swoole_websocket.route_file');
 
         if (! file_exists($routePath)) {
             $routePath = __DIR__ . '/../../routes/websocket.php';

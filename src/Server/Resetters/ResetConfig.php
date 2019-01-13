@@ -2,8 +2,8 @@
 
 namespace SwooleTW\Http\Server\Resetters;
 
-use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Server\Sandbox;
+use Illuminate\Contracts\Container\Container;
 
 class ResetConfig implements ResetterContract
 {

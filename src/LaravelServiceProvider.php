@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http;
 
-use SwooleTW\Http\Helpers\Alias;
 use SwooleTW\Http\Server\Manager;
 
 /**
@@ -21,7 +20,7 @@ class LaravelServiceProvider extends HttpServiceProvider
             return new Manager($app, 'laravel');
         });
 
-        $this->app->alias(Manager::class, Alias::MANAGER);
+        $this->app->alias(Manager::class, 'swoole.manager');
     }
 
     /**

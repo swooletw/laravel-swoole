@@ -2,18 +2,18 @@
 
 namespace SwooleTW\Http\Server;
 
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Config\Repository as ConfigContract;
-use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Facade;
-use Laravel\Lumen\Application as LumenApplication;
-use SwooleTW\Http\Concerns\ResetApplication;
+use Illuminate\Container\Container;
 use SwooleTW\Http\Coroutine\Context;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Support\Facades\Facade;
+use SwooleTW\Http\Concerns\ResetApplication;
 use SwooleTW\Http\Exceptions\SandboxException;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Laravel\Lumen\Application as LumenApplication;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Contracts\Config\Repository as ConfigContract;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class Sandbox
 {

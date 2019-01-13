@@ -2,8 +2,8 @@
 
 namespace SwooleTW\Http\Helpers;
 
-use Illuminate\Support\Arr;
 use LogicException;
+use Illuminate\Support\Arr;
 
 /**
  * Class FW

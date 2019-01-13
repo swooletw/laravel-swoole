@@ -3,10 +3,15 @@
 namespace SwooleTW\Http\Websocket\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use SwooleTW\Http\Helpers\Alias;
 
 /**
- * Class Room
+ * @method static this prepare()
+ * @method static this add($fd, $rooms)
+ * @method static this delete($fd, $rooms)
+ * @method static array getClients($room)
+ * @method static array getRooms($fd)
+ *
+ * @see \SwooleTW\Http\Websocket\Rooms\RoomContract
  */
 class Room extends Facade
 {
@@ -17,6 +22,6 @@ class Room extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return Alias::ROOM;
+        return 'swoole.room';
     }
 }

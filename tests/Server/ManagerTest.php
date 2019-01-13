@@ -3,7 +3,6 @@
 namespace SwooleTW\Http\Tests\Server;
 
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Config;
 use Laravel\Lumen\Exceptions\Handler;
@@ -11,7 +10,6 @@ use Mockery as m;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Table;
-use SwooleTW\Http\Helpers\Alias;
 use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Server\Manager;
 use SwooleTW\Http\Server\Sandbox;
@@ -25,6 +23,7 @@ use SwooleTW\Http\Websocket\Rooms\TableRoom;
 use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 use SwooleTW\Http\Websocket\Websocket;
+use Illuminate\Contracts\Config\Repository as ConfigContract;
 
 class ManagerTest extends TestCase
 {
@@ -524,7 +523,7 @@ class ManagerTest extends TestCase
             return $server;
         });
 
-        $container->alias(Server::class, Alias::SERVER);
+        $container->alias(Server::class, 'swoole.server');
 
         $manager = $this->getWebsocketManager($container);
         $manager->setApplication($app);
@@ -597,15 +596,15 @@ class ManagerTest extends TestCase
         $config = $config ?? $this->getConfig();
         $container = new Container;
 
-        $container->singleton(Repository::class, function () use ($config) {
+        $container->singleton(ConfigContract::class, function () use ($config) {
             return $config;
         });
-        $container->alias(Repository::class, Alias::CONFIG);
+        $container->alias(ConfigContract::class, 'config');
 
         $container->singleton(Server::class, function () use ($server) {
             return $server;
         });
-        $container->alias(Server::class, Alias::SERVER);
+        $container->alias(Server::class, 'swoole.server');
         $container->singleton(ExceptionHandler::class, Handler::class);
 
         return $container;
@@ -623,7 +622,7 @@ class ManagerTest extends TestCase
 
     protected function getConfig($websocket = false)
     {
-        $config = m::mock(Repository::class);
+        $config = m::mock(ConfigContract::class);
         $settings = $websocket ? 'websocketConfig' : 'config';
         $callback = function ($key) use ($settings) {
             return $this->$settings[$key] ?? '';

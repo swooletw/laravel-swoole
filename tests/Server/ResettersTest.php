@@ -3,12 +3,11 @@
 namespace SwooleTW\Http\Tests\Server;
 
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Config\Repository;
+use Illuminate\Contracts\Config\Repository as ConfigContract;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 use Mockery as m;
-use SwooleTW\Http\Helpers\Alias;
 use SwooleTW\Http\Server\Resetters\BindRequest;
 use SwooleTW\Http\Server\Resetters\ClearInstances;
 use SwooleTW\Http\Server\Resetters\RebindKernelContainer;
@@ -158,7 +157,7 @@ class ResettersTest extends TestCase
 
     public function testResetConfig()
     {
-        $config = m::mock(Repository::class);
+        $config = m::mock(ConfigContract::class);
         $sandbox = m::mock(Sandbox::class);
         $sandbox->shouldReceive('getConfig')
                 ->once()
@@ -168,7 +167,7 @@ class ResettersTest extends TestCase
         $resetter = new ResetConfig;
         $app = $resetter->handle($container, $sandbox);
 
-        $this->assertSame(get_class($config), get_class($app->make(Alias::CONFIG)));
+        $this->assertSame(get_class($config), get_class($app->make('config')));
     }
 
     public function testResetCookie()
@@ -239,9 +238,11 @@ class TestProvider extends ServiceProvider
 {
     public function register()
     {
+        //
     }
 
     public function boot()
     {
+        //
     }
 }

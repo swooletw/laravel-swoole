@@ -54,7 +54,7 @@ class SwooleTaskQueue extends Queue implements QueueContract
      */
     public function pushRaw($payload, $queue = null, array $options = [])
     {
-        return $this->swoole->task($payload, ! is_numeric($queue) ? 1 : (int) $queue);
+        return $this->swoole->task($payload, ! is_numeric($queue) ? -1 : (int)$queue);
     }
 
     /**

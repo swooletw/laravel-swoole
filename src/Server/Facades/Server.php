@@ -3,7 +3,6 @@
 namespace SwooleTW\Http\Server\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use SwooleTW\Http\Helpers\Alias;
 
 /**
  * Class Server
@@ -19,6 +18,6 @@ class Server extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return Alias::SERVER;
+        return 'swoole.server';
     }
 }
