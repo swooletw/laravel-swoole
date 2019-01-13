@@ -12,7 +12,7 @@ use SwooleTW\Http\HotReload\FSEvent;
 use SwooleTW\Http\Server\AccessOutput;
 use SwooleTW\Http\HotReload\FSOutput;
 use SwooleTW\Http\HotReload\FSProcess;
-use SwooleTW\Http\Middlewares\AccessLog;
+use SwooleTW\Http\Middleware\AccessLog;
 use SwooleTW\Http\Server\Facades\Server;
 use Illuminate\Contracts\Container\Container;
 use Symfony\Component\Console\Output\ConsoleOutput;

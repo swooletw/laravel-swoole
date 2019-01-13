@@ -269,14 +269,14 @@ class WebsocketTest extends TestCase
            ->andReturnSelf();
 
         $request = m::mock(Request::class);
-        $middlewares = ['foo', 'bar'];
+        $middleware = ['foo', 'bar'];
         $pipeline = m::mock(Pipeline::class);
         $pipeline->shouldReceive('send')
                  ->with($request)
                  ->once()
                  ->andReturnSelf();
         $pipeline->shouldReceive('through')
-                 ->with($middlewares)
+                 ->with($middleware)
                  ->once()
                  ->andReturnSelf();
         $pipeline->shouldReceive('then')
@@ -284,7 +284,7 @@ class WebsocketTest extends TestCase
                  ->andReturn($request);
 
         $websocket = $this->getWebsocket(null, $pipeline);
-        $websocket->middleware($middlewares);
+        $websocket->middleware($middleware);
         $websocket->on('connect', function () {
             return 'connect';
         });

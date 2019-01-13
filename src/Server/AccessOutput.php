@@ -4,7 +4,7 @@ namespace SwooleTW\Http\Server;
 
 use DateTimeInterface;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
@@ -33,7 +33,7 @@ class AccessOutput
      * Access log.
      *
      * @param \Illuminate\Http\Request $request
-     * @param \Illuminate\Http\Response $response
+     * @param \Symfony\Component\HttpFoundation\Response $response
      */
     public function log(Request $request, Response $response): void
     {

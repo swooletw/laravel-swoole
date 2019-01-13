@@ -8,7 +8,7 @@ use Illuminate\Queue\QueueManager;
 use Illuminate\Contracts\Http\Kernel;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\ServiceProvider;
-use SwooleTW\Http\Middlewares\AccessLog;
+use SwooleTW\Http\Middleware\AccessLog;
 use SwooleTW\Http\Server\Facades\Server;
 use Illuminate\Database\DatabaseManager;
 use SwooleTW\Http\Coroutine\MySqlConnection;

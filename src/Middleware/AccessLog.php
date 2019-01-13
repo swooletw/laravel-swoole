@@ -1,11 +1,11 @@
 <?php
 
-namespace SwooleTW\Http\Middlewares;
+namespace SwooleTW\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use SwooleTW\Http\Server\AccessOutput;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class AccessLog
@@ -46,7 +46,7 @@ class AccessLog
      * Handle the outgoing request and response.
      *
      * @param \Illuminate\Http\Request $request
-     * @param \Illuminate\Http\Response $response
+     * @param \Symfony\Component\HttpFoundation\Response $response
      */
     public function terminate(Request $request, Response $response)
     {
