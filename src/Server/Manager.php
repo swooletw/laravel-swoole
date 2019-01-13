@@ -222,7 +222,12 @@ class Manager
             Response::make($illuminateResponse, $swooleResponse)->send();
         } catch (Throwable $e) {
             try {
-                $exceptionResponse = $this->app->make(ExceptionHandler::class)->render(null, $e);
+                $exceptionResponse = $this->app
+                    ->make(ExceptionHandler::class)
+                    ->render(
+                        $illuminateRequest,
+                        $this->normalizeException($e)
+                    );
                 Response::make($exceptionResponse, $swooleResponse)->send();
             } catch (Throwable $e) {
                 $this->logServerError($e);
@@ -423,10 +428,24 @@ class Manager
      */
     public function logServerError(Throwable $e)
     {
+        $this->container
+            ->make(ExceptionHandler::class)
+            ->report(
+                $this->normalizeException($e)
+            );
+    }
+
+    /**
+     * Normalize a throwable/exception to exception.
+     *
+     * @param \Throwable|\Exception $e
+     */
+    protected function normalizeException(Throwable $e)
+    {
         if (! $e instanceof Exception) {
             $e = new FatalThrowableError($e);
         }
 
-        $this->container->make(ExceptionHandler::class)->report($e);
+        return $e;
     }
 }
