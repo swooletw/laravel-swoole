@@ -18,6 +18,7 @@ use SwooleTW\Http\Concerns\WithApplication;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use SwooleTW\Http\Concerns\InteractsWithWebsocket;
+use SwooleTW\Http\Concerns\InteractsWithSwooleQueue;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 
@@ -28,6 +29,7 @@ class Manager
 {
     use InteractsWithWebsocket,
         InteractsWithSwooleTable,
+        InteractsWithSwooleQueue,
         WithApplication;
 
     /**
