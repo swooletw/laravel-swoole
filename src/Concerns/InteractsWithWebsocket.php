@@ -362,4 +362,22 @@ trait InteractsWithWebsocket
 
         return [$opcode, $sender, $fds, $broadcast, $assigned, $event, $message];
     }
+
+    /**
+     * Indicates if the payload is websocket push.
+     *
+     * @param mixed $payload
+     *
+     * @return boolean
+     */
+    protected function isWebsocketPushPayload($payload): bool
+    {
+        if (! is_array($payload)) {
+            return false;
+        }
+
+        return $this->isServerWebsocket
+            && array_key_exists('action', $payload)
+            && $payload['action'] === Websocket::PUSH_ACTION;
+    }
 }

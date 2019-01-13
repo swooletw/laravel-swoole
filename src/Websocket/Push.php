@@ -141,7 +141,7 @@ class Push
      */
     public function hasDescriptor(int $descriptor): bool
     {
-        return \in_array($descriptor, $this->descriptors, true);
+        return in_array($descriptor, $this->descriptors, true);
     }
 
     /**

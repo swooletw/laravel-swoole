@@ -263,21 +263,11 @@ class Manager
 
         try {
             // push websocket message
-            if (is_array($data)) {
-                if ($this->isServerWebsocket
-                    && array_key_exists('action', $data)
-                    && $data['action'] === Websocket::PUSH_ACTION) {
-                    $this->pushMessage($server, $data['data'] ?? []);
-                }
+            if ($this->isWebsocketPushPayload($data)) {
+                $this->pushMessage($server, $data['data'] ?? []);
             // push async task to queue
-            } else {
-                if (is_string($data)) {
-                    $decoded = \json_decode($data, true);
-
-                    if (JSON_ERROR_NONE === \json_last_error() && isset($decoded['job'])) {
-                        (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
-                    }
-                }
+            } elseif ($this->isAsyncTaskPayload($data)) {
+                (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
             }
         } catch (Throwable $e) {
             $this->logServerError($e);
@@ -447,5 +437,23 @@ class Manager
         }
 
         return $e;
+    }
+
+    /**
+     * Indicates if the payload is async task.
+     *
+     * @param mixed $payload
+     *
+     * @return boolean
+     */
+    protected function isAsyncTaskPayload($payload): bool
+    {
+        $data = json_decode($payload, true);
+
+        if (JSON_ERROR_NONE !== json_last_error()) {
+            return false;
+        }
+
+        return isset($data['job']);
     }
 }
