@@ -4,7 +4,6 @@ namespace SwooleTW\Http;
 
 use Illuminate\Support\Arr;
 use SwooleTW\Http\Helpers\FW;
-use Illuminate\Queue\QueueManager;
 use Illuminate\Contracts\Http\Kernel;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\ServiceProvider;
@@ -14,6 +13,7 @@ use Illuminate\Database\DatabaseManager;
 use SwooleTW\Http\Coroutine\MySqlConnection;
 use SwooleTW\Http\Commands\HttpServerCommand;
 use Swoole\Websocket\Server as WebsocketServer;
+use Illuminate\Queue\Capsule\Manager as QueueManager;
 use SwooleTW\Http\Task\Connectors\SwooleTaskConnector;
 use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
 
