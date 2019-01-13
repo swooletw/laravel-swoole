@@ -13,7 +13,6 @@ use Illuminate\Database\DatabaseManager;
 use SwooleTW\Http\Coroutine\MySqlConnection;
 use SwooleTW\Http\Commands\HttpServerCommand;
 use Swoole\Websocket\Server as WebsocketServer;
-use Illuminate\Queue\Capsule\Manager as QueueManager;
 use SwooleTW\Http\Task\Connectors\SwooleTaskConnector;
 use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
 
@@ -232,7 +231,7 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function registerSwooleQueueDriver()
     {
-        $this->app->afterResolving('queue', function (QueueManager $manager) {
+        $this->app->afterResolving('queue', function ($manager) {
             $manager->addConnector('swoole', function () {
                 return new SwooleTaskConnector($this->app->make(Server::class));
             });
