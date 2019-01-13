@@ -2,12 +2,12 @@
 
 namespace SwooleTW\Http\Tests;
 
+use Illuminate\Support\Facades\Facade;
 use Mockery as m;
 use phpmock\Mock;
 use phpmock\MockBuilder;
-use SwooleTW\Http\Coroutine\Context;
-use Illuminate\Support\Facades\Facade;
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use SwooleTW\Http\Coroutine\Context;
 
 class TestCase extends BaseTestCase
 {
@@ -26,7 +26,7 @@ class TestCase extends BaseTestCase
 
     protected function mockMethod($name, \Closure $function, $namespace = null)
     {
-        $builder = new MockBuilder();
+        $builder = new MockBuilder;
         $builder->setNamespace($namespace)
                 ->setName($name)
                 ->setFunction($function);

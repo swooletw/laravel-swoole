@@ -25,7 +25,8 @@ class Response
      *
      * @param $illuminateResponse
      * @param \Swoole\Http\Response $swooleResponse
-     * @return \SwooleTW\Http\Server\Response
+     *
+     * @return \SwooleTW\Http\Transformers\Response
      */
     public static function make($illuminateResponse, SwooleResponse $swooleResponse)
     {
@@ -88,9 +89,12 @@ class Response
         foreach ($illuminateResponse->headers->getCookies() as $cookie) {
             // may need to consider rawcookie
             $this->swooleResponse->cookie(
-                $cookie->getName(), $cookie->getValue(),
-                $cookie->getExpiresTime(), $cookie->getPath(),
-                $cookie->getDomain(), $cookie->isSecure(),
+                $cookie->getName(),
+                $cookie->getValue(),
+                $cookie->getExpiresTime(),
+                $cookie->getPath(),
+                $cookie->getDomain(),
+                $cookie->isSecure(),
                 $cookie->isHttpOnly()
             );
         }
@@ -103,20 +107,33 @@ class Response
     {
         $illuminateResponse = $this->getIlluminateResponse();
 
-        if ($illuminateResponse instanceof StreamedResponse &&
-            property_exists($illuminateResponse, 'output')
-        ) {
+        if ($illuminateResponse instanceof StreamedResponse && property_exists($illuminateResponse, 'output')) {
+            // TODO Add Streamed Response with output
             $this->swooleResponse->end($illuminateResponse->output);
         } elseif ($illuminateResponse instanceof BinaryFileResponse) {
             $this->swooleResponse->sendfile($illuminateResponse->getFile()->getPathname());
         } else {
-            $this->swooleResponse->end($illuminateResponse->getContent());
+            $this->sendInChunk($illuminateResponse->getContent());
         }
     }
 
     /**
+     * Send content in chunk
+     *
+     * @param string $content
+     */
+    protected function sendInChunk($content)
+    {
+        foreach (str_split($content, 1024) as $v) {
+            $this->swooleResponse->write($v);
+        }
+        $this->swooleResponse->end();
+    }
+
+    /**
      * @param \Swoole\Http\Response $swooleResponse
-     * @return \SwooleTW\Http\Server\Response
+     *
+     * @return \SwooleTW\Http\Transformers\Response
      */
     protected function setSwooleResponse(SwooleResponse $swooleResponse)
     {
@@ -135,7 +152,8 @@ class Response
 
     /**
      * @param mixed illuminateResponse
-     * @return \SwooleTW\Http\Server\Response
+     *
+     * @return \SwooleTW\Http\Transformers\Response
      */
     protected function setIlluminateResponse($illuminateResponse)
     {

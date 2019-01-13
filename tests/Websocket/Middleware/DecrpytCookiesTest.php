@@ -2,12 +2,12 @@
 
 namespace SwooleTW\Http\Tests\Websocket\Middleware;
 
-use Mockery as m;
-use Illuminate\Http\Request;
-use SwooleTW\Http\Tests\TestCase;
-use Symfony\Component\HttpFoundation\ParameterBag;
-use SwooleTW\Http\Websocket\Middleware\DecryptCookies;
 use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
+use Illuminate\Http\Request;
+use Mockery as m;
+use SwooleTW\Http\Tests\TestCase;
+use SwooleTW\Http\Websocket\Middleware\DecryptCookies;
+use Symfony\Component\HttpFoundation\ParameterBag;
 
 class DecrpytCookiesTest extends TestCase
 {
@@ -27,17 +27,17 @@ class DecrpytCookiesTest extends TestCase
             'foo' => 'bar',
             'seafood' => 'sasaya',
             'aaa' => [
-                'bbb' => 'ccc'
-            ]
+                'bbb' => 'ccc',
+            ],
         ]);
 
         $encrypter = m::mock(EncrypterContract::class);
         $encrypter->shouldReceive('decrypt')
-            ->once()
-            ->with('sasaya', false);
+                  ->once()
+                  ->with('sasaya', false);
         $encrypter->shouldReceive('decrypt')
-            ->once()
-            ->with('ccc', false);
+                  ->once()
+                  ->with('ccc', false);
 
         $middleware = $this->getMiddleware($encrypter);
         $middleware->disableFor('foo');

@@ -21,5 +21,5 @@ return [
     ],
     'providers' => [
         SwooleTW\Http\Tests\Fixtures\Laravel\App\Providers\TestServiceProvider::class,
-    ]
+    ],
 ];

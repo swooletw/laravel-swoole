@@ -2,12 +2,13 @@
 
 namespace SwooleTW\Http\Tests\SocketIO;
 
-use Mockery as m;
-use Swoole\Websocket\Frame;
 use Illuminate\Http\Request;
-use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
+use Mockery as m;
+use Swoole\Websocket\Frame;
+use SwooleTW\Http\Server\Facades\Server;
+use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
 
 class WebsocketHandlerTest extends TestCase
@@ -17,33 +18,34 @@ class WebsocketHandlerTest extends TestCase
         $fd = 1;
         $request = m::mock(Request::class);
         $request->shouldReceive('input')
-            ->with('sid')
-            ->once()
-            ->andReturn(false);
+                ->with('sid')
+                ->once()
+                ->andReturn(false);
 
         Config::shouldReceive('get')
-            ->with('swoole_websocket.ping_interval')
-            ->once();
+              ->with('swoole_websocket.ping_interval')
+              ->once();
         Config::shouldReceive('get')
-            ->with('swoole_websocket.ping_timeout')
-            ->once();
+              ->with('swoole_websocket.ping_timeout')
+              ->once();
 
         $jsonEncode = false;
         $this->mockMethod('json_encode', function () use (&$jsonEncode) {
             $jsonEncode = true;
+
             return '{foo: "bar"}';
         }, 'SwooleTW\Http\Websocket\SocketIO');
 
         App::shouldReceive('make')
-            ->with('swoole.server')
-            ->twice()
-            ->andReturnSelf();
+           ->with(Server::class)
+           ->twice()
+           ->andReturnSelf();
         App::shouldReceive('push')
-            ->with($fd, '0{foo: "bar"}')
-            ->once();
+           ->with($fd, '0{foo: "bar"}')
+           ->once();
         App::shouldReceive('push')
-            ->with($fd, '40')
-            ->once();
+           ->with($fd, '40')
+           ->once();
 
         $handler = new WebsocketHandler;
         $this->assertTrue($handler->onOpen($fd, $request));
@@ -55,9 +57,9 @@ class WebsocketHandlerTest extends TestCase
         $fd = 1;
         $request = m::mock(Request::class);
         $request->shouldReceive('input')
-            ->with('sid')
-            ->once()
-            ->andReturn(true);
+                ->with('sid')
+                ->once()
+                ->andReturn(true);
 
         $handler = new WebsocketHandler;
         $this->assertFalse($handler->onOpen($fd, $request));

@@ -4,6 +4,11 @@ namespace SwooleTW\Http\Server\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
+/**
+ * Class Server
+ *
+ * @mixin \Swoole\Http\Server
+ */
 class Server extends Facade
 {
     /**

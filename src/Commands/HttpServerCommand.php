@@ -4,7 +4,18 @@ namespace SwooleTW\Http\Commands;
 
 use Throwable;
 use Swoole\Process;
+use Illuminate\Support\Arr;
 use Illuminate\Console\Command;
+use SwooleTW\Http\Server\Manager;
+use Illuminate\Console\OutputStyle;
+use SwooleTW\Http\HotReload\FSEvent;
+use SwooleTW\Http\Server\AccessOutput;
+use SwooleTW\Http\HotReload\FSOutput;
+use SwooleTW\Http\HotReload\FSProcess;
+use SwooleTW\Http\Middleware\AccessLog;
+use SwooleTW\Http\Server\Facades\Server;
+use Illuminate\Contracts\Container\Container;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
  * @codeCoverageIgnore
@@ -38,14 +49,14 @@ class HttpServerCommand extends Command
      *
      * @var int
      */
-    protected $pid;
+    protected $currentPid;
 
     /**
      * The configs for this package.
      *
      * @var array
      */
-    protected $configs;
+    protected $config;
 
     /**
      * Execute the console command.
@@ -65,7 +76,7 @@ class HttpServerCommand extends Command
      */
     protected function loadConfigs()
     {
-        $this->configs = $this->laravel['config']->get('swoole_http');
+        $this->config = $this->laravel->make('config')->get('swoole_http');
     }
 
     /**
@@ -81,22 +92,38 @@ class HttpServerCommand extends Command
      */
     protected function start()
     {
-        if ($this->isRunning($this->getPid())) {
+        if ($this->isRunning($this->getCurrentPid())) {
             $this->error('Failed! swoole_http_server process is already running.');
-            exit(1);
+
+            return;
         }
 
-        $host = $this->configs['server']['host'];
-        $port = $this->configs['server']['port'];
+        $host = Arr::get($this->config, 'server.host');
+        $port = Arr::get($this->config, 'server.port');
+        $hotReloadEnabled = Arr::get($this->config, 'hot_reload.enabled');
+        $accessLogEnabled = Arr::get($this->config, 'server.access_log');
 
         $this->info('Starting swoole http server...');
         $this->info("Swoole http server started: <http://{$host}:{$port}>");
         if ($this->isDaemon()) {
-            $this->info('> (You can run this command to ensure the ' .
-                'swoole_http_server process is running: ps aux|grep "swoole")');
+            $this->info(
+                '> (You can run this command to ensure the ' .
+                'swoole_http_server process is running: ps aux|grep "swoole")'
+            );
         }
 
-        $this->laravel->make('swoole.manager')->run();
+        $manager = $this->laravel->make(Manager::class);
+        $server = $this->laravel->make(Server::class);
+
+        if ($accessLogEnabled) {
+            $this->registerAccessLog();
+        }
+
+        if ($hotReloadEnabled) {
+            $manager->addProcess($this->getHotReloadProcess($server));
+        }
+
+        $manager->run();
     }
 
     /**
@@ -104,11 +131,12 @@ class HttpServerCommand extends Command
      */
     protected function stop()
     {
-        $pid = $this->getPid();
+        $pid = $this->getCurrentPid();
 
         if (! $this->isRunning($pid)) {
             $this->error("Failed! There is no swoole_http_server process running.");
-            exit(1);
+
+            return;
         }
 
         $this->info('Stopping swoole http server...');
@@ -117,7 +145,8 @@ class HttpServerCommand extends Command
 
         if ($isRunning) {
             $this->error('Unable to stop the swoole_http_server process.');
-            exit(1);
+
+            return;
         }
 
         // I don't known why Swoole didn't trigger "onShutdown" after sending SIGTERM.
@@ -132,7 +161,7 @@ class HttpServerCommand extends Command
      */
     protected function restart()
     {
-        $pid = $this->getPid();
+        $pid = $this->getCurrentPid();
 
         if ($this->isRunning($pid)) {
             $this->stop();
@@ -146,11 +175,12 @@ class HttpServerCommand extends Command
      */
     protected function reload()
     {
-        $pid = $this->getPid();
+        $pid = $this->getCurrentPid();
 
         if (! $this->isRunning($pid)) {
             $this->error("Failed! There is no swoole_http_server process running.");
-            exit(1);
+
+            return;
         }
 
         $this->info('Reloading swoole_http_server...');
@@ -159,7 +189,8 @@ class HttpServerCommand extends Command
 
         if (! $isRunning) {
             $this->error('> failure');
-            exit(1);
+
+            return;
         }
 
         $this->info('> success');
@@ -175,20 +206,18 @@ class HttpServerCommand extends Command
 
     /**
      * Display PHP and Swoole miscs infos.
-     *
-     * @param bool $more
      */
     protected function showInfos()
     {
-        $pid = $this->getPid();
+        $pid = $this->getCurrentPid();
         $isRunning = $this->isRunning($pid);
-        $host = $this->configs['server']['host'];
-        $port = $this->configs['server']['port'];
-        $reactorNum = $this->configs['server']['options']['reactor_num'];
-        $workerNum = $this->configs['server']['options']['worker_num'];
-        $taskWorkerNum = $this->configs['server']['options']['task_worker_num'];
-        $isWebsocket = $this->configs['websocket']['enabled'];
-        $logFile = $this->configs['server']['options']['log_file'];
+        $host = Arr::get($this->config, 'server.host');
+        $port = Arr::get($this->config, 'server.port');
+        $reactorNum = Arr::get($this->config, 'server.options.reactor_num');
+        $workerNum = Arr::get($this->config, 'server.options.worker_num');
+        $taskWorkerNum = Arr::get($this->config, 'server.options.task_worker_num');
+        $isWebsocket = Arr::get($this->config, 'websocket.enabled');
+        $logFile = Arr::get($this->config, 'server.options.log_file');
 
         $table = [
             ['PHP Version', 'Version' => phpversion()],
@@ -215,16 +244,40 @@ class HttpServerCommand extends Command
     {
         $this->action = $this->argument('action');
 
-        if (! in_array($this->action, ['start', 'stop', 'restart', 'reload', 'infos'])) {
-            $this->error("Invalid argument '{$this->action}'. Expected 'start', 'stop', 'restart', 'reload' or 'infos'.");
-            exit(1);
+        if (! in_array($this->action, ['start', 'stop', 'restart', 'reload', 'infos'], true)) {
+            $this->error(
+                "Invalid argument '{$this->action}'. Expected 'start', 'stop', 'restart', 'reload' or 'infos'."
+            );
+
+            return;
         }
+    }
+
+    /**
+     * @param \SwooleTW\Http\Server\Facades\Server $server
+     *
+     * @return \Swoole\Process
+     */
+    protected function getHotReloadProcess($server)
+    {
+        $recursively = Arr::get($this->config, 'hot_reload.recursively');
+        $directory = Arr::get($this->config, 'hot_reload.directory');
+        $filter = Arr::get($this->config, 'hot_reload.filter');
+        $log = Arr::get($this->config, 'hot_reload.log');
+
+        $cb = function (FSEvent $event) use ($server, $log) {
+            $log ? $this->info(FSOutput::format($event)) : null;
+            $server->reload();
+        };
+
+        return (new FSProcess($filter, $recursively, $directory))->make($cb);
     }
 
     /**
      * If Swoole process is running.
      *
      * @param int $pid
+     *
      * @return bool
      */
     protected function isRunning($pid)
@@ -246,6 +299,7 @@ class HttpServerCommand extends Command
      * @param int $pid
      * @param int $sig
      * @param int $wait
+     *
      * @return bool
      */
     protected function killProcess($pid, $sig, $wait = 0)
@@ -272,26 +326,17 @@ class HttpServerCommand extends Command
      *
      * @return int|null
      */
-    protected function getPid()
+    protected function getCurrentPid()
     {
-        if ($this->pid) {
-            return $this->pid;
+        if ($this->currentPid) {
+            return $this->currentPid;
         }
 
-        $pid = null;
         $path = $this->getPidPath();
 
-        if (file_exists($path)) {
-            $pid = (int) file_get_contents($path);
-
-            if (! $pid) {
-                $this->removePidFile();
-            } else {
-                $this->pid = $pid;
-            }
-        }
-
-        return $this->pid;
+        return $this->currentPid = file_exists($path)
+            ? (int) file_get_contents($path) ?? $this->removePidFile()
+            : null;
     }
 
     /**
@@ -301,7 +346,7 @@ class HttpServerCommand extends Command
      */
     protected function getPidPath()
     {
-        return $this->configs['server']['options']['pid_file'];
+        return Arr::get($this->config, 'server.options.pid_file', storage_path('logs/swoole.pid'));
     }
 
     /**
@@ -317,9 +362,9 @@ class HttpServerCommand extends Command
     /**
      * Return daemonize config.
      */
-    protected function isDaemon()
+    protected function isDaemon(): bool
     {
-        return $this->configs['server']['options']['daemonize'];
+        return Arr::get($this->config, 'server.options.daemonize', false);
     }
 
     /**
@@ -329,13 +374,38 @@ class HttpServerCommand extends Command
     {
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             $this->error("Swoole extension doesn't support Windows OS yet.");
-            exit;
-        } elseif (! extension_loaded('swoole')) {
-            $this->error("Can't detect Swoole extension installed.");
-            exit;
-        } elseif (! version_compare(swoole_version(), '4.0.0', 'ge')) {
-            $this->error("Your Swoole version must be higher than 4.0 to use coroutine.");
-            exit;
+
+            exit(1);
         }
+
+        if (! extension_loaded('swoole')) {
+            $this->error("Can't detect Swoole extension installed.");
+
+            exit(1);
+        }
+
+        if (! version_compare(swoole_version(), '4.0.0', 'ge')) {
+            $this->error("Your Swoole version must be higher than 4.0 to use coroutine.");
+
+            exit(1);
+        }
+    }
+
+    /**
+     * Register access log services.
+     */
+    protected function registerAccessLog()
+    {
+        $this->laravel->singleton(OutputStyle::class, function () {
+            return new OutputStyle($this->input, $this->output);
+        });
+
+        $this->laravel->singleton(AccessOutput::class, function () {
+            return new AccessOutput(new ConsoleOutput);
+        });
+
+        $this->laravel->singleton(AccessLog::class, function (Container $container) {
+            return new AccessLog($container->make(AccessOutput::class));
+        });
     }
 }

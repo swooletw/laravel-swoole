@@ -1,8 +1,8 @@
 <?php
 
-use Mockery as m;
-use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Http\Kernel;
+use Mockery as m;
 
 $kernel = new TestKernel;
 
@@ -26,7 +26,8 @@ $app->shouldReceive('alias');
 
 return $app;
 
-class TestKernel {
+class TestKernel
+{
     public function bootstrappers()
     {
         return [];

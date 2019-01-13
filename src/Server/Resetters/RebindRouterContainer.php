@@ -2,18 +2,29 @@
 
 namespace SwooleTW\Http\Server\Resetters;
 
-use SwooleTW\Http\Server\Sandbox;
 use Illuminate\Contracts\Container\Container;
-use SwooleTW\Http\Server\Resetters\ResetterContract;
+use SwooleTW\Http\Server\Sandbox;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class RebindRouterContainer implements ResetterContract
 {
     /**
+     * @var \Illuminate\Contracts\Container\Container
+     */
+    protected $container;
+
+    /**
+     * @var mixed
+     */
+    protected $routes;
+
+    /**
      * "handle" function for resetting app.
      *
      * @param \Illuminate\Contracts\Container\Container $app
      * @param \SwooleTW\Http\Server\Sandbox $sandbox
+     *
+     * @return \Illuminate\Contracts\Container\Container
      */
     public function handle(Container $app, Sandbox $sandbox)
     {
@@ -26,6 +37,7 @@ class RebindRouterContainer implements ResetterContract
                     return;
                 }
                 try {
+                    /** @var mixed $route */
                     $route = $this->routes->match($request);
                     // clear resolved controller
                     if (property_exists($route, 'container')) {

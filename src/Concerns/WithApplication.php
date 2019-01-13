@@ -2,34 +2,40 @@
 
 namespace SwooleTW\Http\Concerns;
 
-use Illuminate\Http\Request;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Contracts\Container\Container;
-use Laravel\Lumen\Application as LumenApplication;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use SwooleTW\Http\Exceptions\FrameworkNotSupportException;
 
+/**
+ * Trait WithApplication
+ *
+ * @property Container $container
+ * @property string $framework
+ */
 trait WithApplication
 {
     /**
      * Laravel|Lumen Application.
      *
-     * @var \Illuminate\Contracts\Container\Container
+     * @var \Illuminate\Contracts\Container\Container|mixed
      */
     protected $app;
 
     /**
      * Bootstrap framework.
+     *
+     * @throws \ReflectionException
      */
     protected function bootstrap()
     {
         if ($this->framework === 'laravel') {
             $bootstrappers = $this->getBootstrappers();
             $this->app->bootstrapWith($bootstrappers);
-        } elseif (is_null(Facade::getFacadeApplication())) {
-            $this->app->withFacades();
+        } else {
+            if (is_null(Facade::getFacadeApplication())) {
+                $this->app->withFacades();
+            }
         }
 
         $this->preResolveInstances();
@@ -42,11 +48,12 @@ trait WithApplication
      */
     protected function loadApplication()
     {
-        return require $this->basePath . '/bootstrap/app.php';
+        return require "{$this->basePath}/bootstrap/app.php";
     }
 
     /**
-     * @return \Illuminate\Contracts\Container\Container
+     * @return \Illuminate\Contracts\Container\Container|mixed
+     * @throws \ReflectionException
      */
     public function getApplication()
     {
@@ -60,6 +67,8 @@ trait WithApplication
 
     /**
      * Set laravel application.
+     *
+     * @param \Illuminate\Contracts\Container\Container $app
      */
     public function setApplication(Container $app)
     {
@@ -70,6 +79,7 @@ trait WithApplication
      * Get bootstrappers.
      *
      * @return array
+     * @throws \ReflectionException
      */
     protected function getBootstrappers()
     {
@@ -91,6 +101,7 @@ trait WithApplication
      * Set framework.
      *
      * @param string $framework
+     *
      * @throws \Exception
      */
     protected function setFramework($framework)
@@ -98,7 +109,7 @@ trait WithApplication
         $framework = strtolower($framework);
 
         if (! in_array($framework, ['laravel', 'lumen'])) {
-            throw new \Exception(sprintf('Not support framework "%s".', $framework));
+            throw new FrameworkNotSupportException($framework);
         }
 
         $this->framework = $framework;
@@ -132,10 +143,13 @@ trait WithApplication
 
     /**
      * Reslove some instances before request.
+     *
+     * @throws \ReflectionException
      */
     protected function preResolveInstances()
     {
-        $resolves = $this->container['config']->get('swoole_http.pre_resolved', []);
+        $resolves = $this->container->make('config')
+            ->get('swoole_http.pre_resolved', []);
 
         foreach ($resolves as $abstract) {
             if ($this->getApplication()->offsetExists($abstract)) {
