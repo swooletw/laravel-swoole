@@ -4,6 +4,7 @@ namespace SwooleTW\Http;
 
 use Illuminate\Support\Arr;
 use SwooleTW\Http\Helpers\FW;
+use Illuminate\Queue\QueueManager;
 use Illuminate\Contracts\Http\Kernel;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\ServiceProvider;
@@ -231,7 +232,7 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     protected function registerSwooleQueueDriver()
     {
-        $this->app->afterResolving('queue', function ($manager) {
+        $this->app->afterResolving('queue', function (QueueManager $manager) {
             $manager->addConnector('swoole', function () {
                 return new SwooleTaskConnector($this->app->make(Server::class));
             });
