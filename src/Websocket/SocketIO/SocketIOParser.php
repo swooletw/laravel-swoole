@@ -3,16 +3,18 @@
 namespace SwooleTW\Http\Websocket\SocketIO;
 
 use SwooleTW\Http\Websocket\Parser;
-use SwooleTW\Http\Websocket\SocketIO\Packet;
 use SwooleTW\Http\Websocket\SocketIO\Strategies\HeartbeatStrategy;
 
+/**
+ * Class SocketIOParser
+ */
 class SocketIOParser extends Parser
 {
     /**
      * Strategy classes need to implement handle method.
      */
     protected $strategies = [
-        HeartbeatStrategy::class
+        HeartbeatStrategy::class,
     ];
 
     /**
@@ -20,6 +22,7 @@ class SocketIOParser extends Parser
      *
      * @param string $event
      * @param mixed $data
+     *
      * @return mixed
      */
     public function encode(string $event, $data)
@@ -37,6 +40,7 @@ class SocketIOParser extends Parser
      * Define and return payload here.
      *
      * @param \Swoole\Websocket\Frame $frame
+     *
      * @return array
      */
     public function decode($frame)
@@ -45,7 +49,7 @@ class SocketIOParser extends Parser
 
         return [
             'event' => $payload['event'] ?? null,
-            'data' => $payload['data'] ?? null
+            'data' => $payload['data'] ?? null,
         ];
     }
 }

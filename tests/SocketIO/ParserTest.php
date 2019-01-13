@@ -2,10 +2,10 @@
 
 namespace SwooleTW\Http\Tests\SocketIO;
 
+use Illuminate\Support\Facades\App;
 use Mockery as m;
 use Swoole\Websocket\Frame;
 use SwooleTW\Http\Tests\TestCase;
-use Illuminate\Support\Facades\App;
 use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
 use SwooleTW\Http\Websocket\SocketIO\Strategies\HeartbeatStrategy;
 
@@ -38,15 +38,15 @@ class ParserTest extends TestCase
         $this->assertSame([
             'event' => 'foo',
             'data' => [
-                'message' => 'test'
-            ]
+                'message' => 'test',
+            ],
         ], $parser->decode($frame));
 
         $payload = '42["foo","bar"]';
         $frame->data = $payload;
         $this->assertSame([
             'event' => 'foo',
-            'data' => 'bar'
+            'data' => 'bar',
         ], $parser->decode($frame));
     }
 

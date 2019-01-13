@@ -2,11 +2,11 @@
 
 namespace SwooleTW\Http\Tests\Coroutine;
 
-use TypeError;
-use Mockery as m;
-use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Container\Container;
+use Mockery as m;
 use SwooleTW\Http\Coroutine\Context;
+use SwooleTW\Http\Tests\TestCase;
+use TypeError;
 
 class ContextTest extends TestCase
 {

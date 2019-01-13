@@ -2,17 +2,18 @@
 
 namespace SwooleTW\Http\Tests\Websocket;
 
-use Mockery as m;
-use Illuminate\Http\Request;
-use InvalidArgumentException;
-use Illuminate\Pipeline\Pipeline;
-use SwooleTW\Http\Tests\TestCase;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Http\Request;
+use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
-use SwooleTW\Http\Websocket\Websocket;
+use InvalidArgumentException;
+use Mockery as m;
+use SwooleTW\Http\Server\Facades\Server;
+use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use SwooleTW\Http\Websocket\Websocket;
 
 class WebsocketTest extends TestCase
 {
@@ -44,60 +45,60 @@ class WebsocketTest extends TestCase
     {
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('add')
-            ->with($sender = 1, $name = ['room'])
-            ->once();
+             ->with($sender = 1, $name = ['room'])
+             ->once();
 
         $websocket = $this->getWebsocket($room)
-            ->setSender($sender)
-            ->join($name);
+                          ->setSender($sender)
+                          ->join($name);
     }
 
     public function testInAlias()
     {
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('add')
-            ->with($sender = 1, $name = ['room'])
-            ->once();
+             ->with($sender = 1, $name = ['room'])
+             ->once();
 
         $websocket = $this->getWebsocket($room)
-            ->setSender($sender)
-            ->in($name);
+                          ->setSender($sender)
+                          ->in($name);
     }
 
     public function testJoinAll()
     {
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('add')
-            ->with($sender = 1, $names = ['room1', 'room2'])
-            ->once();
+             ->with($sender = 1, $names = ['room1', 'room2'])
+             ->once();
 
         $websocket = $this->getWebsocket($room)
-            ->setSender($sender)
-            ->join($names);
+                          ->setSender($sender)
+                          ->join($names);
     }
 
     public function testLeave()
     {
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('delete')
-            ->with($sender = 1, $name = ['room'])
-            ->once();
+             ->with($sender = 1, $name = ['room'])
+             ->once();
 
         $websocket = $this->getWebsocket($room)
-            ->setSender($sender)
-            ->leave($name);
+                          ->setSender($sender)
+                          ->leave($name);
     }
 
     public function testLeaveAll()
     {
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('delete')
-            ->with($sender = 1, $names = ['room1', 'room2'])
-            ->once();
+             ->with($sender = 1, $names = ['room1', 'room2'])
+             ->once();
 
         $websocket = $this->getWebsocket($room)
-            ->setSender($sender)
-            ->leave($names);
+                          ->setSender($sender)
+                          ->leave($names);
     }
 
     public function testCallbacks()
@@ -119,50 +120,50 @@ class WebsocketTest extends TestCase
     {
         $user = m::mock(AuthenticatableContract::class);
         $user->shouldReceive('getAuthIdentifier')
-            ->once()
-            ->andReturn($id = 1);
+             ->once()
+             ->andReturn($id = 1);
 
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('add')
-            ->with($sender = 1, ['uid_1'])
-            ->once();
+             ->with($sender = 1, ['uid_1'])
+             ->once();
 
         $websocket = $this->getWebsocket($room)
-            ->setSender($sender)
-            ->loginUsing($user);
+                          ->setSender($sender)
+                          ->loginUsing($user);
     }
 
     public function testLoginUsingId()
     {
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('add')
-            ->with($sender = 1, ['uid_1'])
-            ->once();
+             ->with($sender = 1, ['uid_1'])
+             ->once();
 
         $websocket = $this->getWebsocket($room)
-            ->setSender($sender)
-            ->loginUsingId(1);
+                          ->setSender($sender)
+                          ->loginUsingId(1);
     }
 
     public function testToUserId()
     {
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('getClients')
-            ->with('uid_1')
-            ->once()
-            ->andReturn([$uid = 1]);
+             ->with('uid_1')
+             ->once()
+             ->andReturn([$uid = 1]);
 
         $websocket = $this->getWebsocket($room)->toUserId($uid);
         $this->assertTrue(in_array($uid, $websocket->getTo()));
 
         $room->shouldReceive('getClients')
-            ->with('uid_2')
-            ->once()
-            ->andReturn([2]);
+             ->with('uid_2')
+             ->once()
+             ->andReturn([2]);
         $room->shouldReceive('getClients')
-            ->with('uid_3')
-            ->once()
-            ->andReturn([3]);
+             ->with('uid_3')
+             ->once()
+             ->andReturn([3]);
 
         $websocket->toUserId([2, 3]);
         $this->assertTrue(in_array(2, $websocket->getTo()));
@@ -173,35 +174,35 @@ class WebsocketTest extends TestCase
     {
         $user = m::mock(AuthenticatableContract::class);
         $user->shouldReceive('getAuthIdentifier')
-            ->once()
-            ->andReturn($uid = 1);
+             ->once()
+             ->andReturn($uid = 1);
 
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('getClients')
-            ->with('uid_1')
-            ->once()
-            ->andReturn([$uid]);
+             ->with('uid_1')
+             ->once()
+             ->andReturn([$uid]);
 
         $websocket = $this->getWebsocket($room)->toUser($user);
         $this->assertTrue(in_array($uid, $websocket->getTo()));
 
         $room->shouldReceive('getClients')
-            ->with('uid_2')
-            ->once()
-            ->andReturn([2]);
+             ->with('uid_2')
+             ->once()
+             ->andReturn([2]);
         $room->shouldReceive('getClients')
-            ->with('uid_3')
-            ->once()
-            ->andReturn([3]);
+             ->with('uid_3')
+             ->once()
+             ->andReturn([3]);
 
         $userA = m::mock(AuthenticatableContract::class);
         $userA->shouldReceive('getAuthIdentifier')
-            ->once()
-            ->andReturn(2);
+              ->once()
+              ->andReturn(2);
         $userB = m::mock(AuthenticatableContract::class);
         $userB->shouldReceive('getAuthIdentifier')
-            ->once()
-            ->andReturn(3);
+              ->once()
+              ->andReturn(3);
 
         $websocket->toUser($users = [$userA, $userB]);
         $this->assertTrue(in_array(2, $websocket->getTo()));
@@ -212,9 +213,9 @@ class WebsocketTest extends TestCase
     {
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('getRooms')
-            ->with($sender = 1)
-            ->once()
-            ->andReturn(['uid_1']);
+             ->with($sender = 1)
+             ->once()
+             ->andReturn(['uid_1']);
 
         $websocket = $this->getWebsocket($room)->setSender($sender);
         $this->assertEquals($sender, $websocket->getUserId());
@@ -224,12 +225,12 @@ class WebsocketTest extends TestCase
     {
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('getRooms')
-            ->with($sender = 1)
-            ->once()
-            ->andReturn(['uid_1']);
+             ->with($sender = 1)
+             ->once()
+             ->andReturn(['uid_1']);
         $room->shouldReceive('delete')
-            ->with($sender, $name = ['uid_1'])
-            ->once();
+             ->with($sender, $name = ['uid_1'])
+             ->once();
 
         $websocket = $this->getWebsocket($room)->setSender($sender);
         $websocket->logout();
@@ -239,9 +240,9 @@ class WebsocketTest extends TestCase
     {
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('getClients')
-            ->with('uid_1')
-            ->once()
-            ->andReturn([1]);
+             ->with('uid_1')
+             ->once()
+             ->andReturn([1]);
 
         $websocket = $this->getWebsocket($room);
         $this->assertTrue($websocket->isUserIdOnline(1));
@@ -251,8 +252,8 @@ class WebsocketTest extends TestCase
     {
         $websocket = $this->getWebsocket();
         $websocket->setSender(1)
-            ->broadcast()
-            ->to('foo');
+                  ->broadcast()
+                  ->to('foo');
 
         $websocket->reset(true);
 
@@ -264,26 +265,26 @@ class WebsocketTest extends TestCase
     public function testPipeline()
     {
         App::shouldReceive('call')
-            ->once()
-            ->andReturnSelf();
+           ->once()
+           ->andReturnSelf();
 
         $request = m::mock(Request::class);
-        $middlewares = ['foo', 'bar'];
+        $middleware = ['foo', 'bar'];
         $pipeline = m::mock(Pipeline::class);
         $pipeline->shouldReceive('send')
-            ->with($request)
-            ->once()
-            ->andReturnSelf();
+                 ->with($request)
+                 ->once()
+                 ->andReturnSelf();
         $pipeline->shouldReceive('through')
-            ->with($middlewares)
-            ->once()
-            ->andReturnSelf();
+                 ->with($middleware)
+                 ->once()
+                 ->andReturnSelf();
         $pipeline->shouldReceive('then')
-            ->once()
-            ->andReturn($request);
+                 ->once()
+                 ->andReturn($request);
 
         $websocket = $this->getWebsocket(null, $pipeline);
-        $websocket->middleware($middlewares);
+        $websocket->middleware($middleware);
         $websocket->on('connect', function () {
             return 'connect';
         });
@@ -321,34 +322,34 @@ class WebsocketTest extends TestCase
         $broadcast = true;
         $room = m::mock(RoomContract::class);
         $room->shouldReceive('getClients')
-            ->with(m::type('string'))
-            ->times(3)
-            ->andReturn([3, 4, 5]);
+             ->with(m::type('string'))
+             ->times(3)
+             ->andReturn([3, 4, 5]);
 
         App::shouldReceive('make')
-            ->with('swoole.server')
-            ->once()
-            ->andReturnSelf();
+           ->with(Server::class)
+           ->once()
+           ->andReturnSelf();
 
         App::shouldReceive('task')
-            ->with([
-                'action' => 'push',
-                'data' => [
-                    'sender' => $sender,
-                    'fds' => [1, 2, 3, 4, 5],
-                    'broadcast' => $broadcast,
-                    'assigned' => true,
-                    'event' => $event = 'event',
-                    'message' => $data = 'data'
-                ]
-            ])
-            ->once();
+           ->with([
+               'action' => 'push',
+               'data' => [
+                   'sender' => $sender,
+                   'fds' => [1, 2, 3, 4, 5],
+                   'broadcast' => $broadcast,
+                   'assigned' => true,
+                   'event' => $event = 'event',
+                   'message' => $data = 'data',
+               ],
+           ])
+           ->once();
 
         $websocket = $this->getWebsocket($room);
         $websocket->setSender($sender)
-            ->to($to)
-            ->broadcast()
-            ->emit($event, $data);
+                  ->to($to)
+                  ->broadcast()
+                  ->emit($event, $data);
 
         $this->assertSame([], $websocket->getTo());
         $this->assertFalse($websocket->getIsBroadcast());
@@ -359,17 +360,16 @@ class WebsocketTest extends TestCase
         $fd = 1;
 
         App::shouldReceive('make')
-            ->with('swoole.server')
-            ->once()
-            ->andReturnSelf();
+           ->with(Server::class)
+           ->once()
+           ->andReturnSelf();
 
         App::shouldReceive('close')
-            ->with($fd)
-            ->once();
+           ->with($fd)
+           ->once();
 
         $websocket = $this->getWebsocket();
         $websocket->close($fd);
-
     }
 
     protected function getWebsocket(RoomContract $room = null, $pipeline = null)
@@ -378,8 +378,8 @@ class WebsocketTest extends TestCase
         $pipeline = $pipeline ?: m::mock(Pipeline::class);
 
         Config::shouldReceive('get')
-            ->once()
-            ->andReturn([]);
+              ->once()
+              ->andReturn([]);
 
         return new Websocket($room, $pipeline);
     }
