@@ -155,9 +155,7 @@ class ManagerTest extends TestCase
     public function testLoadApplication()
     {
         $server = $this->getServer();
-        $this->getManager();
-
-        $container = $this->getContainer($this->getServer(), $this->getConfig());
+        $container = $this->getContainer($server, $this->getConfig());
         $container->singleton('events', function () {
             return $this->getEvent('swoole.workerStart');
         });
@@ -165,8 +163,6 @@ class ManagerTest extends TestCase
         $path = __DIR__ . '/../fixtures';
         $manager = $this->getManager($container, $framework = 'laravel', $path);
         $manager->onWorkerStart($server);
-
-        $manager->getApplication();
     }
 
     public function testOnTaskWorkerStart()

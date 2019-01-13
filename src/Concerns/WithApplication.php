@@ -24,15 +24,17 @@ trait WithApplication
 
     /**
      * Bootstrap framework.
-     *
-     * @throws \ReflectionException
      */
     protected function bootstrap()
     {
         if ($this->framework === 'laravel') {
-            $bootstrappers = $this->getBootstrappers();
-            $this->app->bootstrapWith($bootstrappers);
+            $this->app->bootstrap();
         } else {
+            // for Lumen 5.7
+            // https://github.com/laravel/lumen-framework/commit/42cbc998375718b1a8a11883e033617024e57260#diff-c9248b3167fc44af085b81db2e292837
+            if (method_exists($this->app, 'boot')) {
+                $this->app->boot();
+            }
             if (is_null(Facade::getFacadeApplication())) {
                 $this->app->withFacades();
             }
@@ -73,28 +75,6 @@ trait WithApplication
     public function setApplication(Container $app)
     {
         $this->app = $app;
-    }
-
-    /**
-     * Get bootstrappers.
-     *
-     * @return array
-     * @throws \ReflectionException
-     */
-    protected function getBootstrappers()
-    {
-        $kernel = $this->getApplication()->make(Kernel::class);
-
-        $reflection = new \ReflectionObject($kernel);
-
-        $bootstrappersMethod = $reflection->getMethod('bootstrappers');
-        $bootstrappersMethod->setAccessible(true);
-
-        $bootstrappers = $bootstrappersMethod->invoke($kernel);
-
-        array_splice($bootstrappers, -2, 0, ['Illuminate\Foundation\Bootstrap\SetRequestForConsole']);
-
-        return $bootstrappers;
     }
 
     /**
