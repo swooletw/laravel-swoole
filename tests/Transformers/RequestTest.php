@@ -3,6 +3,7 @@
 namespace SwooleTW\Http\Tests\Transformers;
 
 use Illuminate\Http\Request as IlluminateRequest;
+use Illuminate\Http\Testing\MimeType;
 use Mockery as m;
 use Swoole\Http\Request as SwooleRequest;
 use SwooleTW\Http\Tests\TestCase;
@@ -38,19 +39,51 @@ class RequestTest extends TestCase
             return 1;
         });
 
-        $mimeContentType = false;
-        $this->mockMethod('mime_content_type', function () use (&$mimeContentType) {
-            $mimeContentType = true;
-
-            return 'foo';
-        });
+        m::mock(MimeType::class)->shouldReceive('from')
+            ->withAnyArgs()
+            ->andReturn('foo');
 
         $response = m::mock('response');
         $response->shouldReceive('status')
                  ->with(200)
                  ->once();
         $response->shouldReceive('header')
-                 ->with('Content-Type', 'foo')
+                 ->with('Content-Type', 'application/octet-stream')
+                 ->once();
+        $response->shouldReceive('sendfile')
+                 ->with('/foo.bar')
+                 ->once();
+
+        Request::handleStatic(new SwooleRequestStub, $response, '/');
+
+        $this->assertTrue($isFile);
+        $this->assertTrue($fileSize);
+    }
+
+    public function testHandleStaticCss()
+    {
+        $isFile = false;
+        $this->mockMethod('is_file', function () use (&$isFile) {
+            return $isFile = true;
+        });
+
+        $fileSize = false;
+        $this->mockMethod('filesize', function () use (&$fileSize) {
+            $fileSize = true;
+
+            return 1;
+        });
+
+        m::mock(MimeType::class)->shouldReceive('from')
+            ->withAnyArgs()
+            ->andReturn('text/css');
+
+        $response = m::mock('response');
+        $response->shouldReceive('status')
+                 ->with(200)
+                 ->once();
+        $response->shouldReceive('header')
+                 ->with('Content-Type', 'application/octet-stream')
                  ->once();
         $response->shouldReceive('sendfile')
                  ->with('/foo.bar')
