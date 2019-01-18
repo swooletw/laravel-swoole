@@ -4,6 +4,7 @@ namespace SwooleTW\Http\Transformers;
 
 use Illuminate\Http\Request as IlluminateRequest;
 use Illuminate\Http\Response as IlluminateResponse;
+use Illuminate\Http\Testing\MimeType;
 use Swoole\Http\Request as SwooleRequest;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
@@ -191,7 +192,7 @@ class Request
             return false;
         }
 
-        $contentType = mime_content_type($fileName);
+        $contentType = MimeType::from($fileName);
 
         $swooleResponse->status(IlluminateResponse::HTTP_OK);
         $swooleResponse->header('Content-Type', static::EXTENSION_MIMES[$contentType] ?? $contentType);
