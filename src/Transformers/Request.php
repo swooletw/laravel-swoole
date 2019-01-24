@@ -182,7 +182,7 @@ class Request
     public static function handleStatic($swooleRequest, $swooleResponse, string $publicPath)
     {
         $uri = $swooleRequest->server['request_uri'] ?? '';
-        $extension = pathinfo($uri, PATHINFO_EXTENSION);
+        $extension = strtok(pathinfo($uri, PATHINFO_EXTENSION), '?');
         $fileName = $publicPath . $uri;
 
         if ($extension && in_array($extension, static::EXTENSION_BLACKLIST)) {

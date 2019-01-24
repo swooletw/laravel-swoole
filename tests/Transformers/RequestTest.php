@@ -39,7 +39,7 @@ class RequestTest extends TestCase
         });
 
         $this->mockMethod('pathinfo', function () {
-            return 'css';
+            return 'css?id=bfaf14972de9d89ae8fc';
         });
 
         $response = m::mock('response');
