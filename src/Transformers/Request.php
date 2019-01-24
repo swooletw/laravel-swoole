@@ -193,14 +193,14 @@ class Request
             return false;
         }
 
-        if (version_compare(FW::version(), '5.3', '>')) {
+        if (version_compare(FW::version(), '5.4', '>')) {
             $contentType = MimeType::get($extension);
         } else {
             $contentType = static::EXTENSION_MIMES[$extension] ?? mime_content_type($fileName);
         }
 
         $swooleResponse->status(IlluminateResponse::HTTP_OK);
-        $swooleResponse->header('Content-Type', static::EXTENSION_MIMES[$contentType] ?? $contentType);
+        $swooleResponse->header('Content-Type', $contentType);
         $swooleResponse->sendfile($fileName);
 
         return true;
