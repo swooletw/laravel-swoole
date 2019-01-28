@@ -4,9 +4,9 @@ namespace SwooleTW\Http\Transformers;
 
 use Illuminate\Http\Request as IlluminateRequest;
 use Illuminate\Http\Response as IlluminateResponse;
-use Illuminate\Http\Testing\MimeType;
 use Swoole\Http\Request as SwooleRequest;
 use SwooleTW\Http\Helpers\FW;
+use SwooleTW\Http\Helpers\MimeType;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
@@ -193,14 +193,8 @@ class Request
             return false;
         }
 
-        if (version_compare(FW::version(), '5.4', '>')) {
-            $contentType = MimeType::get($extension);
-        } else {
-            $contentType = static::EXTENSION_MIMES[$extension] ?? mime_content_type($fileName);
-        }
-
         $swooleResponse->status(IlluminateResponse::HTTP_OK);
-        $swooleResponse->header('Content-Type', $contentType);
+        $swooleResponse->header('Content-Type', MimeType::get($extension));
         $swooleResponse->sendfile($fileName);
 
         return true;
