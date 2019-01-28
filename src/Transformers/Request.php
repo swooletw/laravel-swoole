@@ -5,6 +5,8 @@ namespace SwooleTW\Http\Transformers;
 use Illuminate\Http\Request as IlluminateRequest;
 use Illuminate\Http\Response as IlluminateResponse;
 use Swoole\Http\Request as SwooleRequest;
+use SwooleTW\Http\Helpers\FW;
+use SwooleTW\Http\Helpers\MimeType;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
@@ -180,7 +182,7 @@ class Request
     public static function handleStatic($swooleRequest, $swooleResponse, string $publicPath)
     {
         $uri = $swooleRequest->server['request_uri'] ?? '';
-        $extension = pathinfo($uri, PATHINFO_EXTENSION);
+        $extension = strtok(pathinfo($uri, PATHINFO_EXTENSION), '?');
         $fileName = $publicPath . $uri;
 
         if ($extension && in_array($extension, static::EXTENSION_BLACKLIST)) {
@@ -191,10 +193,8 @@ class Request
             return false;
         }
 
-        $contentType = mime_content_type($fileName);
-
         $swooleResponse->status(IlluminateResponse::HTTP_OK);
-        $swooleResponse->header('Content-Type', static::EXTENSION_MIMES[$contentType] ?? $contentType);
+        $swooleResponse->header('Content-Type', MimeType::get($extension));
         $swooleResponse->sendfile($fileName);
 
         return true;

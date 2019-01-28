@@ -38,11 +38,8 @@ class RequestTest extends TestCase
             return 1;
         });
 
-        $mimeContentType = false;
-        $this->mockMethod('mime_content_type', function () use (&$mimeContentType) {
-            $mimeContentType = true;
-
-            return 'foo';
+        $this->mockMethod('pathinfo', function () {
+            return 'css?id=bfaf14972de9d89ae8fc';
         });
 
         $response = m::mock('response');
@@ -50,7 +47,7 @@ class RequestTest extends TestCase
                  ->with(200)
                  ->once();
         $response->shouldReceive('header')
-                 ->with('Content-Type', 'foo')
+                 ->with('Content-Type', 'text/css')
                  ->once();
         $response->shouldReceive('sendfile')
                  ->with('/foo.bar')
