@@ -327,7 +327,11 @@ trait InteractsWithWebsocket
             $settings = $config->get("swoole_websocket.settings.{$driver}");
             $className = $config->get("swoole_websocket.drivers.{$driver}");
 
-            return $this->createRoom($className, $settings);
+            // create room instance and initialize
+            $room = $this->createRoom($className, $settings);
+            $room->prepare();
+
+            return $room;
         });
 
         $this->app->alias(RoomContract::class, 'swoole.room');

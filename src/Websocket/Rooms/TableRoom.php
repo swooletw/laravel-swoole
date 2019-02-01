@@ -53,7 +53,7 @@ class TableRoom implements RoomContract
     public function add(int $fd, $roomNames)
     {
         $rooms = $this->getRooms($fd);
-        $roomNames = \is_array($roomNames) ? $roomNames : [$roomNames];
+        $roomNames = is_array($roomNames) ? $roomNames : [$roomNames];
 
         foreach ($roomNames as $room) {
             $fds = $this->getClients($room);
@@ -80,8 +80,8 @@ class TableRoom implements RoomContract
     public function delete(int $fd, $roomNames = [])
     {
         $allRooms = $this->getRooms($fd);
-        $roomNames = \is_array($roomNames) ? $roomNames : [$roomNames];
-        $rooms = \count($roomNames) ? $roomNames : $allRooms;
+        $roomNames = is_array($roomNames) ? $roomNames : [$roomNames];
+        $rooms = count($roomNames) ? $roomNames : $allRooms;
 
         $removeRooms = [];
         foreach ($rooms as $room) {
@@ -177,7 +177,7 @@ class TableRoom implements RoomContract
     {
         $this->checkTable($table);
 
-        $this->$table->set($key, ['value' => \json_encode($value)]);
+        $this->$table->set($key, ['value' => json_encode($value)]);
 
         return $this;
     }
@@ -196,7 +196,7 @@ class TableRoom implements RoomContract
 
         $value = $this->$table->get($key);
 
-        return $value ? \json_decode($value['value'], true) : [];
+        return $value ? json_decode($value['value'], true) : [];
     }
 
     /**
@@ -207,7 +207,7 @@ class TableRoom implements RoomContract
     protected function checkTable(string $table)
     {
         if (! property_exists($this, $table) || ! $this->$table instanceof Table) {
-            throw new \InvalidArgumentException('Invalid table name.');
+            throw new \InvalidArgumentException("Invalid table name: `{$table}`.");
         }
     }
 }

@@ -98,7 +98,7 @@ class RedisRoom implements RoomContract
      */
     public function add(int $fd, $rooms)
     {
-        $rooms = \is_array($rooms) ? $rooms : [$rooms];
+        $rooms = is_array($rooms) ? $rooms : [$rooms];
 
         $this->addValue($fd, $rooms, RoomContract::DESCRIPTORS_KEY);
 
@@ -115,8 +115,8 @@ class RedisRoom implements RoomContract
      */
     public function delete(int $fd, $rooms)
     {
-        $rooms = \is_array($rooms) ? $rooms : [$rooms];
-        $rooms = \count($rooms) ? $rooms : $this->getRooms($fd);
+        $rooms = is_array($rooms) ? $rooms : [$rooms];
+        $rooms = count($rooms) ? $rooms : $this->getRooms($fd);
 
         $this->removeValue($fd, $rooms, RoomContract::DESCRIPTORS_KEY);
 
@@ -203,7 +203,7 @@ class RedisRoom implements RoomContract
     protected function checkTable(string $table)
     {
         if (! in_array($table, [RoomContract::ROOMS_KEY, RoomContract::DESCRIPTORS_KEY])) {
-            throw new \InvalidArgumentException('Invalid table name.');
+            throw new \InvalidArgumentException("Invalid table name: `{$table}`.");
         }
     }
 
