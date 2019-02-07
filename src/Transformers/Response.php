@@ -124,8 +124,10 @@ class Response
      */
     protected function sendInChunk($content)
     {
-        foreach (str_split($content, 1024) as $v) {
-            $this->swooleResponse->write($v);
+        if ($content) {
+            foreach (str_split($content, 1024) as $v) {
+                $this->swooleResponse->write($v);
+            }
         }
         $this->swooleResponse->end();
     }
