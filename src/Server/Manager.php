@@ -255,13 +255,19 @@ class Manager
      * Set onTask listener.
      *
      * @param mixed $server
-     * @param string $taskId
-     * @param string $srcWorkerId
-     * @param mixed $data
+     * @param string|\Swoole\Server\Task $taskIdOrTask
+     * @param string $srcWorkerId                       Optional
+     * @param mixed $data                               Optional
      */
-    public function onTask($server, $taskId, $srcWorkerId, $data)
+    public function onTask($server, ...$args)
     {
-        $this->container->make('events')->fire('swoole.task', func_get_args());
+        if ($args[0] instanceof \Swoole\Server\Task && $task = array_shift($args)) {
+            list($taskId, $srcWorkerId, $data) = [$task->id, $task->worker_id, $task->data];
+        } else {
+            list($taskId, $srcWorkerId, $data) = $args;
+        }
+
+        $this->container->make('events')->fire('swoole.task', [$server, $taskId, $srcWorkerId, $data]);
 
         try {
             // push websocket message
