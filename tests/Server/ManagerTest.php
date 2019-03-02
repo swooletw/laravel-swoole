@@ -2,28 +2,29 @@
 
 namespace SwooleTW\Http\Tests\Server;
 
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Debug\ExceptionHandler;
-use Illuminate\Support\Facades\Config;
-use Laravel\Lumen\Exceptions\Handler;
 use Mockery as m;
+use Swoole\Table;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
-use Swoole\Table;
-use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Server\Manager;
 use SwooleTW\Http\Server\Sandbox;
-use SwooleTW\Http\Table\SwooleTable;
 use SwooleTW\Http\Tests\TestCase;
-use SwooleTW\Http\Websocket\Facades\Websocket as WebsocketFacade;
-use SwooleTW\Http\Websocket\HandlerContract;
+use Illuminate\Container\Container;
 use SwooleTW\Http\Websocket\Parser;
-use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use SwooleTW\Http\Table\SwooleTable;
+use Laravel\Lumen\Exceptions\Handler;
+use Illuminate\Support\Facades\Config;
+use SwooleTW\Http\Websocket\Websocket;
+use SwooleTW\Http\Server\Facades\Server;
+use SwooleTW\Http\Websocket\Facades\Pusher;
+use SwooleTW\Http\Websocket\HandlerContract;
 use SwooleTW\Http\Websocket\Rooms\TableRoom;
+use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
 use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
-use SwooleTW\Http\Websocket\Websocket;
 use Illuminate\Contracts\Config\Repository as ConfigContract;
+use SwooleTW\Http\Websocket\Facades\Websocket as WebsocketFacade;
 
 class ManagerTest extends TestCase
 {
@@ -526,36 +527,35 @@ class ManagerTest extends TestCase
         $manager->onClose('server', $fd, 'reactorId');
     }
 
-    public function testNormalizePushMessage()
+    public function testIsWebsocketPushPayload()
     {
-        $data = [
-            'opcode' => 'opcode',
-            'sender' => 'sender',
-            'fds' => 'fds',
-            'broadcast' => 'broadcast',
-            'assigned' => 'assigned',
-            'event' => 'event',
-            'message' => 'message',
+        $payload = [
+            'action' => 'push',
+            'data' => [
+                'opcode' => 'opcode',
+                'sender' => 'sender',
+                'fds' => 'fds',
+                'broadcast' => 'broadcast',
+                'assigned' => 'assigned',
+                'event' => 'event',
+                'message' => 'message',
+            ]
         ];
 
         $manager = $this->getWebsocketManager();
-        $result = $manager->normalizePushData($data);
 
-        $this->assertSame($data['opcode'], $result[0]);
-        $this->assertSame($data['sender'], $result[1]);
-        $this->assertSame($data['fds'], $result[2]);
-        $this->assertSame($data['broadcast'], $result[3]);
-        $this->assertSame($data['assigned'], $result[4]);
-        $this->assertSame($data['event'], $result[5]);
-        $this->assertSame($data['message'], $result[6]);
+        $this->assertTrue($manager->isWebsocketPushPayload($payload));
+        $this->assertFalse($manager->isWebsocketPushPayload(['foo' => 'bar']));
     }
 
     public function testPushMessage()
     {
         $data = [
+            'sender' => 1,
             'fds' => [1, 2, 3],
-            'event' => 'event',
-            'message' => 'message',
+            'event' => $event = 'event',
+            'message' => $message = 'message',
+            'broadcast' => true
         ];
 
         $parser = m::mock(Parser::class);
@@ -566,10 +566,9 @@ class ManagerTest extends TestCase
 
         $server = m::mock('server');
         $server->shouldReceive('exist')
-               ->times(count($data['fds']))
-               ->andReturn(true);
+            ->andReturn(true);
         $server->shouldReceive('push')
-               ->times(count($data['fds']));
+               ->twice();
 
         $manager = $this->getWebsocketManager();
         $manager->setPayloadParser($parser);

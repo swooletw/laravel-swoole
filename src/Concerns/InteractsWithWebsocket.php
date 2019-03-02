@@ -3,11 +3,10 @@
 namespace SwooleTW\Http\Concerns;
 
 use Throwable;
-use Illuminate\Support\Arr;
 use Illuminate\Pipeline\Pipeline;
 use SwooleTW\Http\Server\Sandbox;
-use SwooleTW\Http\Websocket\Push;
 use SwooleTW\Http\Websocket\Parser;
+use SwooleTW\Http\Websocket\Pusher;
 use SwooleTW\Http\Websocket\Websocket;
 use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Server\Facades\Server;
@@ -158,7 +157,7 @@ trait InteractsWithWebsocket
      */
     protected function isWebsocketPushPacket($packet)
     {
-        if ( !is_array($packet)) {
+        if (! is_array($packet)) {
             return false;
         }
 
@@ -176,25 +175,11 @@ trait InteractsWithWebsocket
      */
     public function pushMessage($server, array $data)
     {
-        $push = Push::new($data);
-        $payload = $this->payloadParser->encode($push->getEvent(), $push->getMessage());
-
-        // attach sender if not broadcast
-        if (! $push->isBroadcast() && $push->getSender() && ! $push->hasOwnDescriptor()) {
-            $push->addDescriptor($push->getSender());
-        }
-
-        // check if to broadcast all clients
-        if ($push->isBroadcastToAllDescriptors()) {
-            $push->mergeDescriptor($this->filterWebsocket($server->connections));
-        }
-
-        // push message to designated fds
-        foreach ($push->getDescriptors() as $descriptor) {
-            if ($server->exist($descriptor) || ! $push->isBroadcastToDescriptor((int) $descriptor)) {
-                $server->push($descriptor, $payload, $push->getOpcode());
-            }
-        }
+        $pusher = Pusher::make($data, $server);
+        $pusher->push($this->payloadParser->encode(
+            $pusher->getEvent(),
+            $pusher->getMessage()
+        ));
     }
 
     /**
@@ -244,25 +229,8 @@ trait InteractsWithWebsocket
      */
     protected function isServerWebsocket(int $fd): bool
     {
-        $info = $this->container->make(Server::class)->connection_info($fd);
-
-        return Arr::has($info, 'websocket_status') && Arr::get($info, 'websocket_status');
-    }
-
-    /**
-     * Returns all descriptors that are websocket
-     *
-     * @param array $descriptors
-     *
-     * @return array
-     */
-    protected function filterWebsocket(array $descriptors): array
-    {
-        $callback = function ($descriptor) {
-            return $this->isServerWebsocket($descriptor);
-        };
-
-        return collect($descriptors)->filter($callback)->toArray();
+        return $this->container->make(Server::class)
+            ->connection_info($fd)['websocket_status'] ?? false;
     }
 
     /**
@@ -365,40 +333,20 @@ trait InteractsWithWebsocket
     }
 
     /**
-     * Normalize data for message push.
-     *
-     * @param array $data
-     *
-     * @return array
-     */
-    public function normalizePushData(array $data)
-    {
-        $opcode = Arr::get($data, 'opcode', 1);
-        $sender = Arr::get($data, 'sender', 0);
-        $fds = Arr::get($data, 'fds', []);
-        $broadcast = Arr::get($data, 'broadcast', false);
-        $assigned = Arr::get($data, 'assigned', false);
-        $event = Arr::get($data, 'event', null);
-        $message = Arr::get($data, 'message', null);
-
-        return [$opcode, $sender, $fds, $broadcast, $assigned, $event, $message];
-    }
-
-    /**
      * Indicates if the payload is websocket push.
      *
      * @param mixed $payload
      *
      * @return boolean
      */
-    protected function isWebsocketPushPayload($payload): bool
+    public function isWebsocketPushPayload($payload): bool
     {
         if (! is_array($payload)) {
             return false;
         }
 
         return $this->isServerWebsocket
-            && array_key_exists('action', $payload)
-            && $payload['action'] === Websocket::PUSH_ACTION;
+            && ($payload['action'] ?? null) === Websocket::PUSH_ACTION
+            && array_key_exists('data', $payload);
     }
 }

@@ -266,7 +266,7 @@ class Manager
         try {
             // push websocket message
             if ($this->isWebsocketPushPayload($data)) {
-                $this->pushMessage($server, $data['data'] ?? []);
+                $this->pushMessage($server, $data['data']);
             // push async task to queue
             } elseif ($this->isAsyncTaskPayload($data)) {
                 (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
