@@ -177,10 +177,4 @@ class Response
     {
         return $this->illuminateResponse;
     }
-
-    // test only
-    public function getResponseClass()
-    {
-        return get_class($this->illuminateResponse);
-    }
 }

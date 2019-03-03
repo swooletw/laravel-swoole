@@ -19,9 +19,9 @@ class ResponseTest extends TestCase
     public function testGetIlluminateResponse()
     {
         $response = Response::make(new IlluminateResponse, new SwooleResponse);
-        $this->assertSame(IlluminateResponse::class, $response->getResponseClass());
-        // $illuminateResponse = $response->getIlluminateResponse();
+        $illuminateResponse = $response->getIlluminateResponse();
 
+        $this->assertSame(IlluminateResponse::class, get_class($illuminateResponse));
         // $this->assertInstanceOf(IlluminateResponse::class, $illuminateResponse);
     }
 
