@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Response
 {
+    const CHUNK_SIZE = 1024;
+
     /**
      * @var \Swoole\Http\Response
      */
@@ -46,7 +48,7 @@ class Response
     }
 
     /**
-     * Sends HTTP headers and content.
+     * Send HTTP headers and content.
      *
      * @throws \InvalidArgumentException
      */
@@ -57,7 +59,7 @@ class Response
     }
 
     /**
-     * Sends HTTP headers.
+     * Send HTTP headers.
      *
      * @throws \InvalidArgumentException
      */
@@ -103,7 +105,7 @@ class Response
     }
 
     /**
-     * Sends HTTP content.
+     * Send HTTP content.
      */
     protected function sendContent()
     {
@@ -126,10 +128,13 @@ class Response
      */
     protected function sendInChunk($content)
     {
-        if ($content) {
-            foreach (str_split($content, 1024) as $v) {
-                $this->swooleResponse->write($v);
-            }
+        if (strlen($content) <= static::CHUNK_SIZE) {
+            $this->swooleResponse->end($content);
+            return;
+        }
+
+        foreach (str_split($content, static::CHUNK_SIZE) as $chunk) {
+            $this->swooleResponse->write($chunk);
         }
 
         $this->swooleResponse->end();
