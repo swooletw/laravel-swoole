@@ -2,7 +2,6 @@
 
 namespace SwooleTW\Http;
 
-use Illuminate\Support\Arr;
 use SwooleTW\Http\Helpers\FW;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Contracts\Http\Kernel;
@@ -177,17 +176,17 @@ abstract class HttpServiceProvider extends ServiceProvider
     {
         $this->app->extend(DatabaseManager::class, function (DatabaseManager $db) {
             $db->extend('mysql-coroutine', function ($config, $name) {
-                $config = $this->getMergedDatabaseConfig($config, $name);
+                $config['name'] = $name;
 
                 $connection = new MySqlConnection(
-                    $this->getNewMySqlConnection($config),
-                    Arr::get($config, 'database'),
-                    Arr::get($config, 'prefix'),
+                    $this->getNewMySqlConnection($config, 'write'),
+                    $config['database'],
+                    $config['prefix'],
                     $config
                 );
 
-                if (Arr::has($config, 'read')) {
-                    $connection->setReadPdo($this->getNewMySqlConnection($config));
+                if (isset($config['read'])) {
+                    $connection->setReadPdo($this->getNewMySqlConnection($config, 'read'));
                 }
 
                 return $connection;
@@ -198,32 +197,19 @@ abstract class HttpServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get mereged config for coroutine mysql.
-     *
-     * @param array $config
-     * @param string $name
-     *
-     * @return array
-     */
-    protected function getMergedDatabaseConfig(array $config, string $name)
-    {
-        $newConfig = $config;
-        $newConfig = Arr::add($newConfig, 'name', $name);
-        $newConfig = array_merge($newConfig, Arr::get($newConfig, 'read', []));
-        $newConfig = array_merge($newConfig, Arr::get($newConfig, 'write', []));
-
-        return $newConfig;
-    }
-
-    /**
      * Get a new mysql connection.
      *
      * @param array $config
+     * @param string $connection
      *
      * @return \PDO
      */
-    protected function getNewMySqlConnection(array $config)
+    protected function getNewMySqlConnection(array $config, string $connection = null)
     {
+        if ($connection && isset($config[$connection])) {
+            $config = array_merge($config, $config[$connection]);
+        }
+
         return ConnectorFactory::make(FW::version())->connect($config);
     }
 

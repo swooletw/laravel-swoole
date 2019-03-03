@@ -22,14 +22,14 @@
   ],
   "require": {
     "php": "^7.2",
-    "illuminate/console": "~5.3",
-    "illuminate/contracts": "~5.3",
-    "illuminate/http": "~5.3",
-    "illuminate/support": "~5.3",
+    "illuminate/console": "~5.4",
+    "illuminate/contracts": "~5.4",
+    "illuminate/http": "~5.4",
+    "illuminate/support": "~5.4",
     "predis/predis": "^1.1"
   },
   "require-dev": {
-    "laravel/lumen-framework": "~5.3",
+    "laravel/lumen-framework": "~5.4",
     "phpunit/phpunit": "^7.5",
     "phpunit/php-code-coverage": "^6.1",
     "php-coveralls/php-coveralls": "^2.1",

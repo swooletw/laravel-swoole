@@ -18,6 +18,7 @@ use SwooleTW\Http\Concerns\WithApplication;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use SwooleTW\Http\Concerns\InteractsWithWebsocket;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use SwooleTW\Http\Concerns\InteractsWithSwooleQueue;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
@@ -122,7 +123,7 @@ class Manager
         foreach ($this->events as $event) {
             $listener = Str::camel("on_$event");
             $callback = method_exists($this, $listener) ? [$this, $listener] : function () use ($event) {
-                $this->container->make('events')->fire("swoole.$event", func_get_args());
+                $this->container->make('events')->dispatch("swoole.$event", func_get_args());
             };
 
             $this->container->make(Server::class)->on($event, $callback);
@@ -137,7 +138,7 @@ class Manager
         $this->setProcessName('master process');
         $this->createPidFile();
 
-        $this->container->make('events')->fire('swoole.start', func_get_args());
+        $this->container->make('events')->dispatch('swoole.start', func_get_args());
     }
 
     /**
@@ -148,7 +149,7 @@ class Manager
     public function onManagerStart()
     {
         $this->setProcessName('manager process');
-        $this->container->make('events')->fire('swoole.managerStart', func_get_args());
+        $this->container->make('events')->dispatch('swoole.managerStart', func_get_args());
     }
 
     /**
@@ -162,7 +163,7 @@ class Manager
     {
         $this->clearCache();
 
-        $this->container->make('events')->fire('swoole.workerStart', func_get_args());
+        $this->container->make('events')->dispatch('swoole.workerStart', func_get_args());
 
         // don't init laravel app in task workers
         if ($server->taskworker) {
@@ -196,7 +197,7 @@ class Manager
      */
     public function onRequest($swooleRequest, $swooleResponse)
     {
-        $this->app->make('events')->fire('swoole.request');
+        $this->app->make('events')->dispatch('swoole.request');
 
         $this->resetOnRequest();
         $sandbox = $this->app->make(Sandbox::class);
@@ -261,21 +262,15 @@ class Manager
      */
     public function onTask($server, ...$args)
     {
-        if ($args[0] instanceof \Swoole\Server\Task && $task = array_shift($args)) {
-            list($taskId, $srcWorkerId, $data) = [$task->id, $task->worker_id, $task->data];
-        } else {
-            list($taskId, $srcWorkerId, $data) = $args;
-        }
-
-        $this->container->make('events')->fire('swoole.task', [$server, $taskId, $srcWorkerId, $data]);
+        $this->container->make('events')->dispatch('swoole.task', [$server, $args]);
 
         try {
             // push websocket message
             if ($this->isWebsocketPushPayload($data)) {
-                $this->pushMessage($server, $data['data'] ?? []);
+                $this->pushMessage($server, $data['data']);
             // push async task to queue
             } elseif ($this->isAsyncTaskPayload($data)) {
-                (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
+                (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->dispatch();
             }
         } catch (Throwable $e) {
             $this->logServerError($e);
@@ -292,7 +287,7 @@ class Manager
     public function onFinish($server, $taskId, $data)
     {
         // task worker callback
-        $this->container->make('events')->fire('swoole.finish', func_get_args());
+        $this->container->make('events')->dispatch('swoole.finish', func_get_args());
 
         return;
     }
@@ -426,11 +421,16 @@ class Manager
      */
     public function logServerError(Throwable $e)
     {
-        $this->container
-            ->make(ExceptionHandler::class)
-            ->report(
-                $this->normalizeException($e)
-            );
+        if ($this->isInTesting()) {
+            return;
+        }
+
+        $exception = $this->normalizeException($e);
+        $this->container->make(ConsoleOutput::class)
+            ->writeln(sprintf("<error>%s</error>", $exception));
+
+        $this->container->make(ExceptionHandler::class)
+            ->report($exception);
     }
 
     /**
