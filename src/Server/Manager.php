@@ -262,13 +262,7 @@ class Manager
      */
     public function onTask($server, ...$args)
     {
-        if ($args[0] instanceof \Swoole\Server\Task && $task = array_shift($args)) {
-            list($taskId, $srcWorkerId, $data) = [$task->id, $task->worker_id, $task->data];
-        } else {
-            list($taskId, $srcWorkerId, $data) = $args;
-        }
-
-        $this->container->make('events')->fire('swoole.task', [$server, $taskId, $srcWorkerId, $data]);
+        $this->container->make('events')->fire('swoole.task', [$server, ...$args]);
 
         try {
             // push websocket message
