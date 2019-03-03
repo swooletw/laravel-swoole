@@ -12,7 +12,7 @@ This package provides a high performance HTTP server to speed up your Laravel/Lu
 
 | PHP     | Laravel | Lumen | Swoole  |
 |:-------:|:-------:|:-----:|:-------:|
-| >=7.2 | ~5.3    | ~5.3  | >=4.0.0 |
+| >=7.2 | ~5.4    | ~5.4  | >=4.0.0 |
 
 ## Features
 
