@@ -16,13 +16,14 @@ class ResponseTest extends TestCase
         $this->assertInstanceOf(Response::class, $response);
     }
 
-    // public function testGetIlluminateResponse()
-    // {
-    //     $response = Response::make(new IlluminateResponse, new SwooleResponse);
-    //     $illuminateResponse = $response->getIlluminateResponse();
+    public function testGetIlluminateResponse()
+    {
+        $response = Response::make(new IlluminateResponse, new SwooleResponse);
+        $this->assertSame(IlluminateResponse::class, $response->getResponseClass());
+        // $illuminateResponse = $response->getIlluminateResponse();
 
-    //     $this->assertInstanceOf(IlluminateResponse::class, $illuminateResponse);
-    // }
+        // $this->assertInstanceOf(IlluminateResponse::class, $illuminateResponse);
+    }
 
     public function testGetSwooleResponse()
     {
