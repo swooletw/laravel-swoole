@@ -129,6 +129,7 @@ class Response
                 $this->swooleResponse->write($v);
             }
         }
+
         $this->swooleResponse->end();
     }
 
