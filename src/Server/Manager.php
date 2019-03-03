@@ -262,7 +262,7 @@ class Manager
      */
     public function onTask($server, ...$args)
     {
-        $this->container->make('events')->fire('swoole.task', [$server, ...$args]);
+        $this->container->make('events')->fire('swoole.task', [$server, $args]);
 
         try {
             // push websocket message
