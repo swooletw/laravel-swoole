@@ -636,7 +636,7 @@ class ManagerTest extends TestCase
     protected function getEvent($name, $default = true)
     {
         $event = m::mock('event')
-                  ->shouldReceive('fire')
+                  ->shouldReceive('dispatch')
                   ->with($name, m::any())
                   ->once();
 
