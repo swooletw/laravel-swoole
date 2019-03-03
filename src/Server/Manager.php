@@ -421,8 +421,11 @@ class Manager
      */
     public function logServerError(Throwable $e)
     {
-        $exception = $this->normalizeException($e);
+        if ($this->isInTesting()) {
+            return;
+        }
 
+        $exception = $this->normalizeException($e);
         $this->container->make(ConsoleOutput::class)
             ->writeln(sprintf("<error>%s</error>", $exception));
 
