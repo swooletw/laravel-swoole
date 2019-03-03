@@ -18,6 +18,7 @@ use SwooleTW\Http\Concerns\WithApplication;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use SwooleTW\Http\Concerns\InteractsWithWebsocket;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use SwooleTW\Http\Concerns\InteractsWithSwooleQueue;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
@@ -420,11 +421,13 @@ class Manager
      */
     public function logServerError(Throwable $e)
     {
-        $this->container
-            ->make(ExceptionHandler::class)
-            ->report(
-                $this->normalizeException($e)
-            );
+        $exception = $this->normalizeException($e);
+
+        $this->container->make(ConsoleOutput::class)
+            ->writeln(sprintf("<error>%s</error>", $exception));
+
+        $this->container->make(ExceptionHandler::class)
+            ->report($exception);
     }
 
     /**
