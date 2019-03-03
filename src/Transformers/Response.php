@@ -86,9 +86,11 @@ class Response
         $this->swooleResponse->status($illuminateResponse->getStatusCode());
 
         // cookies
+        // $cookie->isRaw() is supported after symfony/http-foundation 3.1
+        // and Laravel 5.3, so we can add it back now
         foreach ($illuminateResponse->headers->getCookies() as $cookie) {
-            // may need to consider rawcookie
-            $this->swooleResponse->cookie(
+            $method = $cookie->isRaw() ? 'rawcookie' : 'cookie';
+            $this->swooleResponse->$method(
                 $cookie->getName(),
                 $cookie->getValue(),
                 $cookie->getExpiresTime(),
