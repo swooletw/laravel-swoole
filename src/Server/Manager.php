@@ -5,6 +5,7 @@ namespace SwooleTW\Http\Server;
 use Exception;
 use Throwable;
 use Swoole\Process;
+use Swoole\Server\Task;
 use Illuminate\Support\Str;
 use SwooleTW\Http\Helpers\OS;
 use SwooleTW\Http\Server\Sandbox;
@@ -256,13 +257,13 @@ class Manager
      * Set onTask listener.
      *
      * @param mixed $server
-     * @param string|\Swoole\Server\Task $taskIdOrTask
-     * @param string $srcWorkerId                       Optional
-     * @param mixed $data                               Optional
+     * @param string|\Swoole\Server\Task $taskId or $task
+     * @param string $srcWorkerId
+     * @param mixed $data
      */
-    public function onTask($server, ...$args)
+    public function onTask($server, $taskId, $srcWorkerId, $data)
     {
-        $this->container->make('events')->dispatch('swoole.task', [$server, $args]);
+        $this->container->make('events')->dispatch('swoole.task', func_get_args());
 
         try {
             // push websocket message
