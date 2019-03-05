@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Response
 {
-    const CHUNK_SIZE = 1024;
+    const CHUNK_SIZE = 8192;
 
     /**
      * @var \Swoole\Http\Response
