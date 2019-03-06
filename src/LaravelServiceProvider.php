@@ -32,7 +32,6 @@ class LaravelServiceProvider extends HttpServiceProvider
      */
     protected function bootWebsocketRoutes()
     {
-    {
         require __DIR__ . '/../routes/laravel_routes.php';
     }
 
