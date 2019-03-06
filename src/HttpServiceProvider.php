@@ -4,10 +4,8 @@ namespace SwooleTW\Http;
 
 use SwooleTW\Http\Helpers\FW;
 use Illuminate\Queue\QueueManager;
-use Illuminate\Contracts\Http\Kernel;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\ServiceProvider;
-use SwooleTW\Http\Middleware\AccessLog;
 use SwooleTW\Http\Server\Facades\Server;
 use Illuminate\Database\DatabaseManager;
 use SwooleTW\Http\Coroutine\MySqlConnection;
@@ -62,11 +60,18 @@ abstract class HttpServiceProvider extends ServiceProvider
     abstract protected function registerManager();
 
     /**
-     * Boot routes.
+     * Boot websocket routes.
      *
      * @return void
      */
-    abstract protected function bootRoutes();
+    abstract protected function bootWebsocketRoutes();
+
+    /**
+     * Register access log middleware to container.
+     *
+     * @return void
+     */
+    abstract protected function pushAccessLogMiddleware();
 
     /**
      * Boot the service provider.
@@ -88,7 +93,7 @@ abstract class HttpServiceProvider extends ServiceProvider
         }
 
         if ($config->get('swoole_http.server.access_log')) {
-            $this->app->make(Kernel::class)->pushMiddleware(AccessLog::class);
+            $this->pushAccessLogMiddleware();
         }
     }
 
