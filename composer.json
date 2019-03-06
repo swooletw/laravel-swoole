@@ -26,7 +26,8 @@
     "illuminate/contracts": "~5.4",
     "illuminate/http": "~5.4",
     "illuminate/support": "~5.4",
-    "predis/predis": "^1.1"
+    "predis/predis": "^1.1",
+    "vlucas/phpdotenv": "^3.3"
   },
   "require-dev": {
     "laravel/lumen-framework": "~5.4",
