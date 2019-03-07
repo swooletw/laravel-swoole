@@ -89,7 +89,7 @@ abstract class HttpServiceProvider extends ServiceProvider
         $config = $this->app->make('config');
 
         if ($config->get('swoole_http.websocket.enabled')) {
-            $this->bootRoutes();
+            $this->bootWebsocketRoutes();
         }
 
         if ($config->get('swoole_http.server.access_log')) {
