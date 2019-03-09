@@ -245,8 +245,11 @@ class Pusher
      */
     public function shouldPushToDescriptor(int $fd): bool
     {
-        return $this->server->exist($fd)
-            && ($this->broadcast && $this->sender !== (int) $fd);
+        if (! $this->server->exist($fd)) {
+            return false;
+        }
+
+        return $this->broadcast ? $this->sender !== (int) $fd : true;
     }
 
     /**

@@ -115,7 +115,7 @@ class PusherTest extends TestCase
         $server = m::mock(Server::class);
         $server->shouldReceive('exist')
             ->with($fd = 1)
-            ->twice()
+            ->times(3)
             ->andReturn(true);
 
         $pusher = Pusher::make([
@@ -141,5 +141,17 @@ class PusherTest extends TestCase
         ], $server);
 
         $this->assertFalse($pusher->shouldPushToDescriptor($fd));
+
+        $pusher = Pusher::make([
+            'opcode' => 1,
+            'sender' => 1,
+            'fds' => [],
+            'broadcast' => false,
+            'assigned' => false,
+            'event' => 'event',
+            'message' => 'message'
+        ], $server);
+
+        $this->assertTrue($pusher->shouldPushToDescriptor($fd));
     }
 }
