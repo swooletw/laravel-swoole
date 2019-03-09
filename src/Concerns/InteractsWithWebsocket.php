@@ -12,6 +12,7 @@ use SwooleTW\Http\Transformers\Request;
 use SwooleTW\Http\Server\Facades\Server;
 use SwooleTW\Http\Websocket\HandlerContract;
 use Illuminate\Contracts\Container\Container;
+use Swoole\WebSocket\Server as WebsocketServer;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use SwooleTW\Http\Exceptions\WebsocketNotSetInConfigException;
 
@@ -129,7 +130,7 @@ trait InteractsWithWebsocket
      */
     public function onClose($server, $fd, $reactorId)
     {
-        if (! $this->isServerWebsocket($fd) || ! $server instanceof Websocket) {
+        if (! $this->isServerWebsocket($fd) || ! $server instanceof WebsocketServer) {
             return;
         }
 
@@ -229,7 +230,7 @@ trait InteractsWithWebsocket
      */
     protected function isServerWebsocket(int $fd): bool
     {
-        return $this->container->make(Server::class)
+        return (bool) $this->container->make(Server::class)
             ->connection_info($fd)['websocket_status'] ?? false;
     }
 
