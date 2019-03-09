@@ -221,7 +221,7 @@ class Pusher
      */
     public function isServerWebsocket(int $fd): bool
     {
-        return $this->server->connection_info($fd)['websocket_status'] ?? false;
+        return (bool) $this->server->connection_info($fd)['websocket_status'] ?? false;
     }
 
     /**
