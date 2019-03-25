@@ -213,18 +213,6 @@ class Pusher
     }
 
     /**
-     * Check if it's a websocket fd.
-     *
-     * @param int $fd
-     *
-     * @return bool
-     */
-    public function isServerWebsocket(int $fd): bool
-    {
-        return (bool) $this->server->connection_info($fd)['websocket_status'] ?? false;
-    }
-
-    /**
      * Returns all descriptors that are websocket
      *
      * @param \Swoole\Connection\Iterator $descriptors
@@ -234,7 +222,7 @@ class Pusher
     protected function getWebsocketConnections(): array
     {
         return array_filter(iterator_to_array($this->server->connections), function ($fd) {
-            return $this->isServerWebsocket($fd);
+            return $this->server->isEstablished($fd);
         });
     }
 
@@ -245,7 +233,7 @@ class Pusher
      */
     public function shouldPushToDescriptor(int $fd): bool
     {
-        if (! $this->server->exist($fd)) {
+        if (! $this->server->isEstablished($fd)) {
             return false;
         }
 

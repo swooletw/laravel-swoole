@@ -89,31 +89,23 @@ class PusherTest extends TestCase
 
     public function testShouldBroadcast()
     {
-        $server = m::mock(Server::class);
-        $server->shouldReceive('connection_info')
-            ->with($fd = 1)
-            ->once()
-            ->andReturn([
-                'websocket_status' => true
-            ]);
-
         $pusher = Pusher::make([
             'opcode' => 1,
-            'sender' => 3,
+            'sender' => 1,
             'fds' => [],
             'broadcast' => true,
             'assigned' => false,
             'event' => 'event',
             'message' => 'message'
-        ], $server);
+        ], null);
 
-        $this->assertTrue($pusher->isServerWebsocket($fd));
+        $this->assertTrue($pusher->shouldBroadcast());
     }
 
     public function testShouldPushToDescriptor()
     {
         $server = m::mock(Server::class);
-        $server->shouldReceive('exist')
+        $server->shouldReceive('isEstablished')
             ->with($fd = 1)
             ->times(3)
             ->andReturn(true);
