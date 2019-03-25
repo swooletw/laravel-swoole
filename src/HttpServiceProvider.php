@@ -150,7 +150,7 @@ abstract class HttpServiceProvider extends ServiceProvider
 
         // only enable task worker in websocket mode and for queue driver
         if ($config->get('queue.default') !== 'swoole' && ! $this->isWebsocket) {
-            unset($config['task_worker_num']);
+            unset($options['task_worker_num']);
         }
 
         static::$server->set($options);
