@@ -31,18 +31,10 @@ class LumenServiceProvider extends HttpServiceProvider
      */
     protected function bootWebsocketRoutes()
     {
-        $app = $this->app;
-
-        // router only exists after lumen 5.5
-        if (property_exists($app, 'router')) {
-            $app->router->group(['namespace' => 'SwooleTW\Http\Controllers'], function ($app) {
+        $this->app->router
+            ->group(['namespace' => 'SwooleTW\Http\Controllers'], function ($router) {
                 require __DIR__ . '/../routes/lumen_routes.php';
             });
-        } else {
-            $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
-                require __DIR__ . '/../routes/lumen_routes.php';
-            });
-        }
     }
 
     /**
