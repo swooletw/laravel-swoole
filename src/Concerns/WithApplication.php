@@ -36,9 +36,7 @@ trait WithApplication
             if (method_exists($this->app, 'boot')) {
                 $this->app->boot();
             }
-            if (is_null(Facade::getFacadeApplication())) {
-                $this->app->withFacades();
-            }
+            $this->app->withFacades();
         }
 
         $this->preResolveInstances();
