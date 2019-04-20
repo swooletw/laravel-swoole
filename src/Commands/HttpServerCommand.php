@@ -5,13 +5,14 @@ namespace SwooleTW\Http\Commands;
 use Throwable;
 use Swoole\Process;
 use Illuminate\Support\Arr;
+use SwooleTW\Http\Helpers\OS;
 use Illuminate\Console\Command;
 use SwooleTW\Http\Server\Manager;
 use Illuminate\Console\OutputStyle;
 use SwooleTW\Http\HotReload\FSEvent;
-use SwooleTW\Http\Server\AccessOutput;
 use SwooleTW\Http\HotReload\FSOutput;
 use SwooleTW\Http\HotReload\FSProcess;
+use SwooleTW\Http\Server\AccessOutput;
 use SwooleTW\Http\Middleware\AccessLog;
 use SwooleTW\Http\Server\Facades\Server;
 use Illuminate\Contracts\Container\Container;
@@ -372,20 +373,20 @@ class HttpServerCommand extends Command
      */
     protected function checkEnvironment()
     {
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $this->error("Swoole extension doesn't support Windows OS yet.");
+        if (OS::is(OS::WIN)) {
+            $this->error('Swoole extension doesn\'t support Windows OS.');
 
             exit(1);
         }
 
         if (! extension_loaded('swoole')) {
-            $this->error("Can't detect Swoole extension installed.");
+            $this->error('Can\'t detect Swoole extension installed.');
 
             exit(1);
         }
 
-        if (! version_compare(swoole_version(), '4.0.0', 'ge')) {
-            $this->error("Your Swoole version must be higher than 4.0 to use coroutine.");
+        if (! version_compare(swoole_version(), '4.3.1', 'ge')) {
+            $this->error('Your Swoole version must be higher than `4.3.1`.');
 
             exit(1);
         }

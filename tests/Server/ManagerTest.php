@@ -565,7 +565,7 @@ class ManagerTest extends TestCase
                ->andReturn(false);
 
         $server = m::mock('server');
-        $server->shouldReceive('exist')
+        $server->shouldReceive('isEstablished')
             ->andReturn(true);
         $server->shouldReceive('push')
                ->twice();

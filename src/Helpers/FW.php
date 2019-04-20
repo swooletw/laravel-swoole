@@ -47,7 +47,7 @@ final class FW
      */
     public static function is(string ...$types): bool
     {
-        return \in_array(static::current(), $types, true);
+        return in_array(static::current(), $types, true);
     }
 
     /**
