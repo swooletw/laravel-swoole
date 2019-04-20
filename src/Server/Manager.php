@@ -271,7 +271,7 @@ class Manager
                 $this->pushMessage($server, $data['data']);
             // push async task to queue
             } elseif ($this->isAsyncTaskPayload($data)) {
-                (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->dispatch();
+                (new SwooleTaskJob($this->container, $server, $data, $taskId, $srcWorkerId))->fire();
             }
         } catch (Throwable $e) {
             $this->logServerError($e);

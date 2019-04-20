@@ -45,7 +45,7 @@ class Pusher
     protected $event;
 
     /**
-     * @var string|null
+     * @var mixed|null
      */
     protected $message;
 
@@ -58,7 +58,7 @@ class Pusher
      * @param bool $broadcast
      * @param bool $assigned
      * @param string $event
-     * @param string|null $message
+     * @param mixed|null $message
      * @param \Swoole\Websocket\Server
      */
     protected function __construct(
@@ -68,7 +68,7 @@ class Pusher
         bool $broadcast,
         bool $assigned,
         string $event,
-        string $message = null,
+        $message = null,
         $server
     )
     {
@@ -189,9 +189,9 @@ class Pusher
     }
 
     /**
-     * @return string|null
+     * @return mixed|null
      */
-    public function getMessage(): ?string
+    public function getMessage()
     {
         return $this->message;
     }
