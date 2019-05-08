@@ -122,7 +122,7 @@ class PDO extends BasePDO
             }
         }
 
-        return array_merge($configuredOptions, static::$options);
+        return array_merge(static::$options, $configuredOptions);
     }
 
     /**
