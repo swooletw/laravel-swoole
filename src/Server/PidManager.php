@@ -17,12 +17,12 @@ class PidManager
 	/**
 	 * Write master pid and manager pid to pid file
 	 *
-	 * @throws Exception\RuntimeException When $pidFile is not writable
+	 * @throws \RuntimeException When $pidFile is not writable
 	 */
 	public function write(int $masterPid, int $managerPid): void
 	{
 		if (! is_writable($this->pidFile) && ! is_writable(dirname($this->pidFile))) {
-			throw new Exception\RuntimeException(sprintf('Pid file "%s" is not writable', $this->pidFile));
+			throw new \RuntimeException(sprintf('Pid file "%s" is not writable', $this->pidFile));
 		}
 
 		file_put_contents($this->pidFile, $masterPid . ',' . $managerPid);
