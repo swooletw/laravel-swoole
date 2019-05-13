@@ -11,7 +11,7 @@ class PidManagerFactory
 		$config = $container->get('config');
 
 		return new PidManager(
-			$config->get('swoole_http.server.options.pid_file') ?? sys_get_temp_dir() . '/ofcold-swoole.pid'
+			$config->get('swoole_http.server.options.pid_file') ?? sys_get_temp_dir() . '/swoole.pid'
 		);
 	}
 }
