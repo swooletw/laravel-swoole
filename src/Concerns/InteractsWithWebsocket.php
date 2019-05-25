@@ -41,6 +41,11 @@ trait InteractsWithWebsocket
     protected $payloadParser;
 
     /**
+     * @var SwooleTW\Http\Websocket\Rooms\RoomContract
+     */
+    protected $websocketRoom;
+
+    /**
      * Websocket server events.
      *
      * @var array
@@ -217,6 +222,7 @@ trait InteractsWithWebsocket
         if ($isWebsocket) {
             $this->events = array_merge($this->events ?? [], $this->wsEvents);
             $this->isServerWebsocket = true;
+            $this->prepareWebsocketRoom();
             $this->setPayloadParser(new $parser);
         }
     }
@@ -248,6 +254,20 @@ trait InteractsWithWebsocket
         }
 
         $this->setWebsocketHandler($this->app->make($handlerClass));
+    }
+
+    /**
+     * Prepare websocket room.
+     */
+    protected function prepareWebsocketRoom()
+    {
+        $config = $this->container->make('config');
+        $driver = $config->get('swoole_websocket.default');
+        $websocketConfig = $config->get("swoole_websocket.settings.{$driver}");
+        $className = $config->get("swoole_websocket.drivers.{$driver}");
+
+        $this->websocketRoom = new $className($websocketConfig);
+        $this->websocketRoom->prepare();
     }
 
     /**
@@ -290,17 +310,8 @@ trait InteractsWithWebsocket
      */
     protected function bindRoom(): void
     {
-        $this->app->singleton(RoomContract::class, function (Container $container) {
-            $config = $container->make('config');
-            $driver = $config->get('swoole_websocket.default');
-            $settings = $config->get("swoole_websocket.settings.{$driver}");
-            $className = $config->get("swoole_websocket.drivers.{$driver}");
-
-            // create room instance and initialize
-            $room = $this->createRoom($className, $settings);
-            $room->prepare();
-
-            return $room;
+        $this->app->singleton(RoomContract::class, function (Container $app) {
+            return $this->websocketRoom;
         });
 
         $this->app->alias(RoomContract::class, 'swoole.room');

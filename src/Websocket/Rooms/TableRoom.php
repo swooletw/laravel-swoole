@@ -45,7 +45,7 @@ class TableRoom implements RoomContract
     }
 
     /**
-     * Add multiple socket fds to a room.
+     * Add a socket fd to multiple rooms.
      *
      * @param int fd
      * @param array|string rooms
@@ -72,7 +72,7 @@ class TableRoom implements RoomContract
     }
 
     /**
-     * Delete multiple socket fds from a room.
+     * Delete a socket fd from multiple rooms.
      *
      * @param int fd
      * @param array|string rooms
@@ -95,7 +95,7 @@ class TableRoom implements RoomContract
             $removeRooms[] = $room;
         }
 
-        $this->setRooms($fd, collect($allRooms)->diff($removeRooms)->values()->toArray());
+        $this->setRooms($fd, array_values(array_diff($allRooms, $removeRooms)));
     }
 
     /**
