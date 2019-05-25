@@ -135,7 +135,7 @@ abstract class HttpServiceProvider extends ServiceProvider
         $host = $config->get('swoole_http.server.host');
         $port = $config->get('swoole_http.server.port');
         $socketType = $config->get('swoole_http.server.socket_type', SWOOLE_SOCK_TCP);
-        $processType = $config->get('swoole.http.server.process_type', SWOOLE_PROCESS);
+        $processType = $config->get('swoole_http.server.process_type', SWOOLE_PROCESS);
 
         static::$server = new $server($host, $port, $processType, $socketType);
     }
