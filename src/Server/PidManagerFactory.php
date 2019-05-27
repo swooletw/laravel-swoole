@@ -2,14 +2,15 @@
 
 namespace SwooleTW\Http\Server;
 
-use Illuminate\Support\Facades\Config;
+use Psr\Container\ContainerInterface;
+use Illuminate\Contracts\Config\Repository as ConfigContract;
 
 class PidManagerFactory
 {
-	public function __invoke() : PidManager
+	public function __invoke(ContainerInterface $container): PidManager
 	{
 		return new PidManager(
-			Config::get('swoole_http.server.options.pid_file') ?? sys_get_temp_dir() . '/swoole.pid'
+			$container->get('config')->get('swoole_http.server.options.pid_file') ?? sys_get_temp_dir() . '/swoole.pid'
 		);
 	}
 }
