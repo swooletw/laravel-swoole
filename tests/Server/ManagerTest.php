@@ -577,7 +577,9 @@ class ManagerTest extends TestCase
 
     protected function getManager($container = null, $framework = 'laravel', $path = '/')
     {
-        return new Manager($container ?: $this->getContainer(), $framework, $path);
+        $pidFacotry = (new PidManagerFactory)($this->getContainer());
+
+        return new Manager($container ?: $this->getContainer(), $framework, $path, $pidFacotry);
     }
 
     protected function getWebsocketManager($container = null)
