@@ -22,6 +22,6 @@ class PidManagerFactoryTest extends TestCase
 
         $container->alias(ConfigContract::class, 'config');
 
-        $this->assertInstanceOf(PidManager::class, $factory());
+        $this->assertInstanceOf(PidManager::class, $factory($container));
     }
 }

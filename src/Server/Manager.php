@@ -148,7 +148,7 @@ class Manager
 
         $server = $this->container->make(Server::class);
 
-        $this->pidManager->write($server->master_pid, $server->manager_pid);
+        $this->pidManager->write($server->master_pid, $server->manager_pid ?? 0);
 
         $this->container->make('events')->dispatch('swoole.start', func_get_args());
     }
