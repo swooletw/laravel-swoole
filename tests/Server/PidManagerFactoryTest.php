@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Tests\Server;
 
+use Mockery as m;
 use Illuminate\Container\Container;
 use SwooleTW\Http\Server\PidManager;
 use SwooleTW\Http\Server\PidManagerFactory;
