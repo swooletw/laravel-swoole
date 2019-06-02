@@ -4,69 +4,82 @@ namespace SwooleTW\Http\Server;
 
 class PidManager
 {
-	/**
-	 * @var string
-	 */
-	private $pidFile = '';
+    protected $pidFile;
 
-	public function __construct(string $pidFile)
-	{
-		$this->pidFile = $pidFile;
-	}
+    public function __construct(string $pidFile = null)
+    {
+        $this->setPidFile(
+            $pidFile ?: sys_get_temp_dir() . '/swoole.pid'
+        );
+    }
 
-	/**
-	 * Write master pid and manager pid to pid file
-	 *
-	 * @throws \RuntimeException When $pidFile is not writable
-	 */
-	public function write(int $masterPid, int $managerPid): void
-	{
-		if (! is_writable($this->pidFile) && ! is_writable(dirname($this->pidFile))) {
-			throw new \RuntimeException(sprintf('Pid file "%s" is not writable', $this->pidFile));
-		}
+    /**
+     * Set pid file path
+     */
+    public function setPidFile(string $pidFile): self
+    {
+        $this->pidFile = $pidFile;
 
-		file_put_contents($this->pidFile, $masterPid . ',' . $managerPid);
-	}
+        return $this;
+    }
 
-	/**
-	 * Read master pid and manager pid from pid file
-	 *
-	 * @return string[] {
-	 *	 @var string $masterPid
-	 *	 @var string $managerPid
-	 * }
-	 */
-	public function read(): array
-	{
-		$pids = [];
+    /**
+     * Write master pid and manager pid to pid file
+     *
+     * @throws \RuntimeException when $pidFile is not writable
+     */
+    public function write(int $masterPid, int $managerPid): void
+    {
+        if (! is_writable($this->pidFile)
+            && ! is_writable(dirname($this->pidFile))
+        ) {
+            throw new \RuntimeException(
+                sprintf('Pid file "%s" is not writable', $this->pidFile)
+            );
+        }
 
-		if (is_readable($this->pidFile)) {
-			$content = file_get_contents($this->pidFile);
-			$pids = explode(',', $content);
-		}
+        file_put_contents($this->pidFile, $masterPid . ',' . $managerPid);
+    }
 
-		return $pids;
-	}
+    /**
+     * Read master pid and manager pid from pid file
+     *
+     * @return string[] {
+     *   @var string $masterPid
+     *   @var string $managerPid
+     * }
+     */
+    public function read(): array
+    {
+        $pids = [];
 
-	/**
-	 * Gets pid file path.
-	 *
-	 * @return string
-	 */
-	public function file()
-	{
-		return $this->pidFile;
-	}
+        if (is_readable($this->pidFile)) {
+            $content = file_get_contents($this->pidFile);
+            $pids = explode(',', $content);
+        }
 
-	/**
-	 * Delete pid file
-	 */
-	public function delete(): bool
-	{
-		if (is_writable($this->pidFile)) {
-			return unlink($this->pidFile);
-		}
+        return $pids;
+    }
 
-		return false;
-	}
+    /**
+     * Gets pid file path.
+     *
+     * @return string
+     */
+    public function file()
+    {
+        return $this->pidFile;
+    }
+
+    /**
+     * Delete pid file
+     */
+    public function delete(): bool
+    {
+        if (is_writable($this->pidFile)) {
+            return unlink($this->pidFile);
+        }
+
+        return false;
+    }
 }

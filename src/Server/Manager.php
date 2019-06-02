@@ -9,6 +9,7 @@ use Swoole\Server\Task;
 use Illuminate\Support\Str;
 use SwooleTW\Http\Helpers\OS;
 use SwooleTW\Http\Server\Sandbox;
+use SwooleTW\Http\Server\PidManager;
 use SwooleTW\Http\Task\SwooleTaskJob;
 use Illuminate\Support\Facades\Facade;
 use SwooleTW\Http\Websocket\Websocket;
@@ -40,13 +41,6 @@ class Manager
      * @var \Illuminate\Contracts\Container\Container
      */
     protected $container;
-
-    /**
-     * A manager to handle pid about the application.
-     *
-     * @var PidManager
-     */
-    protected $pidManager;
 
     /**
      * @var string
@@ -89,12 +83,11 @@ class Manager
      *
      * @throws \Exception
      */
-    public function __construct(Container $container, $framework, $basePath = null, PidManager $pidManager)
+    public function __construct(Container $container, $framework, $basePath = null)
     {
         $this->container = $container;
         $this->setFramework($framework);
         $this->setBasepath($basePath);
-        $this->pidManager = $pidManager;
         $this->initialize();
     }
 
@@ -147,8 +140,7 @@ class Manager
         $this->setProcessName('master process');
 
         $server = $this->container->make(Server::class);
-
-        $this->pidManager->write($server->master_pid, $server->manager_pid ?? 0);
+        $this->container->make(PidManager::class)->write($server->master_pid, $server->manager_pid ?? 0);
 
         $this->container->make('events')->dispatch('swoole.start', func_get_args());
     }
@@ -310,7 +302,7 @@ class Manager
      */
     public function onShutdown()
     {
-        $this->pidManager->delete();
+        $this->container->make(PidManager::class)->delete();
     }
 
     /**
