@@ -42,6 +42,13 @@ class Manager
     protected $container;
 
     /**
+     * A manager to handle pid about the application.
+     *
+     * @var PidManager
+     */
+    protected $pidManager;
+
+    /**
      * @var string
      */
     protected $framework;
@@ -82,11 +89,12 @@ class Manager
      *
      * @throws \Exception
      */
-    public function __construct(Container $container, $framework, $basePath = null)
+    public function __construct(Container $container, $framework, $basePath = null, PidManager $pidManager)
     {
         $this->container = $container;
         $this->setFramework($framework);
         $this->setBasepath($basePath);
+        $this->pidManager = $pidManager;
         $this->initialize();
     }
 
@@ -137,7 +145,10 @@ class Manager
     public function onStart()
     {
         $this->setProcessName('master process');
-        $this->createPidFile();
+
+        $server = $this->container->make(Server::class);
+
+        $this->pidManager->write($server->master_pid, $server->manager_pid ?? 0);
 
         $this->container->make('events')->dispatch('swoole.start', func_get_args());
     }
@@ -150,6 +161,7 @@ class Manager
     public function onManagerStart()
     {
         $this->setProcessName('manager process');
+
         $this->container->make('events')->dispatch('swoole.managerStart', func_get_args());
     }
 
@@ -298,7 +310,7 @@ class Manager
      */
     public function onShutdown()
     {
-        $this->removePidFile();
+        $this->pidManager->delete();
     }
 
     /**
@@ -325,39 +337,6 @@ class Manager
         });
 
         $this->app->alias(Sandbox::class, 'swoole.sandbox');
-    }
-
-    /**
-     * Gets pid file path.
-     *
-     * @return string
-     */
-    protected function getPidFile()
-    {
-        return $this->container->make('config')->get('swoole_http.server.options.pid_file');
-    }
-
-    /**
-     * Create pid file.
-     */
-    protected function createPidFile()
-    {
-        $pidFile = $this->getPidFile();
-        $pid = $this->container->make(Server::class)->master_pid;
-
-        file_put_contents($pidFile, $pid);
-    }
-
-    /**
-     * Remove pid file.
-     */
-    protected function removePidFile()
-    {
-        $pidFile = $this->getPidFile();
-
-        if (file_exists($pidFile)) {
-            unlink($pidFile);
-        }
     }
 
     /**

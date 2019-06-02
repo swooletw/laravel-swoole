@@ -13,6 +13,7 @@ use SwooleTW\Http\HotReload\FSEvent;
 use SwooleTW\Http\HotReload\FSOutput;
 use SwooleTW\Http\HotReload\FSProcess;
 use SwooleTW\Http\Server\AccessOutput;
+use SwooleTW\Http\Server\PidManager;
 use SwooleTW\Http\Middleware\AccessLog;
 use SwooleTW\Http\Server\Facades\Server;
 use Illuminate\Contracts\Container\Container;
@@ -60,6 +61,25 @@ class HttpServerCommand extends Command
     protected $config;
 
     /**
+     * A manager to handle pid about the application.
+     *
+     * @var PidManager
+     */
+    protected $pidManager;
+
+    /**
+     * Create a an new HttpServerCommand instance.
+     *
+     * @param PidManager $pidManager
+     */
+    public function __construct(PidManager $pidManager)
+    {
+        parent::__construct();
+
+        $this->pidManager = $pidManager;
+    }
+
+    /**
      * Execute the console command.
      *
      * @return void
@@ -93,7 +113,7 @@ class HttpServerCommand extends Command
      */
     protected function start()
     {
-        if ($this->isRunning($this->getCurrentPid())) {
+        if ($this->isRunning()) {
             $this->error('Failed! swoole_http_server process is already running.');
 
             return;
@@ -132,9 +152,7 @@ class HttpServerCommand extends Command
      */
     protected function stop()
     {
-        $pid = $this->getCurrentPid();
-
-        if (! $this->isRunning($pid)) {
+        if (! $this->isRunning()) {
             $this->error("Failed! There is no swoole_http_server process running.");
 
             return;
@@ -142,7 +160,7 @@ class HttpServerCommand extends Command
 
         $this->info('Stopping swoole http server...');
 
-        $isRunning = $this->killProcess($pid, SIGTERM, 15);
+        $isRunning = $this->killProcess(SIGTERM, 15);
 
         if ($isRunning) {
             $this->error('Unable to stop the swoole_http_server process.');
@@ -152,7 +170,7 @@ class HttpServerCommand extends Command
 
         // I don't known why Swoole didn't trigger "onShutdown" after sending SIGTERM.
         // So we should manually remove the pid file.
-        $this->removePidFile();
+        $this->pidManager->delete();
 
         $this->info('> success');
     }
@@ -162,9 +180,7 @@ class HttpServerCommand extends Command
      */
     protected function restart()
     {
-        $pid = $this->getCurrentPid();
-
-        if ($this->isRunning($pid)) {
+        if ($this->isRunning()) {
             $this->stop();
         }
 
@@ -176,9 +192,7 @@ class HttpServerCommand extends Command
      */
     protected function reload()
     {
-        $pid = $this->getCurrentPid();
-
-        if (! $this->isRunning($pid)) {
+        if (! $this->isRunning()) {
             $this->error("Failed! There is no swoole_http_server process running.");
 
             return;
@@ -186,9 +200,7 @@ class HttpServerCommand extends Command
 
         $this->info('Reloading swoole_http_server...');
 
-        $isRunning = $this->killProcess($pid, SIGUSR1);
-
-        if (! $isRunning) {
+        if (! $this->killProcess(SIGUSR1)) {
             $this->error('> failure');
 
             return;
@@ -210,8 +222,7 @@ class HttpServerCommand extends Command
      */
     protected function showInfos()
     {
-        $pid = $this->getCurrentPid();
-        $isRunning = $this->isRunning($pid);
+        $isRunning = $this->isRunning();
         $host = Arr::get($this->config, 'server.host');
         $port = Arr::get($this->config, 'server.port');
         $reactorNum = Arr::get($this->config, 'server.options.reactor_num');
@@ -231,7 +242,7 @@ class HttpServerCommand extends Command
             ['Worker Num', $workerNum],
             ['Task Worker Num', $isWebsocket ? $taskWorkerNum : 0],
             ['Websocket Mode', $isWebsocket ? 'On' : 'Off'],
-            ['PID', $isRunning ? $pid : 'None'],
+            ['PID', $isRunning ? implode(', ', $this->pidManager->read()) : 'None'],
             ['Log Path', $logFile],
         ];
 
@@ -281,37 +292,45 @@ class HttpServerCommand extends Command
      *
      * @return bool
      */
-    protected function isRunning($pid)
+    public function isRunning()
     {
-        if (! $pid) {
+        $pids = $this->pidManager->read();
+
+        if ([] === $pids) {
             return false;
         }
 
-        try {
-            return Process::kill($pid, 0);
-        } catch (Throwable $e) {
-            return false;
+        [$masterPid, $managerPid] = $pids;
+
+        if ($managerPid) {
+            // Swoole process mode
+            return $masterPid && $managerPid && Process::kill((int) $managerPid, 0);
         }
+
+        // Swoole base mode, no manager process
+        return $masterPid && Process::kill((int) $masterPid, 0);
     }
 
     /**
      * Kill process.
      *
-     * @param int $pid
      * @param int $sig
      * @param int $wait
      *
      * @return bool
      */
-    protected function killProcess($pid, $sig, $wait = 0)
+    protected function killProcess($sig, $wait = 0)
     {
-        Process::kill($pid, $sig);
+        Process::kill(
+            Arr::first($this->pidManager->read()),
+            $sig
+        );
 
         if ($wait) {
             $start = time();
 
             do {
-                if (! $this->isRunning($pid)) {
+                if (! $this->isRunning()) {
                     break;
                 }
 
@@ -319,45 +338,7 @@ class HttpServerCommand extends Command
             } while (time() < $start + $wait);
         }
 
-        return $this->isRunning($pid);
-    }
-
-    /**
-     * Get pid.
-     *
-     * @return int|null
-     */
-    protected function getCurrentPid()
-    {
-        if ($this->currentPid) {
-            return $this->currentPid;
-        }
-
-        $path = $this->getPidPath();
-
-        return $this->currentPid = file_exists($path)
-            ? (int) file_get_contents($path) ?? $this->removePidFile()
-            : null;
-    }
-
-    /**
-     * Get Pid file path.
-     *
-     * @return string
-     */
-    protected function getPidPath()
-    {
-        return Arr::get($this->config, 'server.options.pid_file', storage_path('logs/swoole.pid'));
-    }
-
-    /**
-     * Remove Pid file.
-     */
-    protected function removePidFile()
-    {
-        if (file_exists($this->getPidPath())) {
-            unlink($this->getPidPath());
-        }
+        return $this->isRunning();
     }
 
     /**
