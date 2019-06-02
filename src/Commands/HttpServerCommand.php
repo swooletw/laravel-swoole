@@ -209,9 +209,11 @@ class HttpServerCommand extends Command
         $reactorNum = Arr::get($this->config, 'server.options.reactor_num');
         $workerNum = Arr::get($this->config, 'server.options.worker_num');
         $taskWorkerNum = Arr::get($this->config, 'server.options.task_worker_num');
-        $hasTaskWorker = Arr::get($this->config, 'websocket.enabled') || Arr::get($this->config, 'queue.default') === 'swoole';
+        $isWebsocket = Arr::get($this->config, 'websocket.enabled');
+        $hasTaskWorker = $isWebsocket || Arr::get($this->config, 'queue.default') === 'swoole';
         $logFile = Arr::get($this->config, 'server.options.log_file');
         $pidManager = $this->laravel->make(PidManager::class);
+        [$masterPid, $managerPid] = $pidManager->read();
 
         $table = [
             ['PHP Version', 'Version' => phpversion()],
@@ -224,7 +226,8 @@ class HttpServerCommand extends Command
             ['Worker Num', $workerNum],
             ['Task Worker Num', $hasTaskWorker ? $taskWorkerNum : 0],
             ['Websocket Mode', $isWebsocket ? 'On' : 'Off'],
-            ['PID', $isRunning ? implode(', ', $pidManager->read()) : 'None'],
+            ['Master PID', $isRunning ? $masterPid : 'None'],
+            ['Manager PID', $isRunning && $managerPid ? $managerPid : 'None'],
             ['Log Path', $logFile],
         ];
 
