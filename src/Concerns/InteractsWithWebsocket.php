@@ -41,7 +41,7 @@ trait InteractsWithWebsocket
     protected $payloadParser;
 
     /**
-     * @var SwooleTW\Http\Websocket\Rooms\RoomContract
+     * @var \SwooleTW\Http\Websocket\Rooms\RoomContract
      */
     protected $websocketRoom;
 
@@ -310,7 +310,7 @@ trait InteractsWithWebsocket
      */
     protected function bindRoom(): void
     {
-        $this->app->singleton(RoomContract::class, function (Container $app) {
+        $this->app->singleton(RoomContract::class, function () {
             return $this->websocketRoom;
         });
 
