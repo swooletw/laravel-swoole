@@ -61,25 +61,6 @@ class HttpServerCommand extends Command
     protected $config;
 
     /**
-     * A manager to handle pid about the application.
-     *
-     * @var PidManager
-     */
-    protected $pidManager;
-
-    /**
-     * Create a an new HttpServerCommand instance.
-     *
-     * @param PidManager $pidManager
-     */
-    public function __construct(PidManager $pidManager)
-    {
-        parent::__construct();
-
-        $this->pidManager = $pidManager;
-    }
-
-    /**
      * Execute the console command.
      *
      * @return void
@@ -170,7 +151,7 @@ class HttpServerCommand extends Command
 
         // I don't known why Swoole didn't trigger "onShutdown" after sending SIGTERM.
         // So we should manually remove the pid file.
-        $this->pidManager->delete();
+        $this->laravel->make(PidManager::class)->delete();
 
         $this->info('> success');
     }
@@ -230,6 +211,7 @@ class HttpServerCommand extends Command
         $taskWorkerNum = Arr::get($this->config, 'server.options.task_worker_num');
         $hasTaskWorker = Arr::get($this->config, 'websocket.enabled') || Arr::get($this->config, 'queue.default') === 'swoole';
         $logFile = Arr::get($this->config, 'server.options.log_file');
+        $pidManager = $this->laravel->make(PidManager::class);
 
         $table = [
             ['PHP Version', 'Version' => phpversion()],
@@ -242,7 +224,7 @@ class HttpServerCommand extends Command
             ['Worker Num', $workerNum],
             ['Task Worker Num', $hasTaskWorker ? $taskWorkerNum : 0],
             ['Websocket Mode', $isWebsocket ? 'On' : 'Off'],
-            ['PID', $isRunning ? implode(', ', $this->pidManager->read()) : 'None'],
+            ['PID', $isRunning ? implode(', ', $pidManager->read()) : 'None'],
             ['Log Path', $logFile],
         ];
 
@@ -294,9 +276,9 @@ class HttpServerCommand extends Command
      */
     public function isRunning()
     {
-        $pids = $this->pidManager->read();
+        $pids = $this->laravel->make(PidManager::class)->read();
 
-        if ([] === $pids) {
+        if (! count($pids)) {
             return false;
         }
 
@@ -322,7 +304,7 @@ class HttpServerCommand extends Command
     protected function killProcess($sig, $wait = 0)
     {
         Process::kill(
-            Arr::first($this->pidManager->read()),
+            Arr::first($this->laravel->make(PidManager::class)->read()),
             $sig
         );
 

@@ -2,30 +2,30 @@
 
 namespace SwooleTW\Http\Tests\Server;
 
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Config\Repository as ConfigContract;
-use Illuminate\Contracts\Debug\ExceptionHandler;
-use Illuminate\Support\Facades\Config;
-use Laravel\Lumen\Exceptions\Handler;
 use Mockery as m;
-use SwooleTW\Http\Server\Facades\Server;
-use SwooleTW\Http\Server\Manager;
-use SwooleTW\Http\Server\PidManagerFactory;
-use SwooleTW\Http\Server\Sandbox;
-use SwooleTW\Http\Table\SwooleTable;
-use SwooleTW\Http\Tests\TestCase;
-use SwooleTW\Http\Websocket\Facades\Pusher;
-use SwooleTW\Http\Websocket\Facades\Websocket as WebsocketFacade;
-use SwooleTW\Http\Websocket\HandlerContract;
-use SwooleTW\Http\Websocket\Parser;
-use SwooleTW\Http\Websocket\Rooms\RoomContract;
-use SwooleTW\Http\Websocket\Rooms\TableRoom;
-use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
-use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
-use SwooleTW\Http\Websocket\Websocket;
+use Swoole\Table;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
-use Swoole\Table;
+use SwooleTW\Http\Server\Manager;
+use SwooleTW\Http\Server\Sandbox;
+use SwooleTW\Http\Tests\TestCase;
+use Illuminate\Container\Container;
+use SwooleTW\Http\Websocket\Parser;
+use SwooleTW\Http\Server\PidManager;
+use SwooleTW\Http\Table\SwooleTable;
+use Laravel\Lumen\Exceptions\Handler;
+use Illuminate\Support\Facades\Config;
+use SwooleTW\Http\Websocket\Websocket;
+use SwooleTW\Http\Server\Facades\Server;
+use SwooleTW\Http\Websocket\Facades\Pusher;
+use SwooleTW\Http\Websocket\HandlerContract;
+use SwooleTW\Http\Websocket\Rooms\TableRoom;
+use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use SwooleTW\Http\Websocket\SocketIO\SocketIOParser;
+use SwooleTW\Http\Websocket\SocketIO\WebsocketHandler;
+use Illuminate\Contracts\Config\Repository as ConfigContract;
+use SwooleTW\Http\Websocket\Facades\Websocket as WebsocketFacade;
 
 class ManagerTest extends TestCase
 {
@@ -103,19 +103,18 @@ class ManagerTest extends TestCase
 
     public function testOnStart()
     {
-        $filePutContents = false;
-        $this->mockMethod('file_put_contents', function () use (&$filePutContents) {
-            $filePutContents = true;
-        });
+        $pidManager = m::mock(PidManager::class);
+        $pidManager->shouldReceive('write')->once();
 
         $container = $this->getContainer();
         $container->singleton('events', function () {
             return $this->getEvent('swoole.start');
         });
+        $container->singleton(PidManager::class, function () use ($pidManager) {
+            return $pidManager;
+        });
         $manager = $this->getManager($container);
         $manager->onStart();
-
-        $this->assertTrue($filePutContents);
     }
 
     public function testOnManagerStart()
@@ -308,21 +307,16 @@ class ManagerTest extends TestCase
 
     public function testOnShutdown()
     {
-        $fileExists = false;
-        $this->mockMethod('file_exists', function () use (&$fileExists) {
-            return $fileExists = true;
+        $pidManager = m::mock(PidManager::class);
+        $pidManager->shouldReceive('delete')->once();
+
+        $container = $this->getContainer();
+        $container->singleton(PidManager::class, function () use ($pidManager) {
+            return $pidManager;
         });
 
-        $unlink = false;
-        $this->mockMethod('unlink', function () use (&$unlink) {
-            return $unlink = true;
-        });
-
-        $manager = $this->getManager();
+        $manager = $this->getManager($container);
         $manager->onShutdown();
-
-        $this->assertTrue($fileExists);
-        $this->assertTrue($unlink);
     }
 
     public function testSetParser()
@@ -578,9 +572,7 @@ class ManagerTest extends TestCase
 
     protected function getManager($container = null, $framework = 'laravel', $path = '/')
     {
-        $pidFacotry = (new PidManagerFactory)($this->getContainer());
-
-        return new Manager($container ?: $this->getContainer(), $framework, $path, $pidFacotry);
+        return new Manager($container ?: $this->getContainer(), $framework, $path);
     }
 
     protected function getWebsocketManager($container = null)

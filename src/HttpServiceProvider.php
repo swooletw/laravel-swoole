@@ -2,19 +2,18 @@
 
 namespace SwooleTW\Http;
 
-use Illuminate\Database\DatabaseManager;
-use Illuminate\Queue\QueueManager;
-use Illuminate\Support\ServiceProvider;
-use SwooleTW\Http\Commands\HttpServerCommand;
-use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
-use SwooleTW\Http\Coroutine\MySqlConnection;
 use SwooleTW\Http\Helpers\FW;
-use SwooleTW\Http\Server\Facades\Server;
+use Illuminate\Queue\QueueManager;
 use SwooleTW\Http\Server\PidManager;
-use SwooleTW\Http\Server\PidManagerFactory;
-use SwooleTW\Http\Task\Connectors\SwooleTaskConnector;
 use Swoole\Http\Server as HttpServer;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\DatabaseManager;
+use SwooleTW\Http\Server\Facades\Server;
+use SwooleTW\Http\Coroutine\MySqlConnection;
+use SwooleTW\Http\Commands\HttpServerCommand;
 use Swoole\Websocket\Server as WebsocketServer;
+use SwooleTW\Http\Task\Connectors\SwooleTaskConnector;
+use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
 
 /**
  * @codeCoverageIgnore
@@ -45,12 +44,12 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->registerPidManager();
         $this->mergeConfigs();
         $this->setIsWebsocket();
         $this->registerServer();
         $this->registerManager();
         $this->registerCommands();
+        $this->registerPidManager();
         $this->registerDatabaseDriver();
         $this->registerSwooleQueueDriver();
     }
@@ -117,7 +116,9 @@ abstract class HttpServiceProvider extends ServiceProvider
     protected function registerPidManager(): void
     {
         $this->app->singleton(PidManager::class, function() {
-            return call_user_func(new PidManagerFactory, $this->app);
+            return new PidManager(
+                $this->app->make('config')->get('swoole_http.server.options.pid_file');
+            );
         });
     }
 
