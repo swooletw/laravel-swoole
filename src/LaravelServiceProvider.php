@@ -2,9 +2,10 @@
 
 namespace SwooleTW\Http;
 
-use SwooleTW\Http\Server\Manager;
 use Illuminate\Contracts\Http\Kernel;
 use SwooleTW\Http\Middleware\AccessLog;
+use SwooleTW\Http\Server\Manager;
+use SwooleTW\Http\Server\PidManager;
 
 /**
  * @codeCoverageIgnore
@@ -19,7 +20,7 @@ class LaravelServiceProvider extends HttpServiceProvider
     protected function registerManager()
     {
         $this->app->singleton(Manager::class, function ($app) {
-            return new Manager($app, 'laravel');
+            return new Manager($app, 'laravel', base_path(), $this->app[PidManager::class]);
         });
 
         $this->app->alias(Manager::class, 'swoole.manager');

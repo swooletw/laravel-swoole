@@ -2,8 +2,9 @@
 
 namespace SwooleTW\Http;
 
-use SwooleTW\Http\Server\Manager;
 use SwooleTW\Http\Middleware\AccessLog;
+use SwooleTW\Http\Server\Manager;
+use SwooleTW\Http\Server\PidManager;
 
 /**
  * @codeCoverageIgnore
@@ -18,7 +19,7 @@ class LumenServiceProvider extends HttpServiceProvider
     protected function registerManager()
     {
         $this->app->singleton(Manager::class, function ($app) {
-            return new Manager($app, 'lumen');
+            return new Manager($app, 'lumen', base_path(), $this->app[PidManager::class]);
         });
 
         $this->app->alias(Manager::class, 'swoole.manager');
