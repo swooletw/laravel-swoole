@@ -2,17 +2,19 @@
 
 namespace SwooleTW\Http;
 
-use SwooleTW\Http\Helpers\FW;
-use Illuminate\Queue\QueueManager;
-use Swoole\Http\Server as HttpServer;
-use Illuminate\Support\ServiceProvider;
-use SwooleTW\Http\Server\Facades\Server;
 use Illuminate\Database\DatabaseManager;
-use SwooleTW\Http\Coroutine\MySqlConnection;
+use Illuminate\Queue\QueueManager;
+use Illuminate\Support\ServiceProvider;
 use SwooleTW\Http\Commands\HttpServerCommand;
-use Swoole\Websocket\Server as WebsocketServer;
-use SwooleTW\Http\Task\Connectors\SwooleTaskConnector;
 use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
+use SwooleTW\Http\Coroutine\MySqlConnection;
+use SwooleTW\Http\Helpers\FW;
+use SwooleTW\Http\Server\Facades\Server;
+use SwooleTW\Http\Server\PidManager;
+use SwooleTW\Http\Server\PidManagerFactory;
+use SwooleTW\Http\Task\Connectors\SwooleTaskConnector;
+use Swoole\Http\Server as HttpServer;
+use Swoole\Websocket\Server as WebsocketServer;
 
 /**
  * @codeCoverageIgnore
@@ -43,6 +45,7 @@ abstract class HttpServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->registerPidManager();
         $this->mergeConfigs();
         $this->setIsWebsocket();
         $this->registerServer();
@@ -104,6 +107,18 @@ abstract class HttpServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/swoole_http.php', 'swoole_http');
         $this->mergeConfigFrom(__DIR__ . '/../config/swoole_websocket.php', 'swoole_websocket');
+    }
+
+    /**
+     * Register pid manager.
+     *
+     * @return void
+     */
+    protected function registerPidManager(): void
+    {
+        $this->app->singleton(PidManager::class, function() {
+            return call_user_func(new PidManagerFactory, $this->app);
+        });
     }
 
     /**
