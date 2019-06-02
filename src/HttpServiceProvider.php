@@ -117,7 +117,7 @@ abstract class HttpServiceProvider extends ServiceProvider
     {
         $this->app->singleton(PidManager::class, function() {
             return new PidManager(
-                $this->app->make('config')->get('swoole_http.server.options.pid_file');
+                $this->app->make('config')->get('swoole_http.server.options.pid_file')
             );
         });
     }
