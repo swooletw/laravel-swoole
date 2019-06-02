@@ -217,7 +217,7 @@ class HttpServerCommand extends Command
         $reactorNum = Arr::get($this->config, 'server.options.reactor_num');
         $workerNum = Arr::get($this->config, 'server.options.worker_num');
         $taskWorkerNum = Arr::get($this->config, 'server.options.task_worker_num');
-        $isWebsocket = Arr::get($this->config, 'websocket.enabled');
+        $hasTaskWorker = Arr::get($this->config, 'websocket.enabled') || Arr::get($this->config, 'queue.default') === 'swoole';
         $logFile = Arr::get($this->config, 'server.options.log_file');
 
         $table = [
@@ -229,7 +229,7 @@ class HttpServerCommand extends Command
             ['Server Status', $isRunning ? 'Online' : 'Offline'],
             ['Reactor Num', $reactorNum],
             ['Worker Num', $workerNum],
-            ['Task Worker Num', $isWebsocket ? $taskWorkerNum : 0],
+            ['Task Worker Num', $hasTaskWorker ? $taskWorkerNum : 0],
             ['Websocket Mode', $isWebsocket ? 'On' : 'Off'],
             ['PID', $isRunning ? $pid : 'None'],
             ['Log Path', $logFile],
