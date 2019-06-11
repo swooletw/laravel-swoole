@@ -41,7 +41,7 @@ trait InteractsWithWebsocket
     protected $payloadParser;
 
     /**
-     * @var SwooleTW\Http\Websocket\Rooms\RoomContract
+     * @var \SwooleTW\Http\Websocket\Rooms\RoomContract
      */
     protected $websocketRoom;
 
@@ -160,6 +160,8 @@ trait InteractsWithWebsocket
      * Indicates if a packet is websocket push action.
      *
      * @param mixed
+     *
+     * @return bool
      */
     protected function isWebsocketPushPacket($packet)
     {
@@ -167,7 +169,7 @@ trait InteractsWithWebsocket
             return false;
         }
 
-        return $this->isWebsocket
+        return $this->isServerWebsocket
             && array_key_exists('action', $packet)
             && $packet['action'] === Websocket::PUSH_ACTION;
     }
