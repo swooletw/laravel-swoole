@@ -37,6 +37,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Websocket handler for onHandShake callback
+    | If enable, onOpen would not be triggered
+    |--------------------------------------------------------------------------
+    */
+    'handshake' => [
+        'enabled' => false,
+        'handler' => SwooleTW\Http\Websocket\HandShakeHandler::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Default websocket driver
     |--------------------------------------------------------------------------
     */
