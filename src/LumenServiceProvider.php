@@ -11,6 +11,15 @@ use SwooleTW\Http\Middleware\AccessLog;
 class LumenServiceProvider extends HttpServiceProvider
 {
     /**
+     * Load configurations.
+     */
+    protected function loadConfigs()
+    {
+        $this->app->configure('swoole_http');
+        $this->app->configure('swoole_websocket');
+    }
+
+    /**
      * Register manager.
      *
      * @return void
