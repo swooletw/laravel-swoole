@@ -38,14 +38,35 @@ abstract class HttpServiceProvider extends ServiceProvider
     protected static $server;
 
     /**
+     * Boot the service provider.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        $this->publishFiles();
+        $this->loadConfigs();
+        $this->mergeConfigs();
+        $this->setIsWebsocket();
+
+        $config = $this->app->make('config');
+
+        if ($config->get('swoole_http.websocket.enabled')) {
+            $this->bootWebsocketRoutes();
+        }
+
+        if ($config->get('swoole_http.server.access_log')) {
+            $this->pushAccessLogMiddleware();
+        }
+    }
+
+    /**
      * Register the service provider.
      *
      * @return void
      */
     public function register()
     {
-        $this->mergeConfigs();
-        $this->setIsWebsocket();
         $this->registerServer();
         $this->registerManager();
         $this->registerCommands();
@@ -76,27 +97,23 @@ abstract class HttpServiceProvider extends ServiceProvider
     abstract protected function pushAccessLogMiddleware();
 
     /**
-     * Boot the service provider.
-     *
-     * @return void
+     * Publish files of this package.
      */
-    public function boot()
+    protected function publishFiles()
     {
         $this->publishes([
             __DIR__ . '/../config/swoole_http.php' => base_path('config/swoole_http.php'),
             __DIR__ . '/../config/swoole_websocket.php' => base_path('config/swoole_websocket.php'),
             __DIR__ . '/../routes/websocket.php' => base_path('routes/websocket.php'),
         ], 'laravel-swoole');
+    }
 
-        $config = $this->app->make('config');
-
-        if ($config->get('swoole_http.websocket.enabled')) {
-            $this->bootWebsocketRoutes();
-        }
-
-        if ($config->get('swoole_http.server.access_log')) {
-            $this->pushAccessLogMiddleware();
-        }
+    /**
+     * Load configurations.
+     */
+    protected function loadConfigs()
+    {
+        // do nothing
     }
 
     /**

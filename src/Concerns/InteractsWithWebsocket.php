@@ -280,8 +280,11 @@ trait InteractsWithWebsocket
      */
     protected function isServerWebsocket(int $fd): bool
     {
-        return (bool) $this->container->make(Server::class)
-            ->connection_info($fd)['websocket_status'] ?? false;
+        return array_key_exists(
+            'websocket_status',
+            $this->container->make(Server::class)
+                ->connection_info($fd)
+        );
     }
 
     /**
@@ -354,7 +357,7 @@ trait InteractsWithWebsocket
      */
     protected function bindRoom(): void
     {
-        $this->app->singleton(RoomContract::class, function (Container $app) {
+        $this->app->singleton(RoomContract::class, function () {
             return $this->websocketRoom;
         });
 
