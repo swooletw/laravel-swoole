@@ -88,7 +88,7 @@ class Pusher
      * @param array $data
      * @param \Swoole\Websocket\Server $server
      *
-     * @return \SwooleTW\Http\Websocket\Push
+     * @return \SwooleTW\Http\Websocket\Pusher
      */
     public static function make(array $data, $server)
     {

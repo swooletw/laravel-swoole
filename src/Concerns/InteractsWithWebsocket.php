@@ -89,6 +89,46 @@ trait InteractsWithWebsocket
     }
 
     /**
+     * @param \Swoole\Http\Request $swooleRequest
+     * @param \Swoole\Http\Response $response
+     *
+     * @return bool
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    public function onHandShake($swooleRequest, $response)
+    {
+        $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
+        $websocket = $this->app->make(Websocket::class);
+        $sandbox = $this->app->make(Sandbox::class);
+        $handler = $this->container->make('config')->get('swoole_websocket.handshake.handler');
+
+        try {
+            $websocket->reset(true)->setSender($swooleRequest->fd);
+            // set currnt request to sandbox
+            $sandbox->setRequest($illuminateRequest);
+            // enable sandbox
+            $sandbox->enable();
+
+            if (! $this->app->make($handler)->handle($swooleRequest, $response)) {
+                return false;
+            }
+            // trigger 'connect' websocket event
+            if ($websocket->eventExists('connect')) {
+                // set sandbox container to websocket pipeline
+                $websocket->setContainer($sandbox->getApplication());
+                $websocket->call('connect', $illuminateRequest);
+            }
+
+            return true;
+        } catch (Throwable $e) {
+            $this->logServerError($e);
+        } finally {
+            // disable and recycle sandbox resource
+            $sandbox->disable();
+        }
+    }
+
+    /**
      * "onMessage" listener.
      *
      * @param \Swoole\Websocket\Server $server
@@ -160,6 +200,8 @@ trait InteractsWithWebsocket
      * Indicates if a packet is websocket push action.
      *
      * @param mixed
+     *
+     * @return bool
      */
     protected function isWebsocketPushPacket($packet)
     {
@@ -167,7 +209,7 @@ trait InteractsWithWebsocket
             return false;
         }
 
-        return $this->isWebsocket
+        return $this->isServerWebsocket
             && array_key_exists('action', $packet)
             && $packet['action'] === Websocket::PUSH_ACTION;
     }
@@ -220,7 +262,9 @@ trait InteractsWithWebsocket
         $parser = $config->get('swoole_websocket.parser');
 
         if ($isWebsocket) {
-            $this->events = array_merge($this->events ?? [], $this->wsEvents);
+            $handshake = $config->get('swoole_websocket.handshake.enabled');
+
+            $this->events = array_merge($this->events ?? [], array_merge($this->wsEvents, $handshake ? ['handshake'] : []));
             $this->isServerWebsocket = true;
             $this->prepareWebsocketRoom();
             $this->setPayloadParser(new $parser);
