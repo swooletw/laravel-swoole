@@ -56,6 +56,13 @@ class PidManager
         if (is_readable($this->pidFile)) {
             $content = file_get_contents($this->pidFile);
             $pids = explode(',', $content);
+
+            // when upgraded from an old version with a running swoole:http
+            // the pid file only contains one pid number while the newer version requires two
+            // then the swoole:http command would encounter a bug which the array index 1 is inaccessible
+            if (count($pids) !== 2) {
+                $pids = [];
+            }
         }
 
         return $pids;
