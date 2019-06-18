@@ -61,7 +61,7 @@ class PidManager
             // the pid file only contains one pid number while the newer version requires two
             // then the swoole:http command would encounter a bug which the array index 1 is inaccessible
             if (count($pids) !== 2) {
-                $pids = [];
+                $pids = [0, 0];
             }
         }
 
