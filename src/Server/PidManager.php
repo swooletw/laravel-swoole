@@ -58,7 +58,10 @@ class PidManager
             $pids = explode(',', $content);
         }
 
-        return $pids;
+        return [
+            'masterPid' => $pids[0] ?? null,
+            'managerPid' => $pids[1] ?? null
+        ];
     }
 
     /**

@@ -212,8 +212,9 @@ class HttpServerCommand extends Command
         $isWebsocket = Arr::get($this->config, 'websocket.enabled');
         $hasTaskWorker = $isWebsocket || Arr::get($this->config, 'queue.default') === 'swoole';
         $logFile = Arr::get($this->config, 'server.options.log_file');
-        $pidManager = $this->laravel->make(PidManager::class);
-        [$masterPid, $managerPid] = $pidManager->read();
+        $pids = $this->laravel->make(PidManager::class)->read();
+        $masterPid = $pids['masterPid'] ?? null;
+        $managerPid = $pids['managerPid'] ?? null;
 
         $table = [
             ['PHP Version', 'Version' => phpversion()],
