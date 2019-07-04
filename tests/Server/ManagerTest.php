@@ -471,8 +471,14 @@ class ManagerTest extends TestCase
 
         $container->alias(Sandbox::class, 'swoole.sandbox');
 
+        $handler = m::mock(HandlerContract::class);
+        $handler->shouldReceive('onOpen')
+                ->with(1, m::type('Illuminate\Http\Request'))
+                ->andReturn(true);
+
         $manager = $this->getWebsocketManager();
         $manager->setApplication($container);
+        $manager->setWebsocketHandler($handler);
         $manager->onHandShake($request, $response);
     }
 

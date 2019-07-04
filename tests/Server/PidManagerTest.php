@@ -67,7 +67,7 @@ class PidManagerTest extends TestCase
         });
 
         $this->assertEquals(
-            ['1', '2'],
+            ['masterPid' => '1', 'managerPid' => '2'],
             $pidManager->read()
         );
     }

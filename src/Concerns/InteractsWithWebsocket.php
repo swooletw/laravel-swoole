@@ -53,16 +53,33 @@ trait InteractsWithWebsocket
     protected $wsEvents = ['open', 'message', 'close'];
 
     /**
+     * "onHandShake" listener.
+     * @param \Swoole\Http\Request $swooleRequest
+     * @param \Swoole\Http\Response $response
+     */
+    public function onHandShake($swooleRequest, $response)
+    {
+        $this->onOpen(
+            $this->app->make(Server::class),
+            $swooleRequest,
+            $response
+        );
+    }
+
+    /**
      * "onOpen" listener.
      *
      * @param \Swoole\Websocket\Server $server
      * @param \Swoole\Http\Request $swooleRequest
+     * @param \Swoole\Http\Response $response (optional)
      */
-    public function onOpen($server, $swooleRequest)
+    public function onOpen($server, $swooleRequest, $response = null)
     {
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
         $websocket = $this->app->make(Websocket::class);
         $sandbox = $this->app->make(Sandbox::class);
+        $handshakeHandler = $this->app->make('config')
+            ->get('swoole_websocket.handshake.handler');
 
         try {
             $websocket->reset(true)->setSender($swooleRequest->fd);
@@ -70,6 +87,10 @@ trait InteractsWithWebsocket
             $sandbox->setRequest($illuminateRequest);
             // enable sandbox
             $sandbox->enable();
+            // call customized handshake handler
+            if ($response && ! $this->app->make($handshakeHandler)->handle($swooleRequest, $response)) {
+                return;
+            }
             // check if socket.io connection established
             if (! $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
                 return;
@@ -80,46 +101,6 @@ trait InteractsWithWebsocket
                 $websocket->setContainer($sandbox->getApplication());
                 $websocket->call('connect', $illuminateRequest);
             }
-        } catch (Throwable $e) {
-            $this->logServerError($e);
-        } finally {
-            // disable and recycle sandbox resource
-            $sandbox->disable();
-        }
-    }
-
-    /**
-     * @param \Swoole\Http\Request $swooleRequest
-     * @param \Swoole\Http\Response $response
-     *
-     * @return bool
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
-     */
-    public function onHandShake($swooleRequest, $response)
-    {
-        $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
-        $websocket = $this->app->make(Websocket::class);
-        $sandbox = $this->app->make(Sandbox::class);
-        $handler = $this->container->make('config')->get('swoole_websocket.handshake.handler');
-
-        try {
-            $websocket->reset(true)->setSender($swooleRequest->fd);
-            // set currnt request to sandbox
-            $sandbox->setRequest($illuminateRequest);
-            // enable sandbox
-            $sandbox->enable();
-
-            if (! $this->app->make($handler)->handle($swooleRequest, $response)) {
-                return false;
-            }
-            // trigger 'connect' websocket event
-            if ($websocket->eventExists('connect')) {
-                // set sandbox container to websocket pipeline
-                $websocket->setContainer($sandbox->getApplication());
-                $websocket->call('connect', $illuminateRequest);
-            }
-
-            return true;
         } catch (Throwable $e) {
             $this->logServerError($e);
         } finally {
@@ -258,17 +239,19 @@ trait InteractsWithWebsocket
     protected function prepareWebsocket()
     {
         $config = $this->container->make('config');
-        $isWebsocket = $config->get('swoole_http.websocket.enabled');
         $parser = $config->get('swoole_websocket.parser');
 
-        if ($isWebsocket) {
-            $handshake = $config->get('swoole_websocket.handshake.enabled');
-
-            $this->events = array_merge($this->events ?? [], array_merge($this->wsEvents, $handshake ? ['handshake'] : []));
-            $this->isServerWebsocket = true;
-            $this->prepareWebsocketRoom();
-            $this->setPayloadParser(new $parser);
+        if (! $this->isServerWebsocket = $config->get('swoole_http.websocket.enabled')) {
+            return;
         }
+
+        if ($config->get('swoole_websocket.handshake.enabled')) {
+            $this->wsEvents = array_merge($this->wsEvents, ['handshake']);
+        }
+
+        $this->events = array_merge($this->events ?? [], $this->wsEvents);
+        $this->prepareWebsocketRoom();
+        $this->setPayloadParser(new $parser);
     }
 
     /**
