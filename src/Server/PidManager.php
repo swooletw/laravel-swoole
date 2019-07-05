@@ -59,8 +59,8 @@ class PidManager
         }
 
         return [
-            'masterPid' => $pids[0] ?? null,
-            'managerPid' => $pids[1] ?? null
+            $pids[0] ?? null,
+            $pids[1] ?? null
         ];
     }
 
