@@ -286,7 +286,8 @@ class HttpServerCommand extends Command
             return false;
         }
 
-        [$masterPid, $managerPid] = $pids;
+        $masterPid = $pids['masterPid'] ?? null;
+        $managerPid = $pids['managerPid'] ?? null;
 
         if ($managerPid) {
             // Swoole process mode
