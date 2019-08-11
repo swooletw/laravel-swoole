@@ -176,10 +176,10 @@ class Websocket
         /** @var Server $server */
         $server = App::make(Server::class);
 
-        if ($server->taskworker) {
+        if (!empty($server->taskworker)) {
             /** @var Manager $manager */
             $manager = App::make(Manager::class);
-            $result = $manager->pushMessage($server, [
+            $manager->pushMessage($server, [
                 'sender'    => $this->sender,
                 'fds'       => $fds,
                 'broadcast' => $this->isBroadcast,
@@ -187,6 +187,8 @@ class Websocket
                 'event'     => $event,
                 'message'   => $data,
             ]);
+
+            $result = true;
         } else {
             $result = $server->task([
                 'action' => static::PUSH_ACTION,
