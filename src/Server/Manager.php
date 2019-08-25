@@ -114,7 +114,10 @@ class Manager
     {
         $this->createTables();
         $this->prepareWebsocket();
-        $this->setSwooleServerListeners();
+
+        if (! $this->container->make(Server::class)->taskworker) {
+            $this->setSwooleServerListeners();
+        }
     }
 
     /**
@@ -123,10 +126,6 @@ class Manager
     protected function setSwooleServerListeners()
     {
         $server = $this->container->make(Server::class);
-        if ($server->taskworker){
-            return;
-        }
-
         foreach ($this->events as $event) {
             $listener = Str::camel("on_$event");
             $callback = method_exists($this, $listener) ? [$this, $listener] : function () use ($event) {
@@ -175,10 +174,7 @@ class Manager
 
         $this->container->make('events')->dispatch('swoole.workerStart', func_get_args());
 
-        if ($server->taskworker) {
-            $this->setProcessName('task process');
-        }
-        $this->setProcessName('worker process');
+        $this->setProcessName($server->taskworker ? 'task process' : 'worker process');
 
         // clear events instance in case of repeated listeners in worker process
         Facade::clearResolvedInstance('events');

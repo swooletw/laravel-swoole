@@ -173,33 +173,23 @@ class Websocket
             return false;
         }
 
-        /** @var Server $server */
+        $payload = [
+            'sender'    => $this->sender,
+            'fds'       => $fds,
+            'broadcast' => $this->isBroadcast,
+            'assigned'  => $assigned,
+            'event'     => $event,
+            'message'   => $data,
+        ];
+
+        $result = true;
         $server = App::make(Server::class);
-
-        if (!empty($server->taskworker)) {
-            /** @var Manager $manager */
-            $manager = App::make(Manager::class);
-            $manager->pushMessage($server, [
-                'sender'    => $this->sender,
-                'fds'       => $fds,
-                'broadcast' => $this->isBroadcast,
-                'assigned'  => $assigned,
-                'event'     => $event,
-                'message'   => $data,
-            ]);
-
-            $result = true;
+        if ($server->taskworker) {
+            App::make(Manager::class)->pushMessage($server, $payload);
         } else {
             $result = $server->task([
                 'action' => static::PUSH_ACTION,
-                'data'   => [
-                    'sender'    => $this->sender,
-                    'fds'       => $fds,
-                    'broadcast' => $this->isBroadcast,
-                    'assigned'  => $assigned,
-                    'event'     => $event,
-                    'message'   => $data,
-                ],
+                'data' => $payload
             ]);
         }
 
