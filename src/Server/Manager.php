@@ -122,13 +122,18 @@ class Manager
      */
     protected function setSwooleServerListeners()
     {
+        $server = $this->container->make(Server::class);
+        if ($server->taskworker){
+            return;
+        }
+
         foreach ($this->events as $event) {
             $listener = Str::camel("on_$event");
             $callback = method_exists($this, $listener) ? [$this, $listener] : function () use ($event) {
                 $this->container->make('events')->dispatch("swoole.$event", func_get_args());
             };
 
-            $this->container->make(Server::class)->on($event, $callback);
+            $server->on($event, $callback);
         }
     }
 
@@ -170,11 +175,8 @@ class Manager
 
         $this->container->make('events')->dispatch('swoole.workerStart', func_get_args());
 
-        // don't init laravel app in task workers
         if ($server->taskworker) {
             $this->setProcessName('task process');
-
-            return;
         }
         $this->setProcessName('worker process');
 

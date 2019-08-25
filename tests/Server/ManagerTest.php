@@ -178,7 +178,8 @@ class ManagerTest extends TestCase
             return $this->getEvent('swoole.workerStart');
         });
 
-        $manager = $this->getManager($container);
+        $path = __DIR__ . '/../fixtures';
+        $manager = $this->getManager($container, $framework = 'laravel', $path);
 
         $this->assertNull($manager->onWorkerStart($server));
     }
