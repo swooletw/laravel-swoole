@@ -12,14 +12,17 @@ class AuthenticateTest extends TestCase
 {
     public function testAuthenticate()
     {
+        $request = m::mock(Request::class);
+        $request->shouldReceive('setUserResolver')
+                ->once();
+
         $auth = m::mock(Auth::class);
         $auth->shouldReceive('authenticate')
              ->once()
              ->andReturn('user');
-
-        $request = m::mock(Request::class);
-        $request->shouldReceive('setUserResolver')
-                ->once();
+        $auth->shouldReceive('setRequest')
+            ->with($request)
+            ->once();
 
         $middleware = new Authenticate($auth);
         $middleware->handle($request, function ($next) {
