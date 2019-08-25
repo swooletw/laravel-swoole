@@ -219,7 +219,10 @@ class RedisRoom implements RoomContract
     {
         $this->checkTable($table);
 
-        return $this->redis->smembers($this->getKey($key, $table));
+        $result = $this->redis->smembers($this->getKey($key, $table));
+
+        // Try to fix occasional non-array returned result
+        return is_array($result) ? $result : [];
     }
 
     /**
