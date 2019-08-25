@@ -42,6 +42,7 @@ class Authenticate
     public function handle($request, Closure $next)
     {
         try {
+            $this->auth->setRequest($request);
             if ($user = $this->auth->authenticate()) {
                 $request->setUserResolver(function () use ($user) {
                     return $user;
