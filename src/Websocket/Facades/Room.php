@@ -5,9 +5,9 @@ namespace SwooleTW\Http\Websocket\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static this prepare()
- * @method static this add($fd, $rooms)
- * @method static this delete($fd, $rooms)
+ * @method static $this prepare()
+ * @method static $this add($fd, $rooms)
+ * @method static $this delete($fd, $rooms)
  * @method static array getClients($room)
  * @method static array getRooms($fd)
  *

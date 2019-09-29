@@ -2,18 +2,19 @@
 
 namespace SwooleTW\Http\Tests\Websocket;
 
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Mockery as m;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 use Illuminate\Pipeline\Pipeline;
+use SwooleTW\Http\Server\Manager;
+use SwooleTW\Http\Tests\TestCase;
+use Illuminate\Container\Container;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
-use InvalidArgumentException;
-use Mockery as m;
-use SwooleTW\Http\Server\Facades\Server;
-use SwooleTW\Http\Tests\TestCase;
-use SwooleTW\Http\Websocket\Rooms\RoomContract;
 use SwooleTW\Http\Websocket\Websocket;
+use SwooleTW\Http\Server\Facades\Server;
+use SwooleTW\Http\Websocket\Rooms\RoomContract;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 
 class WebsocketTest extends TestCase
 {
@@ -326,12 +327,15 @@ class WebsocketTest extends TestCase
              ->times(3)
              ->andReturn([3, 4, 5]);
 
+        $server = m::mock('server');
+        $server->taskworker = false;
+
         App::shouldReceive('make')
            ->with(Server::class)
            ->once()
-           ->andReturnSelf();
+           ->andReturn($server);
 
-        App::shouldReceive('task')
+        $server->shouldReceive('task')
            ->with([
                'action' => 'push',
                'data' => [
@@ -344,6 +348,54 @@ class WebsocketTest extends TestCase
                ],
            ])
            ->once();
+
+        $websocket = $this->getWebsocket($room);
+        $websocket->setSender($sender)
+                  ->to($to)
+                  ->broadcast()
+                  ->emit($event, $data);
+
+        $this->assertSame([], $websocket->getTo());
+        $this->assertFalse($websocket->getIsBroadcast());
+    }
+
+    public function testEmitInTaskWorker()
+    {
+        $sender = 1;
+        $to = [1, 2, 'a', 'b', 'c'];
+        $broadcast = true;
+        $room = m::mock(RoomContract::class);
+        $room->shouldReceive('getClients')
+             ->with(m::type('string'))
+             ->times(3)
+             ->andReturn([3, 4, 5]);
+
+        $payload = [
+            'sender' => $sender,
+            'fds' => [1, 2, 3, 4, 5],
+            'broadcast' => $broadcast,
+            'assigned' => true,
+            'event' => $event = 'event',
+            'message' => $data = 'data',
+        ];
+
+        $server = m::mock('server');
+        $server->taskworker = true;
+
+        $manager = m::mock(Manager::class);
+        $manager->shouldReceive('pushMessage')
+            ->with($server, $payload)
+            ->once();
+
+        App::shouldReceive('make')
+           ->with(Server::class)
+           ->once()
+           ->andReturn($server);
+
+        App::shouldReceive('make')
+            ->with(Manager::class)
+            ->once()
+            ->andReturn($manager);
 
         $websocket = $this->getWebsocket($room);
         $websocket->setSender($sender)

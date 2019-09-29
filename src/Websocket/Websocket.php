@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use InvalidArgumentException;
 use SwooleTW\Http\Server\Facades\Server;
+use SwooleTW\Http\Server\Manager;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
 
 /**
@@ -172,17 +173,25 @@ class Websocket
             return false;
         }
 
-        $result = App::make(Server::class)->task([
-            'action' => static::PUSH_ACTION,
-            'data' => [
-                'sender' => $this->sender,
-                'fds' => $fds,
-                'broadcast' => $this->isBroadcast,
-                'assigned' => $assigned,
-                'event' => $event,
-                'message' => $data,
-            ],
-        ]);
+        $payload = [
+            'sender'    => $this->sender,
+            'fds'       => $fds,
+            'broadcast' => $this->isBroadcast,
+            'assigned'  => $assigned,
+            'event'     => $event,
+            'message'   => $data,
+        ];
+
+        $result = true;
+        $server = App::make(Server::class);
+        if ($server->taskworker) {
+            App::make(Manager::class)->pushMessage($server, $payload);
+        } else {
+            $result = $server->task([
+                'action' => static::PUSH_ACTION,
+                'data' => $payload
+            ]);
+        }
 
         $this->reset();
 
