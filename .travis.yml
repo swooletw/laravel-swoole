@@ -13,6 +13,8 @@ matrix:
     - php: 7.2
       env: FRAMEWORK_VERSION=laravel/framework:5.8.*
     - php: 7.2
+      env: FRAMEWORK_VERSION=laravel/framework:6.0.*
+    - php: 7.2
       env: FRAMEWORK_VERSION=laravel/lumen-framework:5.5.*
     - php: 7.2
       env: FRAMEWORK_VERSION=laravel/lumen-framework:5.6.*
