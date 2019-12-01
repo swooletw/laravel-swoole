@@ -15,6 +15,12 @@ use SwooleTW\Http\Tests\TestCase;
  */
 class QueueFactoryTest extends TestCase
 {
+    public function setUp()
+    {
+        parent::setUp();
+        $this->mockEnv('Laravel\Lumen');
+    }
+
     public function testItHasNeededStubByVersion()
     {
         $version = FW::version();

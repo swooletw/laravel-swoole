@@ -34,4 +34,15 @@ class TestCase extends BaseTestCase
         $mock = $builder->build();
         $mock->enable();
     }
+
+    protected function mockEnv(string $namespace, array $variables = [])
+    {
+        $this->mockMethod('env', function ($key, $value = null) use ($variables) {
+            if (array_key_exists($key, $variables)) {
+                return $variables[$key];
+            }
+
+            return null;
+        }, $namespace);
+    }
 }

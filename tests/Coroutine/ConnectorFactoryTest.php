@@ -14,6 +14,12 @@ use SwooleTW\Http\Tests\TestCase;
  */
 class ConnectorFactoryTest extends TestCase
 {
+    public function setUp()
+    {
+        parent::setUp();
+        $this->mockEnv('Laravel\Lumen');
+    }
+
     public function testItHasNeededStubByVersion()
     {
         $version = FW::version();
