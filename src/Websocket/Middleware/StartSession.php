@@ -86,6 +86,6 @@ class StartSession
      */
     protected function sessionConfigured()
     {
-        return Arr::get($this->manager->getSessionConfig(), 'session') !== null;
+        return ! is_null($this->manager->getSessionConfig()['driver'] ?? null);
     }
 }
