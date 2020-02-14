@@ -296,7 +296,7 @@ trait InteractsWithWebsocket
         $websocketConfig = $config->get("swoole_websocket.settings.{$driver}");
         $className = $config->get("swoole_websocket.drivers.{$driver}");
 
-        $this->websocketRoom = new $className($websocketConfig);
+        $this->websocketRoom = new $className($websocketConfig, $this->container->make('redis'));
         $this->websocketRoom->prepare();
     }
 
