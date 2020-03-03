@@ -324,8 +324,8 @@ class Sandbox
      */
     public function disable()
     {
-        Context::clear();
         $this->setInstance($this->getBaseApp());
+        Context::clear();
     }
 
     /**
