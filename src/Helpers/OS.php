@@ -31,6 +31,13 @@ final class OS
     public const WIN = 'win';
 
     /**
+     * Cygwin
+     *
+     * @const string
+     */
+    public const CYGWIN = 'cyg';
+
+    /**
      * Returns true if current OS in types
      *
      * @param string ...$types

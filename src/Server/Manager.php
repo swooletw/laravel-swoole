@@ -353,7 +353,7 @@ class Manager
     protected function setProcessName($process)
     {
         // MacOS doesn't support modifying process name.
-        if (OS::is(OS::MAC_OS) || $this->isInTesting()) {
+        if (OS::is(OS::MAC_OS, OS::CYGWIN) || $this->isInTesting()) {
             return;
         }
         $serverName = 'swoole_http_server';
