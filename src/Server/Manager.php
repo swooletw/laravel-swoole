@@ -204,7 +204,7 @@ class Manager
 
         $this->resetOnRequest();
         $sandbox = $this->app->make(Sandbox::class);
-        $handleStatic = $this->container->make('config')->get('swoole_http.handle_static_files', true);
+        $handleStatic = $this->container->make('config')->get('swoole_http.server.handle_static_files', true);
         $publicPath = $this->container->make('config')->get('swoole_http.server.public_path', base_path('public'));
 
         try {
