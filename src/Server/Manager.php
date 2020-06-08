@@ -23,7 +23,7 @@ use SwooleTW\Http\Concerns\InteractsWithWebsocket;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use SwooleTW\Http\Concerns\InteractsWithSwooleQueue;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
-use Symfony\Component\ErrorHandler\Error\FatalError;
+use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 /**
  * Class Manager
@@ -411,23 +411,7 @@ class Manager
     protected function normalizeException(Throwable $e)
     {
         if (! $e instanceof Exception) {
-			if ($e instanceof \ParseError) {
-				$severity = E_PARSE;
-			} elseif ($e instanceof \TypeError) {
-				$severity = E_RECOVERABLE_ERROR;
-			} else {
-				$severity = E_ERROR;
-			}
-		
-			//error_get_last() syntax
-			$error = [
-				'type' => $severity,
-				'message' => $e->getMessage(),
-				'file' => $e->getFile(),
-				'line' => $e->getLine(),
-			];
-			
-            $e = new FatalError($e->getMessage(), $e->getCode(), $error, null, true, $e->getTrace());
+            $e = new FatalThrowableError($e);
         }
 
         return $e;
