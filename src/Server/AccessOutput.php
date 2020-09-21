@@ -41,7 +41,7 @@ class AccessOutput
         $method = $request->method();
         $agent = $request->userAgent();
         $date = $this->date($response->getDate());
-        $status = $response->status();
+        $status = $response->getStatusCode();
         $style = $this->style($status);
 
         $this->output->writeln(
