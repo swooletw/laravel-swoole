@@ -805,7 +805,7 @@ class MimeType
      */
     public static function get($extension = null)
     {
-        return $extension ? self::getMimeTypeFromExtension($extension) : self::$mimes;
+        return isset($extension) ? self::getMimeTypeFromExtension($extension) : self::$mimes;
     }
 
     /**

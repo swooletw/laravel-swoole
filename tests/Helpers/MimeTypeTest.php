@@ -14,6 +14,14 @@ class MimeTypeTest extends TestCase
 
         $this->assertEquals($mimetype, 'text/css');
     }
+    
+    public function testGetWithEmptyString()
+    {
+        $extension = '';
+        $mimetype = MimeType::get($extension);
+
+        $this->assertEquals($mimetype, 'application/octet-stream');
+    }
 
     public function testFrom()
     {
