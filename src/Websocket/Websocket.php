@@ -170,6 +170,7 @@ class Websocket
         // that means trying to emit to a non-existing room
         // skip it directly instead of pushing to a task queue
         if (empty($fds) && $assigned) {
+            $this->reset();
             return false;
         }
 
