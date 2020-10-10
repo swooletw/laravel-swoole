@@ -5,6 +5,7 @@ namespace SwooleTW\Http\Websocket\Middleware;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Factory as Auth;
+use Illuminate\Support\Facades\Config;
 
 /**
  * Class Authenticate
@@ -43,6 +44,9 @@ class Authenticate
     {
         try {
             $this->auth->setRequest($request);
+            if ($authDriver = Config::get('swoole_websocket.auth_driver')) {
+                $this->auth->setDefaultDriver($authDriver);
+            }
             if ($user = $this->auth->authenticate()) {
                 $request->setUserResolver(function () use ($user) {
                     return $user;
