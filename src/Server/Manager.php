@@ -134,6 +134,8 @@ class Manager
 
             $server->on($event, $callback);
         }
+        
+        $this->container->make('events')->dispatch('swoole.beforeStart', $server);
     }
 
     /**
