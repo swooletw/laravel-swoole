@@ -102,11 +102,15 @@ class HttpServerCommand extends Command
 
         $host = Arr::get($this->config, 'server.host');
         $port = Arr::get($this->config, 'server.port');
+        $ssl_port = Arr::get($this->config, 'server.ssl_port');
         $hotReloadEnabled = Arr::get($this->config, 'hot_reload.enabled');
         $accessLogEnabled = Arr::get($this->config, 'server.access_log');
 
         $this->info('Starting swoole http server...');
         $this->info("Swoole http server started: <http://{$host}:{$port}>");
+        if(intval($ssl_port) > 0)
+            $this->info("Swoole https server started: <https://{$host}:{$ssl_port}>");
+
         if ($this->isDaemon()) {
             $this->info(
                 '> (You can run this command to ensure the ' .

@@ -167,10 +167,14 @@ abstract class HttpServiceProvider extends ServiceProvider
         $config = $this->app->make('config');
         $host = $config->get('swoole_http.server.host');
         $port = $config->get('swoole_http.server.port');
+        $ssl_port = $config->get('swoole_http.server.ssl_port');
         $socketType = $config->get('swoole_http.server.socket_type', SWOOLE_SOCK_TCP);
         $processType = $config->get('swoole_http.server.process_type', SWOOLE_PROCESS);
 
         static::$server = new $server($host, $port, $processType, $socketType);
+
+        if(intval($ssl_port) > 0)
+            static::$server->listen($host, $ssl_port, SWOOLE_SOCK_TCP | SWOOLE_SSL );
     }
 
     /**
