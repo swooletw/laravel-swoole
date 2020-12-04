@@ -2,9 +2,13 @@
 
 namespace SwooleTW\Http\Task\Connectors;
 
-use SwooleTW\Http\Task\SwooleTaskQueue;
 use Illuminate\Queue\Connectors\ConnectorInterface;
+use SwooleTW\Http\Helpers\FW;
+use SwooleTW\Http\Task\QueueFactory;
 
+/**
+ * Class SwooleTaskConnector
+ */
 class SwooleTaskConnector implements ConnectorInterface
 {
     /**
@@ -14,10 +18,11 @@ class SwooleTaskConnector implements ConnectorInterface
      */
     protected $swoole;
 
-     /**
+    /**
      * Create a new Swoole Async task connector instance.
      *
      * @param  \Swoole\Http\Server $swoole
+     *
      * @return void
      */
     public function __construct($swoole)
@@ -28,11 +33,12 @@ class SwooleTaskConnector implements ConnectorInterface
     /**
      * Establish a queue connection.
      *
-     * @param  array  $config
+     * @param  array $config
+     *
      * @return \Illuminate\Contracts\Queue\Queue
      */
     public function connect(array $config)
     {
-        return new SwooleTaskQueue($this->swoole);
+        return QueueFactory::make($this->swoole, FW::version());
     }
 }

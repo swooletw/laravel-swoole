@@ -37,6 +37,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Websocket handler for customized onHandShake callback
+    |--------------------------------------------------------------------------
+    */
+    'handshake' => [
+        'enabled' => false,
+        'handler' => SwooleTW\Http\Websocket\HandShakeHandler::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Default websocket driver
     |--------------------------------------------------------------------------
     */
@@ -77,7 +87,7 @@ return [
             'room_rows' => 4096,
             'room_size' => 2048,
             'client_rows' => 8192,
-            'client_size' => 2048
+            'client_size' => 2048,
         ],
 
         'redis' => [
@@ -92,6 +102,6 @@ return [
                 //
             ],
             'prefix' => 'swoole:',
-        ]
+        ],
     ],
 ];

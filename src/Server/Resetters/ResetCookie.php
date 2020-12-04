@@ -2,9 +2,8 @@
 
 namespace SwooleTW\Http\Server\Resetters;
 
-use SwooleTW\Http\Server\Sandbox;
 use Illuminate\Contracts\Container\Container;
-use SwooleTW\Http\Server\Resetters\ResetterContract;
+use SwooleTW\Http\Server\Sandbox;
 
 class ResetCookie implements ResetterContract
 {
@@ -13,13 +12,15 @@ class ResetCookie implements ResetterContract
      *
      * @param \Illuminate\Contracts\Container\Container $app
      * @param \SwooleTW\Http\Server\Sandbox $sandbox
+     *
+     * @return \Illuminate\Contracts\Container\Container
      */
     public function handle(Container $app, Sandbox $sandbox)
     {
         if (isset($app['cookie'])) {
             $cookies = $app->make('cookie');
             foreach ($cookies->getQueuedCookies() as $key => $value) {
-                $cookies->unqueue($key);
+                $cookies->unqueue($value->getName());
             }
         }
 

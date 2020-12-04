@@ -6,6 +6,9 @@ use Illuminate\Queue\Jobs\Job;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Queue\Job as JobContract;
 
+/**
+ * Class SwooleTaskJob
+ */
 class SwooleTaskJob extends Job implements JobContract
 {
     /**
@@ -37,14 +40,18 @@ class SwooleTaskJob extends Job implements JobContract
     protected $srcWrokerId;
 
     /**
+     * @var int
+     */
+    protected $srcWorkderId;
+
+    /**
      * Create a new job instance.
      *
-     * @param  \Illuminate\Container\Container  $container
-     * @param  \Swoole\Http\Server  $swoole
-     * @param  string  $job
-     * @param  int  $taskId
-     * @param  int  $srcWorkerId
-     * @return void
+     * @param \Illuminate\Contracts\Container\Container $container
+     * @param  \Swoole\Http\Server $swoole
+     * @param  string $job
+     * @param  int $taskId
+     * @param $srcWrokerId
      */
     public function __construct(Container $container, $swoole, $job, $taskId, $srcWrokerId)
     {
@@ -71,6 +78,7 @@ class SwooleTaskJob extends Job implements JobContract
 
     /**
      * Get the number of times the job has been attempted.
+     *
      * @return int
      */
     public function attempts()
@@ -80,6 +88,7 @@ class SwooleTaskJob extends Job implements JobContract
 
     /**
      * Get the raw body string for the job.
+     *
      * @return string
      */
     public function getRawBody()
@@ -87,9 +96,9 @@ class SwooleTaskJob extends Job implements JobContract
         return $this->job;
     }
 
-
     /**
      * Get the job identifier.
+     *
      * @return string
      */
     public function getJobId()
@@ -100,7 +109,7 @@ class SwooleTaskJob extends Job implements JobContract
     /**
      * Get the service container instance.
      *
-     * @return \Illuminate\Container\Container
+     * @return \Illuminate\Contracts\Container\Container
      */
     public function getContainer()
     {

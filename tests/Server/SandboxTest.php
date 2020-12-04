@@ -2,21 +2,17 @@
 
 namespace SwooleTW\Http\Tests\Server;
 
-use Mockery as m;
-use RuntimeException;
-use Swoole\Coroutine;
-use ReflectionProperty;
-use Illuminate\Http\Request;
 use Illuminate\Config\Repository;
+use Illuminate\Container\Container;
+use Illuminate\Contracts\Container\Container as ContainerContract;
+use Illuminate\Http\Request;
+use Mockery as m;
+use SwooleTW\Http\Coroutine\Context;
+use SwooleTW\Http\Exceptions\SandboxException;
+use SwooleTW\Http\Server\Application;
+use SwooleTW\Http\Server\Resetters\ResetterContract;
 use SwooleTW\Http\Server\Sandbox;
 use SwooleTW\Http\Tests\TestCase;
-use Illuminate\Container\Container;
-use SwooleTW\Http\Coroutine\Context;
-use SwooleTW\Http\Server\Application;
-use Illuminate\Support\Facades\Facade;
-use SwooleTW\Http\Exceptions\SandboxException;
-use SwooleTW\Http\Server\Resetters\ResetterContract;
-use Illuminate\Contracts\Container\Container as ContainerContract;
 
 class SandboxTest extends TestCase
 {
@@ -56,23 +52,23 @@ class SandboxTest extends TestCase
 
         $config = m::mock(Repository::class);
         $config->shouldReceive('get')
-            ->with('swoole_http.providers', [])
-            ->once()
-            ->andReturn([$providerName]);
+               ->with('swoole_http.providers', [])
+               ->once()
+               ->andReturn([$providerName]);
         $config->shouldReceive('get')
-            ->with('swoole_http.resetters', [])
-            ->once()
-            ->andReturn([$resetterName]);
+               ->with('swoole_http.resetters', [])
+               ->once()
+               ->andReturn([$resetterName]);
 
         $container = m::mock(Container::class);
         $container->shouldReceive('make')
-            ->with('config')
-            ->once()
-            ->andReturn($config);
+                  ->with(\Illuminate\Contracts\Config\Repository::class)
+                  ->once()
+                  ->andReturn($config);
         $container->shouldReceive('make')
-            ->with($resetterName)
-            ->once()
-            ->andReturn($resetter);
+                  ->with($resetterName)
+                  ->once()
+                  ->andReturn($resetter);
 
         $sandbox = new Sandbox;
         $sandbox->setBaseApp($container);
@@ -97,6 +93,31 @@ class SandboxTest extends TestCase
         $sandbox->getApplication();
 
         $this->assertTrue($sandbox->getSnapshot() instanceof Container);
+    }
+
+    public function testGetCachedSnapshot()
+    {
+        $container = m::mock(Container::class);
+        $snapshot = m::mock(Container::class);
+        $snapshot->shouldReceive('offsetGet')
+                 ->with('foo')
+                 ->once()
+                 ->andReturn($result = 'bar');
+
+        $sandbox = new Sandbox;
+        $sandbox->setBaseApp($container);
+        $sandbox->setSnapshot($snapshot);
+
+        $this->assertTrue($sandbox->getApplication() instanceof Container);
+        $this->assertEquals($result, $sandbox->getApplication()->foo);
+    }
+
+    public function testRunWithoutSnapshot()
+    {
+        $this->expectException(SandboxException::class);
+
+        $sandbox = new Sandbox;
+        $sandbox->run($request = m::mock(Request::class));
     }
 
     public function testSetRequest()
@@ -132,18 +153,19 @@ class SandboxTest extends TestCase
     {
         $config = m::mock(Illuminate\Config\Repository::class);
         $config->shouldReceive('get')
-            ->andReturn([]);
+               ->andReturn([]);
         $container = m::mock(Container::class);
         $container->shouldReceive('offsetGet')
-            ->andReturn((object)[]);
+                  ->andReturn((object) []);
         $container->shouldReceive('make')
-            ->andReturn($config);
+                  ->andReturn($config);
 
         return $container;
     }
 }
 
-class TestResetter implements ResetterContract {
+class TestResetter implements ResetterContract
+{
     public function handle(ContainerContract $app, Sandbox $sandbox)
     {
         return 'foo';

@@ -4,8 +4,8 @@ namespace SwooleTW\Http\Tests\Table;
 
 use Mockery as m;
 use Swoole\Table;
-use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Table\SwooleTable;
+use SwooleTW\Http\Tests\TestCase;
 
 class TableTest extends TestCase
 {

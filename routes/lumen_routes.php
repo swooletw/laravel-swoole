@@ -11,10 +11,5 @@
 |
 */
 
-$app->get('socket.io', [
-    'as' => 'io.get', 'uses' => 'SocketIOController@upgrade'
-]);
-
-$app->post('socket.io', [
-    'as' => 'io.post', 'uses' => 'SocketIOController@reject'
-]);
+$router->get('socket.io', ['uses' => 'SocketIOController@upgrade']);
+$router->post('socket.io', ['uses' => 'SocketIOController@reject']);

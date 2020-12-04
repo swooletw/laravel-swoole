@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Response
 {
+    const CHUNK_SIZE = 8192;
+
     /**
      * @var \Swoole\Http\Response
      */
@@ -25,7 +27,8 @@ class Response
      *
      * @param $illuminateResponse
      * @param \Swoole\Http\Response $swooleResponse
-     * @return \SwooleTW\Http\Server\Response
+     *
+     * @return \SwooleTW\Http\Transformers\Response
      */
     public static function make($illuminateResponse, SwooleResponse $swooleResponse)
     {
@@ -45,7 +48,7 @@ class Response
     }
 
     /**
-     * Sends HTTP headers and content.
+     * Send HTTP headers and content.
      *
      * @throws \InvalidArgumentException
      */
@@ -56,7 +59,7 @@ class Response
     }
 
     /**
-     * Sends HTTP headers.
+     * Send HTTP headers.
      *
      * @throws \InvalidArgumentException
      */
@@ -85,38 +88,62 @@ class Response
         $this->swooleResponse->status($illuminateResponse->getStatusCode());
 
         // cookies
+        // $cookie->isRaw() is supported after symfony/http-foundation 3.1
+        // and Laravel 5.3, so we can add it back now
         foreach ($illuminateResponse->headers->getCookies() as $cookie) {
-            // may need to consider rawcookie
-            $this->swooleResponse->cookie(
-                $cookie->getName(), $cookie->getValue(),
-                $cookie->getExpiresTime(), $cookie->getPath(),
-                $cookie->getDomain(), $cookie->isSecure(),
+            $method = $cookie->isRaw() ? 'rawcookie' : 'cookie';
+            $this->swooleResponse->$method(
+                $cookie->getName(),
+                $cookie->getValue(),
+                $cookie->getExpiresTime(),
+                $cookie->getPath(),
+                $cookie->getDomain(),
+                $cookie->isSecure(),
                 $cookie->isHttpOnly()
             );
         }
     }
 
     /**
-     * Sends HTTP content.
+     * Send HTTP content.
      */
     protected function sendContent()
     {
         $illuminateResponse = $this->getIlluminateResponse();
 
-        if ($illuminateResponse instanceof StreamedResponse &&
-            property_exists($illuminateResponse, 'output')
-        ) {
+        if ($illuminateResponse instanceof StreamedResponse && property_exists($illuminateResponse, 'output')) {
+            // TODO Add Streamed Response with output
             $this->swooleResponse->end($illuminateResponse->output);
         } elseif ($illuminateResponse instanceof BinaryFileResponse) {
             $this->swooleResponse->sendfile($illuminateResponse->getFile()->getPathname());
         } else {
-            $this->swooleResponse->end($illuminateResponse->getContent());
+            $this->sendInChunk($illuminateResponse->getContent());
         }
     }
 
     /**
+     * Send content in chunk
+     *
+     * @param string $content
+     */
+    protected function sendInChunk($content)
+    {
+        if (strlen($content) <= static::CHUNK_SIZE) {
+            $this->swooleResponse->end($content);
+            return;
+        }
+
+        foreach (str_split($content, static::CHUNK_SIZE) as $chunk) {
+            $this->swooleResponse->write($chunk);
+        }
+
+        $this->swooleResponse->end();
+    }
+
+    /**
      * @param \Swoole\Http\Response $swooleResponse
-     * @return \SwooleTW\Http\Server\Response
+     *
+     * @return \SwooleTW\Http\Transformers\Response
      */
     protected function setSwooleResponse(SwooleResponse $swooleResponse)
     {
@@ -135,7 +162,8 @@ class Response
 
     /**
      * @param mixed illuminateResponse
-     * @return \SwooleTW\Http\Server\Response
+     *
+     * @return \SwooleTW\Http\Transformers\Response
      */
     protected function setIlluminateResponse($illuminateResponse)
     {

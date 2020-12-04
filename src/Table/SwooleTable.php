@@ -18,6 +18,7 @@ class SwooleTable
      *
      * @param string $name
      * @param \Swoole\Table $table
+     *
      * @return \SwooleTW\Http\Table\SwooleTable
      */
     public function add(string $name, Table $table)
@@ -31,6 +32,7 @@ class SwooleTable
      * Get a swoole table by its name from existing tables.
      *
      * @param string $name
+     *
      * @return \Swoole\Table $table
      */
     public function get(string $name)
@@ -51,7 +53,8 @@ class SwooleTable
     /**
      * Dynamically access table.
      *
-     * @param  string  $key
+     * @param  string $key
+     *
      * @return table
      */
     public function __get($key)

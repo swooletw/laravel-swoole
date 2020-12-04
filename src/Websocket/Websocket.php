@@ -2,14 +2,18 @@
 
 namespace SwooleTW\Http\Websocket;
 
-use InvalidArgumentException;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Pipeline\Pipeline as PipelineContract;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
-use SwooleTW\Http\Websocket\Authenticatable;
-use Illuminate\Contracts\Container\Container;
+use InvalidArgumentException;
+use SwooleTW\Http\Server\Facades\Server;
+use SwooleTW\Http\Server\Manager;
 use SwooleTW\Http\Websocket\Rooms\RoomContract;
-use Illuminate\Contracts\Pipeline\Pipeline as PipelineContract;
 
+/**
+ * Class Websocket
+ */
 class Websocket
 {
     use Authenticatable;
@@ -56,22 +60,29 @@ class Websocket
     /**
      * Pipeline instance.
      *
-     * @var PipelineContract
+     * @var \Illuminate\Contracts\Pipeline\Pipeline
      */
     protected $pipeline;
 
     /**
      * Room adapter.
      *
-     * @var RoomContract
+     * @var \SwooleTW\Http\Websocket\Rooms\RoomContract
      */
     protected $room;
 
     /**
+     * DI Container.
+     *
+     * @var \Illuminate\Contracts\Container\Container
+     */
+    protected $container;
+
+    /**
      * Websocket constructor.
      *
-     * @var RoomContract $room
-     * @var PipelineContract $pipeline
+     * @param \SwooleTW\Http\Websocket\Rooms\RoomContract $room
+     * @param \Illuminate\Contracts\Pipeline\Pipeline $pipeline
      */
     public function __construct(RoomContract $room, PipelineContract $pipeline)
     {
@@ -83,7 +94,7 @@ class Websocket
     /**
      * Set broadcast to true.
      */
-    public function broadcast()
+    public function broadcast(): self
     {
         $this->isBroadcast = true;
 
@@ -94,9 +105,10 @@ class Websocket
      * Set multiple recipients fd or room names.
      *
      * @param integer, string, array
+     *
      * @return $this
      */
-    public function to($values)
+    public function to($values): self
     {
         $values = is_string($values) || is_integer($values) ? func_get_args() : $values;
 
@@ -113,9 +125,10 @@ class Websocket
      * Join sender to multiple rooms.
      *
      * @param string, array $rooms
+     *
      * @return $this
      */
-    public function join($rooms)
+    public function join($rooms): self
     {
         $rooms = is_string($rooms) || is_integer($rooms) ? func_get_args() : $rooms;
 
@@ -127,10 +140,11 @@ class Websocket
     /**
      * Make sender leave multiple rooms.
      *
-     * @param string, array
+     * @param array $rooms
+     *
      * @return $this
      */
-    public function leave($rooms = [])
+    public function leave($rooms = []): self
     {
         $rooms = is_string($rooms) || is_integer($rooms) ? func_get_args() : $rooms;
 
@@ -144,9 +158,10 @@ class Websocket
      *
      * @param string
      * @param mixed
+     *
      * @return boolean
      */
-    public function emit(string $event, $data)
+    public function emit(string $event, $data): bool
     {
         $fds = $this->getFds();
         $assigned = ! empty($this->to);
@@ -155,30 +170,40 @@ class Websocket
         // that means trying to emit to a non-existing room
         // skip it directly instead of pushing to a task queue
         if (empty($fds) && $assigned) {
+            $this->reset();
             return false;
         }
 
-        $result = App::make('swoole.server')->task([
-            'action' => static::PUSH_ACTION,
-            'data' => [
-                'sender' => $this->sender,
-                'fds' => $fds,
-                'broadcast' => $this->isBroadcast,
-                'assigned' => $assigned,
-                'event' => $event,
-                'message' => $data
-            ]
-        ]);
+        $payload = [
+            'sender'    => $this->sender,
+            'fds'       => $fds,
+            'broadcast' => $this->isBroadcast,
+            'assigned'  => $assigned,
+            'event'     => $event,
+            'message'   => $data,
+        ];
+
+        $result = true;
+        $server = App::make(Server::class);
+        if ($server->taskworker) {
+            App::make(Manager::class)->pushMessage($server, $payload);
+        } else {
+            $result = $server->task([
+                'action' => static::PUSH_ACTION,
+                'data' => $payload
+            ]);
+        }
 
         $this->reset();
 
-        return $result === false ? false : true;
+        return $result !== false;
     }
 
     /**
      * An alias of `join` function.
      *
      * @param string
+     *
      * @return $this
      */
     public function in($room)
@@ -193,6 +218,7 @@ class Websocket
      *
      * @param string
      * @param callback
+     *
      * @return $this
      */
     public function on(string $event, $callback)
@@ -212,6 +238,7 @@ class Websocket
      * Check if this event name exists.
      *
      * @param string
+     *
      * @return boolean
      */
     public function eventExists(string $event)
@@ -224,6 +251,7 @@ class Websocket
      *
      * @param string
      * @param mixed
+     *
      * @return mixed
      */
     public function call(string $event, $data = null)
@@ -243,7 +271,7 @@ class Websocket
 
         return App::call($this->callbacks[$event], [
             'websocket' => $this,
-            $dataKey => $data
+            $dataKey => $data,
         ]);
     }
 
@@ -251,17 +279,19 @@ class Websocket
      * Close current connection.
      *
      * @param integer
+     *
      * @return boolean
      */
     public function close(int $fd = null)
     {
-        return App::make('swoole.server')->close($fd ?: $this->sender);
+        return App::make(Server::class)->close($fd ?: $this->sender);
     }
 
     /**
      * Set sender fd.
      *
      * @param integer
+     *
      * @return $this
      */
     public function setSender(int $fd)
@@ -320,6 +350,10 @@ class Websocket
 
     /**
      * Reset some data status.
+     *
+     * @param bool $force
+     *
+     * @return $this
      */
     public function reset($force = false)
     {
@@ -336,6 +370,10 @@ class Websocket
 
     /**
      * Get or set middleware.
+     *
+     * @param array|string|null $middleware
+     *
+     * @return array|\SwooleTW\Http\Websocket\Websocket
      */
     public function middleware($middleware = null)
     {
@@ -362,6 +400,10 @@ class Websocket
 
     /**
      * Set container to pipeline.
+     *
+     * @param \Illuminate\Contracts\Container\Container $container
+     *
+     * @return $this
      */
     public function setContainer(Container $container)
     {
@@ -373,10 +415,16 @@ class Websocket
 
         $resetPipeline = $closure->bindTo($pipeline, $pipeline);
         $resetPipeline();
+
+        return $this;
     }
 
     /**
      * Set pipeline.
+     *
+     * @param \Illuminate\Contracts\Pipeline\Pipeline $pipeline
+     *
+     * @return $this
      */
     public function setPipeline(PipelineContract $pipeline)
     {
@@ -396,7 +444,8 @@ class Websocket
     /**
      * Set the given request through the middleware.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Request
      */
     protected function setRequestThroughMiddleware($request)

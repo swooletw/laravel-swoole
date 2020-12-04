@@ -2,6 +2,7 @@
 
 namespace SwooleTW\Http\Concerns;
 
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Container\Container;
 use SwooleTW\Http\Exceptions\SandboxException;
 use SwooleTW\Http\Server\Resetters\ResetterContract;
@@ -19,7 +20,7 @@ trait ResetApplication
     protected $providers = [];
 
     /**
-     * @var array
+     * @var \SwooleTW\Http\Server\Resetters\ResetterContract[]|array
      */
     protected $resetters = [];
 
@@ -28,7 +29,7 @@ trait ResetApplication
      */
     protected function setInitialConfig()
     {
-        $this->config = clone $this->getBaseApp()->make('config');
+        $this->config = clone $this->getBaseApp()->make(Repository::class);
     }
 
     /**
@@ -90,6 +91,8 @@ trait ResetApplication
 
     /**
      * Reset Laravel/Lumen Application.
+     *
+     * @param \Illuminate\Contracts\Container\Container $app
      */
     public function resetApp(Container $app)
     {

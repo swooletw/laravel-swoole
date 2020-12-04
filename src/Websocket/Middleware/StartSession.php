@@ -3,10 +3,14 @@
 namespace SwooleTW\Http\Websocket\Middleware;
 
 use Closure;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use Illuminate\Session\SessionManager;
-use Illuminate\Contracts\Session\Session;
+use Illuminate\Support\Arr;
 
+/**
+ * Class StartSession
+ */
 class StartSession
 {
     /**
@@ -19,7 +23,8 @@ class StartSession
     /**
      * Create a new session middleware.
      *
-     * @param  \Illuminate\Session\SessionManager  $manager
+     * @param  \Illuminate\Session\SessionManager $manager
+     *
      * @return void
      */
     public function __construct(SessionManager $manager)
@@ -30,16 +35,15 @@ class StartSession
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param  \Illuminate\Http\Request $request
+     * @param  \Closure $next
+     *
      * @return mixed
      */
     public function handle($request, Closure $next)
     {
         if ($this->sessionConfigured()) {
-            $request->setLaravelSession(
-                $session = $this->startSession($request)
-            );
+            $request->setLaravelSession($this->startSession($request));
         }
 
         return $next($request);
@@ -48,12 +52,13 @@ class StartSession
     /**
      * Start the session for the given request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Contracts\Session\Session
      */
     protected function startSession(Request $request)
     {
-        return tap($this->getSession($request), function ($session) use ($request) {
+        return tap($this->getSession($request), function (Session $session) use ($request) {
             $session->setRequestOnHandler($request);
 
             $session->start();
@@ -63,12 +68,13 @@ class StartSession
     /**
      * Get the session implementation from the manager.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Contracts\Session\Session
      */
     public function getSession(Request $request)
     {
-        return tap($this->manager->driver(), function ($session) use ($request) {
+        return tap($this->manager->driver(), function (Session $session) use ($request) {
             $session->setId($request->cookies->get($session->getName()));
         });
     }

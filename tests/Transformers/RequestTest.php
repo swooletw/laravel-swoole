@@ -2,11 +2,11 @@
 
 namespace SwooleTW\Http\Tests\Transformers;
 
+use Illuminate\Http\Request as IlluminateRequest;
 use Mockery as m;
+use Swoole\Http\Request as SwooleRequest;
 use SwooleTW\Http\Tests\TestCase;
 use SwooleTW\Http\Transformers\Request;
-use Swoole\Http\Request as SwooleRequest;
-use Illuminate\Http\Request as IlluminateRequest;
 
 class RequestTest extends TestCase
 {
@@ -34,25 +34,24 @@ class RequestTest extends TestCase
         $fileSize = false;
         $this->mockMethod('filesize', function () use (&$fileSize) {
             $fileSize = true;
+
             return 1;
         });
 
-        $mimeContentType = false;
-        $this->mockMethod('mime_content_type', function () use (&$mimeContentType) {
-            $mimeContentType = true;
-            return 'foo';
+        $this->mockMethod('pathinfo', function () {
+            return 'css?id=bfaf14972de9d89ae8fc';
         });
 
         $response = m::mock('response');
         $response->shouldReceive('status')
-            ->with(200)
-            ->once();
+                 ->with(200)
+                 ->once();
         $response->shouldReceive('header')
-            ->with('Content-Type', 'foo')
-            ->once();
+                 ->with('Content-Type', 'text/css')
+                 ->once();
         $response->shouldReceive('sendfile')
-            ->with('/foo.bar')
-            ->once();
+                 ->with('/foo.bar')
+                 ->once();
 
         Request::handleStatic(new SwooleRequestStub, $response, '/');
 
@@ -66,7 +65,7 @@ class RequestTest extends TestCase
         $request->server['request_uri'] = 'foo.php';
 
         $result = Request::handleStatic($request, null, '/');
-        $this->assertNull($result);
+        $this->assertFalse($result);
     }
 
     public function testHandleStaticWithNoneFile()
@@ -74,11 +73,12 @@ class RequestTest extends TestCase
         $isFile = false;
         $this->mockMethod('is_file', function () use (&$isFile) {
             $isFile = true;
+
             return false;
         });
 
         $result = Request::handleStatic(new SwooleRequestStub, null, '/');
-        $this->assertNull($result);
+        $this->assertFalse($result);
         $this->assertTrue($isFile);
     }
 
@@ -91,17 +91,23 @@ class RequestTest extends TestCase
 class SwooleRequestStub extends SwooleRequest
 {
     public $get = [];
+
     public $post = [];
+
     public $header = ['foo' => 'bar'];
+
     public $server = [
         'HTTP_CONTENT_LENGTH' => 0,
         'CONTENT_LENGTH' => 0,
         'HTTP_CONTENT_TYPE' => null,
         'CONTENT_TYPE' => null,
-        'request_uri' => 'foo.bar'
+        'request_uri' => 'foo.bar',
     ];
+
     public $cookie = [];
+
     public $files = [];
+
     public $fd = 1;
 
     function rawContent()

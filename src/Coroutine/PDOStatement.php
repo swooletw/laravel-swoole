@@ -10,18 +10,24 @@
 namespace SwooleTW\Http\Coroutine;
 
 use PDOStatement as BaseStatement;
-use SwooleTW\Http\Coroutine\PDO;
 use Swoole\Coroutine\MySQL\Statement;
 
 class PDOStatement extends BaseStatement
 {
     private $parent;
+
     public $statement;
+
     public $timeout;
+
     public $bindMap = [];
+
     public $cursor = -1;
+
     public $cursorOrientation = PDO::FETCH_ORI_NEXT;
+
     public $resultSet = [];
+
     public $fetchStyle = PDO::FETCH_BOTH;
 
     public function __construct(PDO $parent, Statement $statement, array $driverOptions = [])
@@ -95,7 +101,9 @@ class PDOStatement extends BaseStatement
         $inputParameters = [];
         if (! empty($this->statement->bindKeyMap)) {
             foreach ($this->statement->bindKeyMap as $nameKey => $numKey) {
-                $inputParameters[$numKey] = $this->bindMap[$nameKey];
+                if (isset($this->bindMap[$nameKey])) {
+                    $inputParameters[$numKey] = $this->bindMap[$nameKey];
+                }
             }
         } else {
             $inputParameters = $this->bindMap;
@@ -104,6 +112,10 @@ class PDOStatement extends BaseStatement
         $result = $this->statement->execute($inputParameters, $this->timeout);
         $this->resultSet = ($ok = $result !== false) ? $result : [];
         $this->afterExecute();
+
+        if ($result === false) {
+            throw new \PDOException($this->errorInfo(), $this->errorCode());
+        }
 
         return $ok;
     }
@@ -142,7 +154,8 @@ class PDOStatement extends BaseStatement
         $fetchStyle = null,
         $fetchArgument = null,
         $ctorArgs = null
-    ) {
+    )
+    {
         if (! is_array($rawData)) {
             return false;
         }
@@ -187,7 +200,8 @@ class PDOStatement extends BaseStatement
         $cursorOrientation = null,
         $cursorOffset = null,
         $fetchArgument = null
-    ) {
+    )
+    {
         $this->__executeWhenStringQueryEmpty();
 
         $cursorOrientation = is_null($cursorOrientation) ? PDO::FETCH_ORI_NEXT : $cursorOrientation;
@@ -222,7 +236,8 @@ class PDOStatement extends BaseStatement
     /**
      * Returns a single column from the next row of a result set or FALSE if there are no more rows.
      *
-     * @param int $column_number
+     * @param int|null $columnNumber
+     *
      * 0-indexed number of the column you wish to retrieve from the row.
      * If no value is supplied, PDOStatement::fetchColumn() fetches the first column.
      *
@@ -232,6 +247,7 @@ class PDOStatement extends BaseStatement
     {
         $columnNumber = is_null($columnNumber) ? 0 : $columnNumber;
         $this->__executeWhenStringQueryEmpty();
+
         return $this->fetch(PDO::FETCH_COLUMN, PDO::FETCH_ORI_NEXT, 0, $columnNumber);
     }
 

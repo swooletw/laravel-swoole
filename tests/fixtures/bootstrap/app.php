@@ -5,8 +5,8 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Contracts\Container\Container;
 
 $kernel = new TestKernel;
-
 $app = m::mock(Container::class);
+
 $app->shouldReceive('make')
     ->with(Kernel::class)
     ->once()
@@ -26,7 +26,8 @@ $app->shouldReceive('alias');
 
 return $app;
 
-class TestKernel {
+class TestKernel
+{
     public function bootstrappers()
     {
         return [];
