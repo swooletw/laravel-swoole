@@ -127,7 +127,7 @@ class Response
             $this->swooleResponse->sendfile($illuminateResponse->getFile()->getPathname());
         } else {
             $chunkGzip = $this->canGzipContent($illuminateResponse->headers->get('Content-Encoding'));
-            $this->sendInChunk($illuminateResponse->getContent());
+            $this->sendInChunk($illuminateResponse->getContent(), $chunkGzip);
         }
     }
 
@@ -135,8 +135,9 @@ class Response
      * Send content in chunk
      *
      * @param string $content
+     * @param bool $chunkGzip
      */
-    protected function sendInChunk($content)
+    protected function sendInChunk($content, $chunkGzip)
     {
         if (strlen($content) <= static::CHUNK_SIZE) {
             $this->swooleResponse->end($content);
