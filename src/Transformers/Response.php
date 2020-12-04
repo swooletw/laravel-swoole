@@ -126,6 +126,7 @@ class Response
         } elseif ($illuminateResponse instanceof BinaryFileResponse) {
             $this->swooleResponse->sendfile($illuminateResponse->getFile()->getPathname());
         } else {
+            $chunkGzip = $this->canGzipContent($illuminateResponse->headers->get('Content-Encoding'));
             $this->sendInChunk($illuminateResponse->getContent());
         }
     }
