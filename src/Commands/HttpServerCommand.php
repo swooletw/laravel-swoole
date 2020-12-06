@@ -125,7 +125,21 @@ class HttpServerCommand extends Command
             $manager->addProcess($this->getHotReloadProcess($server));
         }
 
+        //注册
+        $this->registerProcess($server);
+
         $manager->run();
+    }
+
+    /**
+     * @param \Swoole\WebSocket\Server $server
+     */
+    public function registerProcess($server)
+    {
+        $processes = Arr::get($this->config, 'process');
+        foreach ($processes as $process) {
+            $server->addProcess((new \SwooleTW\Http\Process\Process())->make($server, $process));
+        }
     }
 
     /**
