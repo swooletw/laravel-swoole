@@ -3,28 +3,18 @@
 namespace SwooleTW\Http\Process;
 
 use Swoole\Process as SwooleProcess;
-use SwooleTW\Http\HotReload\FSEventParser;
-use Symfony\Component\Process\Process as AppProcess;
 
 class Process
 {
-    /**
-     * FSProcess constructor.
-     *
-     * @param string $filter
-     * @param bool $recursively
-     * @param string $directory
-     */
-    public function __construct()
+    public function make($server, $process_class)
     {
+        if (!isset(class_implements($process_class)[ProcessContract::class])) {
+            throw new \InvalidArgumentException('costom process error');
+        }
 
-    }
-
-    public function make($server, $process_name)
-    {
-        return new SwooleProcess(function ($process) use ($server, $process_name) {
-            $p = new $process_name($server);
-            $p->handle($process);
+        return new SwooleProcess(function ($process) use ($server, $process_class) {
+            $p = new $process_class();
+            $p->handle($server, $process);
         }, false, false);
     }
 }
