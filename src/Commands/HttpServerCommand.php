@@ -18,7 +18,7 @@ use SwooleTW\Http\Middleware\AccessLog;
 use SwooleTW\Http\Server\Facades\Server;
 use Illuminate\Contracts\Container\Container;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use SwooleTW\Http\Process\Process as CostomProcess;
+use SwooleTW\Http\Process\CustomProcess;
 
 /**
  * @codeCoverageIgnore
@@ -126,7 +126,7 @@ class HttpServerCommand extends Command
             $manager->addProcess($this->getHotReloadProcess($server));
         }
 
-        //注册
+        //register custom process
         $this->registerProcess($server);
 
         $manager->run();
@@ -137,14 +137,13 @@ class HttpServerCommand extends Command
      */
     public function registerProcess($server)
     {
-        $this->laravel->singleton(CostomProcess::class, function () {
-            return new CostomProcess();
+        $this->laravel->singleton(CustomProcess::class, function () {
+            return new CustomProcess();
         });
-
-        $costom_process = $this->laravel->make(CostomProcess::class);
+        $customProcess = $this->laravel->make(CustomProcess::class);
         $processes = Arr::get($this->config, 'processes');
-        foreach ($processes as $process_name) {
-            $server->addProcess($costom_process->make($server, $process_name));
+        foreach ($processes as $process_class) {
+            $server->addProcess($customProcess->make($server, $process_class));
         }
     }
 
@@ -153,7 +152,7 @@ class HttpServerCommand extends Command
      */
     protected function stop()
     {
-        if (!$this->isRunning()) {
+        if (! $this->isRunning()) {
             $this->error("Failed! There is no swoole_http_server process running.");
 
             return;
@@ -193,7 +192,7 @@ class HttpServerCommand extends Command
      */
     protected function reload()
     {
-        if (!$this->isRunning()) {
+        if (! $this->isRunning()) {
             $this->error("Failed! There is no swoole_http_server process running.");
 
             return;
@@ -201,7 +200,7 @@ class HttpServerCommand extends Command
 
         $this->info('Reloading swoole_http_server...');
 
-        if (!$this->killProcess(SIGUSR1)) {
+        if (! $this->killProcess(SIGUSR1)) {
             $this->error('> failure');
 
             return;
@@ -337,7 +336,7 @@ class HttpServerCommand extends Command
             $start = time();
 
             do {
-                if (!$this->isRunning()) {
+                if (! $this->isRunning()) {
                     break;
                 }
 

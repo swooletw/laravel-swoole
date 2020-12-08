@@ -4,12 +4,18 @@ namespace SwooleTW\Http\Process;
 
 use Swoole\Process as SwooleProcess;
 
-class Process
+class CustomProcess
 {
     public function make($server, $process_class)
     {
         if (!isset(class_implements($process_class)[ProcessContract::class])) {
-            throw new \InvalidArgumentException('costom process error');
+            throw new \InvalidArgumentException(
+                sprintf(
+                    '%s must implement the interface %s',
+                    $process_class,
+                    ProcessContract::class
+                )
+            );
         }
 
         return new SwooleProcess(function ($process) use ($server, $process_class) {
