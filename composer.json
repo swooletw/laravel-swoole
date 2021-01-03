@@ -1,5 +1,5 @@
 {
-  "name": "lagerroos/laravel-swoole",
+  "name": "swooletw/laravel-swoole",
   "description": "High performance HTTP server based on Swoole. Speed up your Laravel and Lumen applications.",
   "keywords": [
     "swoole",
