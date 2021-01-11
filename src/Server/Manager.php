@@ -205,11 +205,11 @@ class Manager
         $this->resetOnRequest();
         $sandbox = $this->app->make(Sandbox::class);
         $handleStatic = $this->container->make('config')->get('swoole_http.server.handle_static_files', true);
-        $publicPath = $this->container->make('config')->get('swoole_http.server.public_path', base_path('public'));
+        $documentRoot = $this->container->make('config')->get('swoole_http.server.document_root', base_path('public'));
 
         try {
             // handle static file request first
-            if ($handleStatic && Request::handleStatic($swooleRequest, $swooleResponse, $publicPath)) {
+            if ($handleStatic && Request::handleStatic($swooleRequest, $swooleResponse, $documentRoot)) {
                 return;
             }
             // transform swoole request to illuminate request
