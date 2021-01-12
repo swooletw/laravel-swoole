@@ -175,15 +175,15 @@ class Request
      *
      * @param \Swoole\Http\Request $swooleRequest
      * @param \Swoole\Http\Response $swooleResponse
-     * @param string $documentRoot
+     * @param string $publicPath
      *
      * @return boolean
      */
-    public static function handleStatic($swooleRequest, $swooleResponse, string $documentRoot)
+    public static function handleStatic($swooleRequest, $swooleResponse, string $publicPath)
     {
         $uri = $swooleRequest->server['request_uri'] ?? '';
         $extension = strtok(pathinfo($uri, PATHINFO_EXTENSION), '?');
-        $fileName = @realpath($documentRoot . $uri);
+        $fileName = @realpath($publicPath . $uri);
 
         if (!$fileName) {
             return false;
@@ -193,7 +193,7 @@ class Request
             return false;
         }
 
-        if (substr($fileName, 0, strlen($documentRoot)) != $documentRoot) {
+        if (substr($fileName, 0, strlen($publicPath)) != $publicPath) {
             return false;
         }
 

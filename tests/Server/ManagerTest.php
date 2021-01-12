@@ -61,7 +61,7 @@ class ManagerTest extends TestCase
         'swoole_http.tables' => [],
         'swoole_http.providers' => [],
         'swoole_http.resetters' => [],
-        'swoole_http.server.document_root' => '/',
+        'swoole_http.server.public_path' => '/',
     ];
 
     public function testGetFramework()
