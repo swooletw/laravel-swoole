@@ -70,6 +70,7 @@ class HttpServerCommand extends Command
         $this->checkEnvironment();
         $this->loadConfigs();
         $this->initAction();
+        $this->hookAction();
         $this->runAction();
     }
 
@@ -79,6 +80,14 @@ class HttpServerCommand extends Command
     protected function loadConfigs()
     {
         $this->config = $this->laravel->make('config')->get('swoole_http');
+    }
+    
+    /**
+     * Hook action
+     */
+    protected function hookAction()
+    {
+        // custom hook task before starting server
     }
 
     /**

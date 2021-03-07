@@ -4,6 +4,7 @@ namespace SwooleTW\Http\Transformers;
 
 use Illuminate\Http\Response as IlluminateResponse;
 use Swoole\Http\Response as SwooleResponse;
+use Swoole\Http\Request as SwooleRequest;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -18,6 +19,11 @@ class Response
     protected $swooleResponse;
 
     /**
+     * @var \Swoole\Http\Request
+     */
+    protected $swooleRequest;
+
+    /**
      * @var \Illuminate\Http\Response
      */
     protected $illuminateResponse;
@@ -27,12 +33,13 @@ class Response
      *
      * @param $illuminateResponse
      * @param \Swoole\Http\Response $swooleResponse
+     * @param \Swoole\Http\Request $swooleRequest
      *
      * @return \SwooleTW\Http\Transformers\Response
      */
-    public static function make($illuminateResponse, SwooleResponse $swooleResponse)
+    public static function make($illuminateResponse, SwooleResponse $swooleResponse, SwooleRequest $swooleRequest)
     {
-        return new static($illuminateResponse, $swooleResponse);
+        return new static($illuminateResponse, $swooleResponse, $swooleRequest);
     }
 
     /**
@@ -40,11 +47,13 @@ class Response
      *
      * @param mixed $illuminateResponse
      * @param \Swoole\Http\Response $swooleResponse
+     * @param \Swoole\Http\Request $swooleRequest
      */
-    public function __construct($illuminateResponse, SwooleResponse $swooleResponse)
+    public function __construct($illuminateResponse, SwooleResponse $swooleResponse, SwooleRequest $swooleRequest)
     {
         $this->setIlluminateResponse($illuminateResponse);
         $this->setSwooleResponse($swooleResponse);
+        $this->setSwooleRequest($swooleRequest);
     }
 
     /**
@@ -117,7 +126,8 @@ class Response
         } elseif ($illuminateResponse instanceof BinaryFileResponse) {
             $this->swooleResponse->sendfile($illuminateResponse->getFile()->getPathname());
         } else {
-            $this->sendInChunk($illuminateResponse->getContent());
+            $chunkGzip = $this->canGzipContent($illuminateResponse->headers->get('Content-Encoding'));
+            $this->sendInChunk($illuminateResponse->getContent(), $chunkGzip);
         }
     }
 
@@ -125,12 +135,19 @@ class Response
      * Send content in chunk
      *
      * @param string $content
+     * @param bool $chunkGzip
      */
-    protected function sendInChunk($content)
+    protected function sendInChunk($content, $chunkGzip)
     {
         if (strlen($content) <= static::CHUNK_SIZE) {
             $this->swooleResponse->end($content);
             return;
+        }
+
+        // Swoole Chunk mode does not support compress by default, this patch only supports gzip
+        if ($chunkGzip) {
+            $this->swooleResponse->header('Content-Encoding', 'gzip');
+            $content = gzencode($content, config('swoole_http.server.options.http_compression_level', 3));
         }
 
         foreach (str_split($content, static::CHUNK_SIZE) as $chunk) {
@@ -183,5 +200,38 @@ class Response
     public function getIlluminateResponse()
     {
         return $this->illuminateResponse;
+    }
+
+    /**
+     * @param \Swoole\Http\Request $swooleRequest
+     *
+     * @return \SwooleTW\Http\Transformers\Response
+     */
+    protected function setSwooleRequest(SwooleRequest $swooleRequest)
+    {
+        $this->swooleRequest = $swooleRequest;
+
+        return $this;
+    }
+
+    /**
+     * @return \Swoole\Http\Request
+     */
+    public function getSwooleRequest()
+    {
+        return $this->swooleRequest;
+    }
+
+    /**
+     * @param string $responseContentEncoding
+     * @return bool
+     */
+    protected function canGzipContent($responseContentEncoding)
+    {
+        return empty($responseContentEncoding) &&
+            config('swoole_http.server.options.http_compression', true) &&
+            !empty($this->swooleRequest->header['accept-encoding']) &&
+            strpos($this->swooleRequest->header['accept-encoding'], 'gzip') !== false &&
+            function_exists('gzencode');
     }
 }

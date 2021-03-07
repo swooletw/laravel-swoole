@@ -233,7 +233,7 @@ class Manager
             $illuminateResponse = $sandbox->run($illuminateRequest);
 
             // send response
-            Response::make($illuminateResponse, $swooleResponse)->send();
+            Response::make($illuminateResponse, $swooleResponse, $swooleRequest)->send();
         } catch (Throwable $e) {
             try {
                 $exceptionResponse = $this->app
@@ -242,7 +242,7 @@ class Manager
                         $illuminateRequest,
                         $this->normalizeException($e)
                     );
-                Response::make($exceptionResponse, $swooleResponse)->send();
+                Response::make($exceptionResponse, $swooleResponse, $swooleRequest)->send();
             } catch (Throwable $e) {
                 $this->logServerError($e);
             }
