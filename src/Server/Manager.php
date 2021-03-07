@@ -212,6 +212,14 @@ class Manager
             if ($handleStatic && Request::handleStatic($swooleRequest, $swooleResponse, $publicPath)) {
                 return;
             }
+
+            // Respond with 503 if app is not settled by worker
+            if (!$sandbox->isSettledApp()) {
+                Response::make((new \Illuminate\Http\Response())->setStatusCode(503), $swooleResponse)
+                    ->send();
+                return;
+            }
+
             // transform swoole request to illuminate request
             $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
 

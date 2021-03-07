@@ -48,6 +48,11 @@ class Sandbox
         $this->initialize();
     }
 
+    public function isSettledApp()
+    {
+        return !!$this->app;
+    }
+
     /**
      * Set framework type.
      *
