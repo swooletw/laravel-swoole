@@ -68,7 +68,7 @@ class Pusher
         bool $broadcast,
         bool $assigned,
         string $event,
-        $message = null,
+        string $message,
         $server
     )
     {
