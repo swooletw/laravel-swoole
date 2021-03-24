@@ -45,7 +45,7 @@ class Pusher
     protected $event;
 
     /**
-     * @var mixed|null
+     * @var string|null
      */
     protected $message;
 
