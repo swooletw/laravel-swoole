@@ -2,6 +2,9 @@ language: php
 dist: trusty
 sudo: false
 
+env:
+  global:
+    - COMPOSER_MEMORY_LIMIT=-1
 matrix:
   include:
     - php: 7.2
