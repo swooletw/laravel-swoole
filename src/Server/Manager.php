@@ -260,11 +260,19 @@ class Manager
      *
      * @param mixed $server
      * @param string|\Swoole\Server\Task $taskId or $task
-     * @param string $srcWorkerId
-     * @param mixed $data
+     * @param string|null $srcWorkerId
+     * @param mixed|null $data
      */
-    public function onTask($server, $taskId, $srcWorkerId, $data)
+    public function onTask($server, $task, $srcWorkerId = null, $data = null)
     {
+        if ($task instanceof Task) {
+            $data = $task->data;
+            $srcWorkerId = $task->worker_id;
+            $taskId = $task->id;
+        } else {
+            $taskId = $task;
+        }
+
         $this->container->make('events')->dispatch('swoole.task', func_get_args());
 
         try {
