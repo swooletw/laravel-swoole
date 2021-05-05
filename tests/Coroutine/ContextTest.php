@@ -63,12 +63,12 @@ class ContextTest extends TestCase
 
             $data1 = Context::getData('foo');
             $data2 = 'baz';
-            $coroutineId1 = Context::getCoroutineId();
+            $coroutineId1 = Context::getRequestedCoroutineId();
             $coroutineId2 = -1;
 
             go(function () use (&$data2, &$coroutineId2) {
                 $data2 = Context::getData('foo');
-                $coroutineId2 = Context::getCoroutineId();
+                $coroutineId2 = Context::getRequestedCoroutineId();
             });
         });
 
