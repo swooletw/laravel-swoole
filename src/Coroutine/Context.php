@@ -7,6 +7,8 @@ use Swoole\Coroutine;
 
 class Context
 {
+    protected const MAX_RECURSE_CONTEXT_ID = 50;
+
     /**
      * The app containers in different coroutine environment.
      *
@@ -90,10 +92,20 @@ class Context
     }
 
     /**
-     * Get current coroutine id.
+     * Get current requesting coroutine id.
      */
-    public static function getCoroutineId()
+    public static function getCoroutineId(): int
     {
-        return Coroutine::getuid();
+        $currentId = Coroutine::getuid();
+        if ($currentId === -1) {
+            return -1;
+        }
+
+        $counter = 0;
+        while (($topCoroutineId = Coroutine::getPcid($currentId)) !== -1 && $counter <= self::MAX_RECURSE_CONTEXT_ID) {
+            $currentId = $topCoroutineId;
+            $counter++;
+        }
+        return $currentId;
     }
 }
