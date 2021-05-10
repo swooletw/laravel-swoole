@@ -183,9 +183,9 @@ class Request
     {
         $uri = $swooleRequest->server['request_uri'] ?? '';
         $extension = strtok(pathinfo($uri, PATHINFO_EXTENSION), '?');
-        $fileName = @realpath($publicPath . $uri);
+        $fileName = realpath($publicPath . $uri);
 
-        if (!$fileName) {
+        if (! $fileName) {
             return false;
         }
 

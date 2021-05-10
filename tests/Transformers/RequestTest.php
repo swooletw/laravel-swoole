@@ -26,6 +26,10 @@ class RequestTest extends TestCase
 
     public function testHandleStatic()
     {
+        $this->mockMethod('realpath', function () {
+            return '/foo.bar';
+        });
+
         $isFile = false;
         $this->mockMethod('is_file', function () use (&$isFile) {
             return $isFile = true;
@@ -70,6 +74,10 @@ class RequestTest extends TestCase
 
     public function testHandleStaticWithNoneFile()
     {
+        $this->mockMethod('realpath', function () {
+            return '/foo.bar';
+        });
+
         $isFile = false;
         $this->mockMethod('is_file', function () use (&$isFile) {
             $isFile = true;
