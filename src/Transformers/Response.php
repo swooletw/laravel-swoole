@@ -3,8 +3,9 @@
 namespace SwooleTW\Http\Transformers;
 
 use Illuminate\Http\Response as IlluminateResponse;
-use Swoole\Http\Response as SwooleResponse;
+use Illuminate\Support\Facades\Config;
 use Swoole\Http\Request as SwooleRequest;
+use Swoole\Http\Response as SwooleResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -147,7 +148,7 @@ class Response
         // Swoole Chunk mode does not support compress by default, this patch only supports gzip
         if ($chunkGzip) {
             $this->swooleResponse->header('Content-Encoding', 'gzip');
-            $content = gzencode($content, config('swoole_http.server.options.http_compression_level', 3));
+            $content = gzencode($content, Config::get('swoole_http.server.options.http_compression_level', 3));
         }
 
         foreach (str_split($content, static::CHUNK_SIZE) as $chunk) {
@@ -229,7 +230,7 @@ class Response
     protected function canGzipContent($responseContentEncoding)
     {
         return empty($responseContentEncoding) &&
-            config('swoole_http.server.options.http_compression', true) &&
+            Config::get('swoole_http.server.options.http_compression', true) &&
             !empty($this->swooleRequest->header['accept-encoding']) &&
             strpos($this->swooleRequest->header['accept-encoding'], 'gzip') !== false &&
             function_exists('gzencode');

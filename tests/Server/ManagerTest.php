@@ -223,6 +223,10 @@ class ManagerTest extends TestCase
             return '/';
         });
 
+        Config::shouldReceive('get')
+            ->with('swoole_http.server.options.http_compression', true)
+            ->andReturn(true);
+
         $request = m::mock(Request::class);
         $request->shouldReceive('rawcontent')
                 ->once()
@@ -274,6 +278,10 @@ class ManagerTest extends TestCase
         $this->mockMethod('base_path', function () {
             return '/';
         });
+
+        Config::shouldReceive('get')
+            ->with('swoole_http.server.options.http_compression', true)
+            ->andReturn(true);
 
         $request = m::mock(Request::class);
         $request->shouldReceive('rawcontent')

@@ -2,18 +2,19 @@
 
 namespace SwooleTW\Http\Tests\Transformers;
 
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Http\Response as IlluminateResponse;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
+use Mockery;
+use SwooleTW\Http\Tests\TestCase;
+use SwooleTW\Http\Transformers\Response;
+use Swoole\Http\Request as SwooleRequest;
+use Swoole\Http\Response as SwooleResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\File\File;
-use Illuminate\Http\Response as IlluminateResponse;
-use Illuminate\Support\Str;
-use Swoole\Http\Response as SwooleResponse;
-use Swoole\Http\Request as SwooleRequest;
-use SwooleTW\Http\Tests\TestCase;
-use SwooleTW\Http\Transformers\Response;
-use Mockery;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ResponseTest extends TestCase
 {
@@ -212,26 +213,22 @@ class ResponseTest extends TestCase
 
     public function testSendChunkedContent()
     {
-        $http_compression_level = 5;
+        $httpCompressionLevel = 5;
         $content = Str::random(Response::CHUNK_SIZE * 3);
-        $compressedContent = gzencode($content, $http_compression_level);
-        $times = (int)ceil(strlen($compressedContent) / Response::CHUNK_SIZE);
+        $compressedContent = gzencode($content, $httpCompressionLevel);
+        $times = (int) ceil(strlen($compressedContent) / Response::CHUNK_SIZE);
 
         $chunks = [];
         foreach (str_split($compressedContent, Response::CHUNK_SIZE) as $chunk) {
             $chunks[] = $chunk;
         }
 
-        app()->instance('config', new \Illuminate\Config\Repository([
-            'swoole_http' => [
-                'server' => [
-                    'options' => [
-                        'http_compression' => true,
-                        'http_compression_level' => $http_compression_level
-                    ]
-                ],
-            ],
-        ]));
+        Config::shouldReceive('get')
+            ->with('swoole_http.server.options.http_compression_level', 3)
+            ->andReturn($httpCompressionLevel);
+        Config::shouldReceive('get')
+            ->with('swoole_http.server.options.http_compression', true)
+            ->andReturn(true);
 
         $illuminateResponse = Mockery::mock(IlluminateResponse::class);
         $illuminateResponse->headers = Mockery::mock(ResponseHeaderBag::class);
@@ -274,20 +271,14 @@ class ResponseTest extends TestCase
         $callback->call($response);
     }
 
-    public function testSend_()
+    public function testSend()
     {
         $status = 200;
         $content = 'test';
 
-        app()->instance('config', new \Illuminate\Config\Repository([
-            'swoole_http' => [
-                'server' => [
-                    'options' => [
-                        'http_compression' => false,
-                    ]
-                ],
-            ],
-        ]));
+        Config::shouldReceive('get')
+            ->with('swoole_http.server.options.http_compression', true)
+            ->andReturn(false);
 
         $swooleResponse = Mockery::mock(SwooleResponse::class);
         $swooleResponse->shouldReceive('header')
