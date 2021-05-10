@@ -5,6 +5,7 @@ sudo: false
 env:
   global:
     - COMPOSER_MEMORY_LIMIT=-1
+
 matrix:
   include:
     - php: 7.4
@@ -48,8 +49,4 @@ install:
   - travis_retry composer install --no-suggest --prefer-dist -n -o
 
 script:
-  - mkdir -p build/logs
-  - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
-
-after_success:
-  - vendor/bin/php-coveralls -v
+  - vendor/bin/phpunit
