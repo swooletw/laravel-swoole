@@ -21,7 +21,7 @@ class WebsocketHandler implements HandlerContract
      */
     public function onOpen($fd, Request $request)
     {
-        if (! $request->input('sid')) {
+        if (!$request->input('sid')) {
             $payload = json_encode(
                 [
                     'sid' => base64_encode(uniqid()),
@@ -31,7 +31,7 @@ class WebsocketHandler implements HandlerContract
                 ]
             );
             $initPayload = Packet::OPEN . $payload;
-            $connectPayload = Packet::MESSAGE . Packet::CONNECT;
+            $connectPayload = Packet::MESSAGE . Packet::CONNECT . json_encode(['sid' => base64_encode(uniqid())]);
 
             App::make(Server::class)->push($fd, $initPayload);
             App::make(Server::class)->push($fd, $connectPayload);
