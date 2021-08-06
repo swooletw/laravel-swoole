@@ -161,9 +161,14 @@ trait InteractsWithWebsocket
         }
 
         $websocket = $this->app->make(Websocket::class);
+        $sandbox = $this->app->make(Sandbox::class);
 
         try {
             $websocket->reset(true)->setSender($fd);
+            
+            // enable sandbox
+            $sandbox->enable();
+            
             // trigger 'disconnect' websocket event
             if ($websocket->eventExists('disconnect')) {
                 $websocket->call('disconnect');
@@ -174,6 +179,9 @@ trait InteractsWithWebsocket
             $websocket->leave();
         } catch (Throwable $e) {
             $this->logServerError($e);
+        } finally {
+            // disable and recycle sandbox resource
+            $sandbox->disable();
         }
     }
 
