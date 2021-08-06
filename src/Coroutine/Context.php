@@ -7,6 +7,8 @@ use Swoole\Coroutine;
 
 class Context
 {
+    protected const MAX_RECURSE_COROUTINE_ID = 50;
+
     /**
      * The app containers in different coroutine environment.
      *
@@ -26,7 +28,7 @@ class Context
      */
     public static function getApp()
     {
-        return static::$apps[static::getCoroutineId()] ?? null;
+        return static::$apps[static::getRequestedCoroutineId()] ?? null;
     }
 
     /**
@@ -36,7 +38,7 @@ class Context
      */
     public static function setApp(Container $app)
     {
-        static::$apps[static::getCoroutineId()] = $app;
+        static::$apps[static::getRequestedCoroutineId()] = $app;
     }
 
     /**
@@ -48,7 +50,7 @@ class Context
      */
     public static function getData(string $key)
     {
-        return static::$data[static::getCoroutineId()][$key] ?? null;
+        return static::$data[static::getRequestedCoroutineId()][$key] ?? null;
     }
 
     /**
@@ -59,7 +61,7 @@ class Context
      */
     public static function setData(string $key, $value)
     {
-        static::$data[static::getCoroutineId()][$key] = $value;
+        static::$data[static::getRequestedCoroutineId()][$key] = $value;
     }
 
     /**
@@ -69,7 +71,7 @@ class Context
      */
     public static function removeData(string $key)
     {
-        unset(static::$data[static::getCoroutineId()][$key]);
+        unset(static::$data[static::getRequestedCoroutineId()][$key]);
     }
 
     /**
@@ -77,7 +79,7 @@ class Context
      */
     public static function getDataKeys()
     {
-        return array_keys(static::$data[static::getCoroutineId()] ?? []);
+        return array_keys(static::$data[static::getRequestedCoroutineId()] ?? []);
     }
 
     /**
@@ -85,15 +87,30 @@ class Context
      */
     public static function clear()
     {
-        unset(static::$apps[static::getCoroutineId()]);
-        unset(static::$data[static::getCoroutineId()]);
+        unset(static::$apps[static::getRequestedCoroutineId()]);
+        unset(static::$data[static::getRequestedCoroutineId()]);
+    }
+
+    public static function getCoroutineId(): int
+    {
+        return Coroutine::getuid();
     }
 
     /**
      * Get current coroutine id.
      */
-    public static function getCoroutineId()
+    public static function getRequestedCoroutineId(): int
     {
-        return Coroutine::getuid();
+        $currentId = static::getCoroutineId();
+        if ($currentId === -1) {
+            return -1;
+        }
+
+        $counter = 0;
+        while (($topCoroutineId = Coroutine::getPcid($currentId)) !== -1 && $counter <= static::MAX_RECURSE_COROUTINE_ID) {
+            $currentId = $topCoroutineId;
+            $counter++;
+        }
+        return $currentId;
     }
 }

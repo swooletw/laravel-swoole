@@ -18,5 +18,5 @@ if (! defined('SWOOLE_SOCK_TCP')) {
 }
 
 if (! defined('SWOOLE_PROCESS')) {
-    define('SWOOLE_PROCESS', 3);
+    define('SWOOLE_PROCESS', 2);
 }
