@@ -68,8 +68,8 @@ class Pusher
         bool $broadcast,
         bool $assigned,
         string $event,
-        $message = null,
-        $server
+        $server,
+        $message = null
     )
     {
         $this->opcode = $opcode;
