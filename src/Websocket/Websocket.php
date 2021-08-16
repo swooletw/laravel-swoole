@@ -81,8 +81,8 @@ class Websocket
     /**
      * Websocket constructor.
      *
-     * @param \SwooleTW\Http\Websocket\Rooms\RoomContract $room
-     * @param \Illuminate\Contracts\Pipeline\Pipeline $pipeline
+     * @param  \SwooleTW\Http\Websocket\Rooms\RoomContract  $room
+     * @param  \Illuminate\Contracts\Pipeline\Pipeline  $pipeline
      */
     public function __construct(RoomContract $room, PipelineContract $pipeline)
     {
@@ -104,7 +104,7 @@ class Websocket
     /**
      * Set multiple recipients fd or room names.
      *
-     * @param integer, string, array
+     * @param  integer, string, array
      *
      * @return $this
      */
@@ -113,7 +113,7 @@ class Websocket
         $values = is_string($values) || is_integer($values) ? func_get_args() : $values;
 
         foreach ($values as $value) {
-            if (! in_array($value, $this->to)) {
+            if (!in_array($value, $this->to)) {
                 $this->to[] = $value;
             }
         }
@@ -124,7 +124,7 @@ class Websocket
     /**
      * Join sender to multiple rooms.
      *
-     * @param string, array $rooms
+     * @param  string, array $rooms
      *
      * @return $this
      */
@@ -140,7 +140,7 @@ class Websocket
     /**
      * Make sender leave multiple rooms.
      *
-     * @param array $rooms
+     * @param  array  $rooms
      *
      * @return $this
      */
@@ -156,15 +156,15 @@ class Websocket
     /**
      * Emit data and reset some status.
      *
-     * @param string
-     * @param mixed
+     * @param  string
+     * @param  mixed
      *
      * @return boolean
      */
     public function emit(string $event, $data): bool
     {
         $fds = $this->getFds();
-        $assigned = ! empty($this->to);
+        $assigned = !empty($this->to);
 
         // if no fds are found, but rooms are assigned
         // that means trying to emit to a non-existing room
@@ -175,12 +175,12 @@ class Websocket
         }
 
         $payload = [
-            'sender'    => $this->sender,
-            'fds'       => $fds,
+            'sender' => $this->sender,
+            'fds' => $fds,
             'broadcast' => $this->isBroadcast,
-            'assigned'  => $assigned,
-            'event'     => $event,
-            'message'   => $data,
+            'assigned' => $assigned,
+            'event' => $event,
+            'message' => $data,
         ];
 
         $result = true;
@@ -189,9 +189,9 @@ class Websocket
             App::make(Manager::class)->pushMessage($server, $payload);
         } else {
             $result = $server->task([
-                'action' => static::PUSH_ACTION,
-                'data' => $payload
-            ]);
+                                        'action' => static::PUSH_ACTION,
+                                        'data' => $payload
+                                    ]);
         }
 
         $this->reset();
@@ -202,7 +202,7 @@ class Websocket
     /**
      * An alias of `join` function.
      *
-     * @param string
+     * @param  string
      *
      * @return $this
      */
@@ -216,14 +216,14 @@ class Websocket
     /**
      * Register an event name with a closure binding.
      *
-     * @param string
-     * @param callback
+     * @param  string
+     * @param  callback
      *
      * @return $this
      */
     public function on(string $event, $callback)
     {
-        if (! is_string($callback) && ! is_callable($callback)) {
+        if (!is_string($callback) && !is_callable($callback)) {
             throw new InvalidArgumentException(
                 'Invalid websocket callback. Must be a string or callable.'
             );
@@ -237,7 +237,7 @@ class Websocket
     /**
      * Check if this event name exists.
      *
-     * @param string
+     * @param  string
      *
      * @return boolean
      */
@@ -249,14 +249,14 @@ class Websocket
     /**
      * Execute callback function by its event name.
      *
-     * @param string
-     * @param mixed
+     * @param  string
+     * @param  mixed
      *
      * @return mixed
      */
     public function call(string $event, $data = null)
     {
-        if (! $this->eventExists($event)) {
+        if (!$this->eventExists($event)) {
             return null;
         }
 
@@ -266,7 +266,9 @@ class Websocket
 
         // dispatch request to pipeline if middleware are set
         if ($isConnect && count($this->middleware)) {
-            $data = $this->setRequestThroughMiddleware($data);
+            $response = $this->setRequestThroughMiddleware($data);
+            $response->setContent('');
+            return $response;
         }
 
         return App::call($this->callbacks[$event], [
@@ -278,7 +280,7 @@ class Websocket
     /**
      * Close current connection.
      *
-     * @param integer
+     * @param  integer
      *
      * @return boolean
      */
@@ -290,7 +292,7 @@ class Websocket
     /**
      * Set sender fd.
      *
-     * @param integer
+     * @param  integer
      *
      * @return $this
      */
@@ -351,7 +353,7 @@ class Websocket
     /**
      * Reset some data status.
      *
-     * @param bool $force
+     * @param  bool  $force
      *
      * @return $this
      */
@@ -371,7 +373,7 @@ class Websocket
     /**
      * Get or set middleware.
      *
-     * @param array|string|null $middleware
+     * @param  array|string|null  $middleware
      *
      * @return array|\SwooleTW\Http\Websocket\Websocket
      */
@@ -401,7 +403,7 @@ class Websocket
     /**
      * Set container to pipeline.
      *
-     * @param \Illuminate\Contracts\Container\Container $container
+     * @param  \Illuminate\Contracts\Container\Container  $container
      *
      * @return $this
      */
@@ -422,7 +424,7 @@ class Websocket
     /**
      * Set pipeline.
      *
-     * @param \Illuminate\Contracts\Pipeline\Pipeline $pipeline
+     * @param  \Illuminate\Contracts\Pipeline\Pipeline  $pipeline
      *
      * @return $this
      */
@@ -444,7 +446,7 @@ class Websocket
     /**
      * Set the given request through the middleware.
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param  \Illuminate\Http\Request  $request
      *
      * @return \Illuminate\Http\Request
      */
