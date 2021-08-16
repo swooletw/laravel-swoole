@@ -17,10 +17,10 @@ class HandShakeHandler
      *
      * @return Response
      */
-    public function handle($request, \Closure $next)
+    public function handle($request)
     {
         /** @var Response $response */
-        $response = $next($request);
+        $response = \response();
         $socketkey = $request->header['sec-websocket-key'];
 
         if (0 === preg_match('#^[+/0-9A-Za-z]{21}[AQgw]==$#', $socketkey) || 16 !== strlen(base64_decode($socketkey))) {

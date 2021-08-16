@@ -78,8 +78,7 @@ trait InteractsWithWebsocket
         $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
         $websocket = $this->app->make(Websocket::class);
         $sandbox = $this->app->make(Sandbox::class);
-        $handshakeHandler = $this->app->make('config')
-            ->get('swoole_websocket.handshake.handler');
+
 
         try {
             $websocket->reset(true)->setSender($swooleRequest->fd);
@@ -87,19 +86,15 @@ trait InteractsWithWebsocket
             $sandbox->setRequest($illuminateRequest);
             // enable sandbox
             $sandbox->enable();
-            // call customized handshake handler
-            if ($response && ! $this->app->make($handshakeHandler)->handle($swooleRequest, $response)) {
-                return;
-            }
             // check if socket.io connection established
-            if (! $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
-                return;
-            }
             // trigger 'connect' websocket event
             if ($websocket->eventExists('connect')) {
                 // set sandbox container to websocket pipeline
                 $websocket->setContainer($sandbox->getApplication());
                 $websocket->call('connect', $illuminateRequest);
+            }
+            if (! $this->websocketHandler->onOpen($swooleRequest->fd, $illuminateRequest)) {
+                return;
             }
         } catch (Throwable $e) {
             $this->logServerError($e);

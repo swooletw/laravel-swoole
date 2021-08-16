@@ -267,7 +267,6 @@ class Websocket
         // dispatch request to pipeline if middleware are set
         if ($isConnect && count($this->middleware)) {
             $response = $this->setRequestThroughMiddleware($data);
-            $response->setContent('');
             return $response;
         }
 
@@ -448,7 +447,7 @@ class Websocket
      *
      * @param  \Illuminate\Http\Request  $request
      *
-     * @return \Illuminate\Http\Request
+     * @return \Illuminate\Http\Response
      */
     protected function setRequestThroughMiddleware($request)
     {
@@ -456,7 +455,10 @@ class Websocket
             ->send($request)
             ->through($this->middleware)
             ->then(function ($request) {
-                return $request;
+                $handshakeHandler = $this->app->make('config')->get('swoole_websocket.handshake.handler');
+                $response = App::make($handshakeHandler)->handle($request);
+//                response()->setContent('');
+                return $response;
             });
     }
 }
