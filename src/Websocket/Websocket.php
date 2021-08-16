@@ -455,7 +455,7 @@ class Websocket
             ->send($request)
             ->through($this->middleware)
             ->then(function ($request) {
-                $handshakeHandler = $this->app->make('config')->get('swoole_websocket.handshake.handler');
+                $handshakeHandler = App::make('config')->get('swoole_websocket.handshake.handler');
                 $response = App::make($handshakeHandler)->handle($request);
 //                response()->setContent('');
                 return $response;
