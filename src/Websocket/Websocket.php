@@ -267,7 +267,6 @@ class Websocket
         // dispatch request to pipeline if middleware are set
         if ($isConnect && count($this->middleware)) {
             $response = $this->setRequestThroughMiddleware($data);
-            return $response;
         }
 
         return App::call($this->callbacks[$event], [

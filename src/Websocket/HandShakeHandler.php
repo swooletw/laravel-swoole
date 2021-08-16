@@ -19,12 +19,11 @@ class HandShakeHandler
      */
     public function handle($request)
     {
-        /** @var Response $response */
-        $response = \response();
+        $response = new Response();
         $socketkey = $request->headers->get('sec-websocket-key');
 
         if (0 === preg_match('#^[+/0-9A-Za-z]{21}[AQgw]==$#', $socketkey) || 16 !== strlen(base64_decode($socketkey))) {
-            return $response->setContent('')->setStatusCode(403, 'Not Allowed');
+            return $response->setStatusCode(403);
         }
 
         $headers = [

@@ -58,8 +58,8 @@ class Pusher
      * @param bool $broadcast
      * @param bool $assigned
      * @param string $event
-     * @param mixed|null $message
      * @param \Swoole\Websocket\Server
+     * @param mixed|null $message
      */
     protected function __construct(
         int $opcode,
@@ -99,8 +99,8 @@ class Pusher
             $data['broadcast'] ?? false,
             $data['assigned'] ?? false,
             $data['event'] ?? null,
-            $data['message'] ?? null,
-            $server
+            $server,
+            $data['message'] ?? null
         );
     }
 
