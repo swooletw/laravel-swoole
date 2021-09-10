@@ -4,7 +4,6 @@ require __DIR__.'/vendor/autoload.php';
 
 use SwooleTW\Http\Helpers\FW;
 use SwooleTW\Http\Task\QueueFactory;
-use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
 
 try {
     $framework = ucfirst(FW::current());
@@ -21,11 +20,6 @@ $stubs = [];
 /* Copy queue class */
 $stub = QueueFactory::stub($version);
 QueueFactory::copy($stub, true);
-$stubs[] = $stub;
-
-/* Copy connector class */
-$stub = ConnectorFactory::stub($version);
-ConnectorFactory::copy($stub, true);
 $stubs[] = $stub;
 
 foreach ($stubs as $stub) {

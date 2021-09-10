@@ -2,18 +2,14 @@
 
 namespace SwooleTW\Http;
 
-use SwooleTW\Http\Helpers\FW;
 use Illuminate\Queue\QueueManager;
 use SwooleTW\Http\Server\PidManager;
 use Swoole\Http\Server as HttpServer;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Database\DatabaseManager;
 use SwooleTW\Http\Server\Facades\Server;
-use SwooleTW\Http\Coroutine\MySqlConnection;
 use SwooleTW\Http\Commands\HttpServerCommand;
 use Swoole\Websocket\Server as WebsocketServer;
 use SwooleTW\Http\Task\Connectors\SwooleTaskConnector;
-use SwooleTW\Http\Coroutine\Connectors\ConnectorFactory;
 
 /**
  * @codeCoverageIgnore
@@ -71,7 +67,6 @@ abstract class HttpServiceProvider extends ServiceProvider
         $this->registerManager();
         $this->registerCommands();
         $this->registerPidManager();
-        $this->registerDatabaseDriver();
         $this->registerSwooleQueueDriver();
     }
 
@@ -205,50 +200,6 @@ abstract class HttpServiceProvider extends ServiceProvider
             return static::$server;
         });
         $this->app->alias(Server::class, 'swoole.server');
-    }
-
-    /**
-     * Register database driver for coroutine mysql.
-     */
-    protected function registerDatabaseDriver()
-    {
-        $this->app->extend(DatabaseManager::class, function (DatabaseManager $db) {
-            $db->extend('mysql-coroutine', function ($config, $name) {
-                $config['name'] = $name;
-
-                $connection = new MySqlConnection(
-                    $this->getNewMySqlConnection($config, 'write'),
-                    $config['database'],
-                    $config['prefix'],
-                    $config
-                );
-
-                if (isset($config['read'])) {
-                    $connection->setReadPdo($this->getNewMySqlConnection($config, 'read'));
-                }
-
-                return $connection;
-            });
-
-            return $db;
-        });
-    }
-
-    /**
-     * Get a new mysql connection.
-     *
-     * @param array $config
-     * @param string $connection
-     *
-     * @return \PDO
-     */
-    protected function getNewMySqlConnection(array $config, string $connection = null)
-    {
-        if ($connection && isset($config[$connection])) {
-            $config = array_merge($config, $config[$connection]);
-        }
-
-        return ConnectorFactory::make(FW::version())->connect($config);
     }
 
     /**
