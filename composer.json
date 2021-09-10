@@ -34,7 +34,7 @@
     "phpunit/php-code-coverage": "^6.1",
     "php-coveralls/php-coveralls": "^2.1",
     "mockery/mockery": "~1.0",
-    "codedungeon/phpunit-result-printer": "^0.14.0",
+    "codedungeon/phpunit-result-printer": "^0.31.0",
     "php-mock/php-mock": "^2.0",
     "swoole/ide-helper": "@dev"
   },
