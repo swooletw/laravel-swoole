@@ -20,5 +20,6 @@ else
   echo "Adding $FILENAME to php config"
   echo "extension = $FILENAME" > ${INI_DIR}/${FILENAME}.ini
   phpenv config-add ${INI_DIR}/${FILENAME}.ini
+  phpenv config-rm xdebug.ini || true
 fi
 cp ${PHP_TARGET_DIR}/${FILENAME} ${MODULE_CACHE_DIR}
