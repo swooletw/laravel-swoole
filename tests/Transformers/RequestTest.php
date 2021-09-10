@@ -26,6 +26,12 @@ class RequestTest extends TestCase
 
     public function testHandleStatic()
     {
+        $realPath = false;
+        $this->mockMethod('realpath', function () use (&$realPath) {
+            $realPath = true;
+            return '/foo.css';
+        });
+
         $isFile = false;
         $this->mockMethod('is_file', function () use (&$isFile) {
             return $isFile = true;
@@ -50,11 +56,12 @@ class RequestTest extends TestCase
                  ->with('Content-Type', 'text/css')
                  ->once();
         $response->shouldReceive('sendfile')
-                 ->with('/foo.bar')
+                 ->with('/foo.css')
                  ->once();
 
         Request::handleStatic(new SwooleRequestStub, $response, '/');
 
+        $this->assertTrue($realPath);
         $this->assertTrue($isFile);
         $this->assertTrue($fileSize);
     }
@@ -70,16 +77,16 @@ class RequestTest extends TestCase
 
     public function testHandleStaticWithNoneFile()
     {
-        $isFile = false;
-        $this->mockMethod('is_file', function () use (&$isFile) {
-            $isFile = true;
+        $realPath = false;
+        $this->mockMethod('realpath', function () use (&$realPath) {
+            $realPath = true;
 
             return false;
         });
 
         $result = Request::handleStatic(new SwooleRequestStub, null, '/');
         $this->assertFalse($result);
-        $this->assertTrue($isFile);
+        $this->assertTrue($realPath);
     }
 
     protected function mockMethod($name, \Closure $function, $namespace = null)
