@@ -228,10 +228,16 @@ class Response
      */
     protected function canGzipContent($responseContentEncoding)
     {
-        return empty($responseContentEncoding) &&
-            config('swoole_http.server.options.http_compression', true) &&
-            !empty($this->swooleRequest->header['accept-encoding']) &&
-            strpos($this->swooleRequest->header['accept-encoding'], 'gzip') !== false &&
-            function_exists('gzencode');
+        if (empty($responseContentEncoding)) {
+            return false;
+        }
+
+        $acceptEncoding = $this->swooleRequest->header['accept-encoding'];
+        if (! $acceptEncoding || strpos($acceptEncoding, 'gzip') === false) {
+            return false;
+        }
+
+        return config('swoole_http.server.options.http_compression', true)
+            && function_exists('gzencode');
     }
 }
