@@ -220,6 +220,8 @@ class HttpServerCommand extends Command
         $taskWorkerNum = Arr::get($this->config, 'server.options.task_worker_num');
         $isWebsocket = Arr::get($this->config, 'websocket.enabled');
 
+        $queueConfig = $this->laravel->make('config')->get('queue');
+        
         // lookup for set swoole driver
         $isDefinedSwooleDriver = in_array(
             'swoole',
