@@ -219,7 +219,19 @@ class HttpServerCommand extends Command
         $workerNum = Arr::get($this->config, 'server.options.worker_num');
         $taskWorkerNum = Arr::get($this->config, 'server.options.task_worker_num');
         $isWebsocket = Arr::get($this->config, 'websocket.enabled');
-        $hasTaskWorker = $isWebsocket || Arr::get($this->config, 'queue.default') === 'swoole';
+
+        // lookup for settled swoole driver
+        $isDefinedSwooleDriver = in_array(
+                'swoole',
+                array_column(
+                    $queueConfig['connections'] ?? [],
+                    'driver'
+                ),
+                true
+            ) || ($queueConfig['default'] ?? null) === 'swoole';
+
+        $hasTaskWorker = $isWebsocket || $isDefinedSwooleDriver;
+
         $logFile = Arr::get($this->config, 'server.options.log_file');
         $pids = $this->laravel->make(PidManager::class)->read();
         $masterPid = $pids['masterPid'] ?? null;
