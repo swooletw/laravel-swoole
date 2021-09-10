@@ -240,7 +240,7 @@ class ResponseTest extends TestCase
             ->shouldReceive('get')
             ->once()
             ->withArgs(['Content-Encoding'])
-            ->andReturn(null);
+            ->andReturn('gzip');
 
         $illuminateResponse->shouldReceive('getContent')
             ->andReturn($content);
