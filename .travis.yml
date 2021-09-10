@@ -24,9 +24,12 @@ matrix:
     - php: 7.4
       dist: trusty
       env: FRAMEWORK_VERSION=laravel/framework:8.0.*
+    - php: 7.4
+      dist: trusty
+      env: FRAMEWORK_VERSION=laravel/framework:8.1.*
     - php: 8.0
       dist: bionic
-      env: FRAMEWORK_VERSION=laravel/framework:8.0.*
+      env: FRAMEWORK_VERSION=laravel/framework:8.1.*
     - php: 7.4
       dist: trusty
       env: FRAMEWORK_VERSION=laravel/lumen-framework:5.8.*
@@ -39,9 +42,12 @@ matrix:
     - php: 7.4
       dist: trusty
       env: FRAMEWORK_VERSION=laravel/lumen-framework:8.0.*
+    - php: 7.4
+      dist: trusty
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:8.1.*
     - php: 8.0
       dist: bionic
-      env: FRAMEWORK_VERSION=laravel/lumen-framework:8.0.*
+      env: FRAMEWORK_VERSION=laravel/lumen-framework:8.1.*
 
 before_install:
   - sh -c "mkdir -p ${TRAVIS_BUILD_DIR}/.travis/module-cache/$(php-config --vernum)"
