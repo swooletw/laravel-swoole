@@ -181,7 +181,7 @@ abstract class HttpServiceProvider extends ServiceProvider
         $config = $this->app->make('config');
         $options = $config->get('swoole_http.server.options');
 
-        // lookup for settled swoole driver
+        // lookup for set swoole driver
         $isDefinedSwooleDriver = in_array(
             'swoole',
             array_column(

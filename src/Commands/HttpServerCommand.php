@@ -220,7 +220,7 @@ class HttpServerCommand extends Command
         $taskWorkerNum = Arr::get($this->config, 'server.options.task_worker_num');
         $isWebsocket = Arr::get($this->config, 'websocket.enabled');
 
-        // lookup for settled swoole driver
+        // lookup for set swoole driver
         $isDefinedSwooleDriver = in_array(
             'swoole',
             array_column(
