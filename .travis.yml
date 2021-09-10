@@ -3,7 +3,7 @@ sudo: false
 
 cache:
   directories:
-    - $HOME/.composer/cache
+    # - $HOME/.composer/cache
     - ${TRAVIS_BUILD_DIR}/.travis/module-cache
 
 env:
