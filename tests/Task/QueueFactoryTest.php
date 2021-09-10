@@ -31,16 +31,6 @@ class QueueFactoryTest extends TestCase
         $this->assertTrue(Str::contains($stub, $search));
     }
 
-    public function testItCanCompareNeededStubByVersion()
-    {
-        $version = '5.6';
-        $search = '5.7';
-
-        $stub = QueueFactory::stub($version);
-
-        $this->assertNotTrue(Str::contains($stub, $search));
-    }
-
     public function testItCanMakeNeededQueueByVersion()
     {
         $version = FW::version();
