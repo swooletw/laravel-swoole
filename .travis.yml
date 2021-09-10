@@ -31,8 +31,6 @@ matrix:
       env: FRAMEWORK_VERSION=laravel/lumen-framework:7.0.*
     - php: 7.4
       env: FRAMEWORK_VERSION=laravel/lumen-framework:8.0.*
-    - php: 7.4
-      env: FRAMEWORK_VERSION=laravel/lumen-framework:8.6.*
 
 before_install:
   - sh -c "mkdir -p ${TRAVIS_BUILD_DIR}/.travis/module-cache/$(php-config --vernum)"
