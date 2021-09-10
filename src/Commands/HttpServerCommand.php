@@ -222,13 +222,13 @@ class HttpServerCommand extends Command
 
         // lookup for settled swoole driver
         $isDefinedSwooleDriver = in_array(
-                'swoole',
-                array_column(
-                    $queueConfig['connections'] ?? [],
-                    'driver'
-                ),
-                true
-            ) || ($queueConfig['default'] ?? null) === 'swoole';
+            'swoole',
+            array_column(
+                $queueConfig['connections'] ?? [],
+                'driver'
+            ),
+            true
+        ) || ($queueConfig['default'] ?? null) === 'swoole';
 
         $hasTaskWorker = $isWebsocket || $isDefinedSwooleDriver;
 
