@@ -2,9 +2,15 @@ language: php
 dist: trusty
 sudo: false
 
+cache:
+  directories:
+    - $HOME/.composer/cache
+    - ${TRAVIS_BUILD_DIR}/.travis/module-cache
+
 env:
   global:
     - COMPOSER_MEMORY_LIMIT=-1
+
 matrix:
   include:
     - php: 7.2
@@ -35,13 +41,14 @@ matrix:
       env: FRAMEWORK_VERSION=laravel/lumen-framework:6.0.*
     - php: 7.2
       env: FRAMEWORK_VERSION=laravel/lumen-framework:7.0.*
-    - php: 7.2
+    - php: 8.0
       env: FRAMEWORK_VERSION=laravel/lumen-framework:8.0.*
     - php: 8.0
       env: FRAMEWORK_VERSION=laravel/lumen-framework:8.0.*
 
 before_install:
-  - printf "\n" | pecl install swoole
+  - sh -c "mkdir -p ${TRAVIS_BUILD_DIR}/.travis/module-cache/$(php-config --vernum)"
+  - sh ${TRAVIS_BUILD_DIR}/.travis/modulecache.sh
 
 install:
   - composer require "${FRAMEWORK_VERSION}" --no-update -n
