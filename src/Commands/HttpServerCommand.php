@@ -370,7 +370,7 @@ class HttpServerCommand extends Command
             exit(1);
         }
 
-        if (! extension_loaded('swoole')) {
+        if (! extension_loaded('swoole') && ! extension_loaded('openswoole')) {
             $this->error('Can\'t detect Swoole extension installed.');
 
             exit(1);
