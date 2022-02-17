@@ -15,7 +15,7 @@ use SwooleTW\Http\Tests\TestCase;
  */
 class QueueFactoryTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->mockEnv('Laravel\Lumen');

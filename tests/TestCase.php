@@ -11,7 +11,7 @@ use SwooleTW\Http\Coroutine\Context;
 
 class TestCase extends BaseTestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->addToAssertionCount(
             m::getContainer()->mockery_getExpectationCount()

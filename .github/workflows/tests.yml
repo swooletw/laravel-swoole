@@ -1,0 +1,43 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  linux_tests:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - php: "7.3"
+            framework: "laravel/framework:^8.0"
+          - php: "7.4"
+            framework: "laravel/framework:^8.0"
+          - php: "8.0"
+            framework: "laravel/framework:^8.0"
+          - php: "8.0"
+            framework: "laravel/framework:^9.0"
+
+    name: PHP ${{ matrix.php }} (${{ matrix.framework }})
+
+    steps:
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: swoole
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+            composer require ${{ matrix.framework }} --no-update -n
+            COMPOSER_MEMORY_LIMIT=-1 composer install --prefer-dist -n -o
+
+      - name: Execute tests
+        run: vendor/bin/phpunit

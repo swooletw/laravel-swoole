@@ -14,7 +14,7 @@ use SwooleTW\Http\Tests\TestCase;
  */
 class ConnectorFactoryTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->mockEnv('Laravel\Lumen');
