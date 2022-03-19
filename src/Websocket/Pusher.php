@@ -45,7 +45,7 @@ class Pusher
     protected $event;
 
     /**
-     * @var string|null
+     * @var mixed|null
      */
     protected $message;
 
@@ -68,7 +68,7 @@ class Pusher
         bool $broadcast,
         bool $assigned,
         string $event,
-        ?string $message,
+        $message = null,
         $server
     )
     {
