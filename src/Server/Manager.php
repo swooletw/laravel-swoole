@@ -24,6 +24,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use SwooleTW\Http\Concerns\InteractsWithSwooleQueue;
 use SwooleTW\Http\Concerns\InteractsWithSwooleTable;
 use Symfony\Component\ErrorHandler\Error\FatalError;
+use Laravel\Lumen\Http\Request as LumenRequest;
 
 /**
  * Class Manager
@@ -214,6 +215,10 @@ class Manager
             }
             // transform swoole request to illuminate request
             $illuminateRequest = Request::make($swooleRequest)->toIlluminate();
+
+            if (!$sandbox->isLaravel()) { // is lumen app
+                $illuminateRequest = LumenRequest::createFromBase($illuminateRequest);
+            }
 
             // set current request to sandbox
             $sandbox->setRequest($illuminateRequest);
