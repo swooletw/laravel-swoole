@@ -1,5 +1,5 @@
 {
-  "name": "swooletw/laravel-swoole",
+  "name": "jcamiloduque/laravel-swoole",
   "description": "High performance HTTP server based on Swoole. Speed up your Laravel and Lumen applications.",
   "keywords": [
     "swoole",
