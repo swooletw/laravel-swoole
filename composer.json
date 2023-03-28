@@ -21,17 +21,17 @@
     }
   ],
   "require": {
-    "php": "^7.2|^8.0",
-    "illuminate/console": "~5.4|~6.0|~7.0|~8.0|~9.0",
-    "illuminate/contracts": "~5.4|~6.0|~7.0|~8.0|~9.0",
-    "illuminate/http": "~5.4|~6.0|~7.0|~8.0|~9.0",
-    "illuminate/support": "~5.4|~6.0|~7.0|~8.0|~9.0",
+    "php": "^7.2|^8.0|^8.1",
+    "illuminate/console": "~5.4|~6.0|~7.0|~8.0|~9.0|~10.0",
+    "illuminate/contracts": "~5.4|~6.0|~7.0|~8.0|~9.0|~10.0",
+    "illuminate/http": "~5.4|~6.0|~7.0|~8.0|~9.0|~10.0",
+    "illuminate/support": "~5.4|~6.0|~7.0|~8.0|~9.0|~10.0",
     "predis/predis": "^1.1"
   },
   "require-dev": {
-    "laravel/lumen-framework": "~5.4|~6.0|~7.0|~8.0|~9.0",
-    "phpunit/phpunit": "^9",
-    "phpunit/php-code-coverage": "^9",
+    "laravel/lumen-framework": "~5.4|~6.0|~7.0|~8.0|~9.0|~10.0",
+    "phpunit/phpunit": "^10",
+    "phpunit/php-code-coverage": "^10",
     "php-coveralls/php-coveralls": "^2.1",
     "mockery/mockery": "~1.5",
     "codedungeon/phpunit-result-printer": "^0.31.0",
