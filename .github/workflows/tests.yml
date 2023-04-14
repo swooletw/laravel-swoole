@@ -44,7 +44,7 @@ jobs:
             framework: "laravel/framework:^10.0"
             swoole: "4.8.13"
 
-    name: PHP ${{ matrix.php }} (${{ matrix.framework }})
+    name: PHP ${{ matrix.php }} (${{ matrix.framework }}) swoole-(${{ matrix.swoole }})
 
     steps:
       - name: Setup PHP
