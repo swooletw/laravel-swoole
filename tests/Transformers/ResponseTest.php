@@ -58,7 +58,7 @@ class ResponseTest extends TestCase
         $cookie1->shouldReceive('isRaw')->once()->andReturn(true);
         $cookie1->shouldReceive('getName')->once()->andReturn('Cookie_1_getName');
         $cookie1->shouldReceive('getValue')->once()->andReturn('Cookie_1_getValue');
-        $cookie1->shouldReceive('getExpiresTime')->once()->andReturn('Cookie_1_getExpiresTime');
+        $cookie1->shouldReceive('getExpiresTime')->once()->andReturn(1);
         $cookie1->shouldReceive('getPath')->once()->andReturn('Cookie_1_getPath');
         $cookie1->shouldReceive('getDomain')->once()->andReturn('Cookie_1_getDomain');
         $cookie1->shouldReceive('isSecure')->once()->andReturn('Cookie_1_isSecure');
@@ -69,7 +69,7 @@ class ResponseTest extends TestCase
         $cookie2->shouldReceive('isRaw')->once()->andReturn(false);
         $cookie2->shouldReceive('getName')->once()->andReturn('Cookie_2_getName');
         $cookie2->shouldReceive('getValue')->once()->andReturn('Cookie_2_getValue');
-        $cookie2->shouldReceive('getExpiresTime')->once()->andReturn('Cookie_2_getExpiresTime');
+        $cookie2->shouldReceive('getExpiresTime')->once()->andReturn(2);
         $cookie2->shouldReceive('getPath')->once()->andReturn('Cookie_2_getPath');
         $cookie2->shouldReceive('getDomain')->once()->andReturn('Cookie_2_getDomain');
         $cookie2->shouldReceive('isSecure')->once()->andReturn('Cookie_2_isSecure');
@@ -122,7 +122,7 @@ class ResponseTest extends TestCase
             ->withArgs([
                 'Cookie_1_getName',
                 'Cookie_1_getValue',
-                'Cookie_1_getExpiresTime',
+                1,
                 'Cookie_1_getPath',
                 'Cookie_1_getDomain',
                 'Cookie_1_isSecure',
@@ -133,7 +133,7 @@ class ResponseTest extends TestCase
             ->withArgs([
                 'Cookie_2_getName',
                 'Cookie_2_getValue',
-                'Cookie_2_getExpiresTime',
+                2,
                 'Cookie_2_getPath',
                 'Cookie_2_getDomain',
                 'Cookie_2_isSecure',
