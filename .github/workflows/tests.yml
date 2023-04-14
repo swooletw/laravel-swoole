@@ -30,6 +30,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: swoole
+          coverage: none
 
       - name: Checkout code
         uses: actions/checkout@v2
