@@ -201,6 +201,18 @@ class ManagerTest extends TestCase
 
             return $websocket;
         });
+
+        app()->instance('config', new \Illuminate\Config\Repository([
+            'swoole_http' => [
+                'server' => [
+                    'options' => [
+                        'http_compression' => false,
+                    ]
+                ],
+            ],
+        ]));
+
+
         $container->singleton(Sandbox::class, function () {
             $sandbox = m::mock(Sandbox::class);
             $sandbox->shouldReceive('setRequest')
@@ -213,6 +225,9 @@ class ManagerTest extends TestCase
                     ->once();
             $sandbox->shouldReceive('disable')
                     ->once();
+            $sandbox->shouldReceive('isLaravel')
+                    ->once()
+                    ->andReturnTrue();
 
             return $sandbox;
         });
@@ -270,6 +285,16 @@ class ManagerTest extends TestCase
 
             return $handler;
         });
+
+        app()->instance('config', new \Illuminate\Config\Repository([
+            'swoole_http' => [
+                'server' => [
+                    'options' => [
+                        'http_compression' => false,
+                    ]
+                ],
+            ],
+        ]));
 
         $this->mockMethod('base_path', function () {
             return '/';

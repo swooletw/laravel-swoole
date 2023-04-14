@@ -18,10 +18,10 @@ class TestCase extends BaseTestCase
         );
 
         Context::clear();
+        Mock::disableAll();
         Facade::clearResolvedInstances();
         parent::tearDown();
         m::close();
-        Mock::disableAll();
     }
 
     protected function mockMethod($name, \Closure $function, $namespace = null)
