@@ -62,7 +62,7 @@ class ContextTest extends TestCase
         $coroutineId2 = null;
         $coroutineId3 = null;
 
-        \Swoole\Coroutine\run(function () use (&$data1, &$data2, &$data3, &$coroutineId1, &$coroutineId2, &$coroutineId3) {
+        go(function () use (&$data1, &$data2, &$data3, &$coroutineId1, &$coroutineId2, &$coroutineId3) {
             Context::setData('foo', 'bar');
 
             $data1 = Context::getData('foo');
