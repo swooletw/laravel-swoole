@@ -28,7 +28,7 @@
     "illuminate/http": ">=5.4",
     "illuminate/support": ">=5.4",
     "predis/predis": "^1.1",
-    "laravel/framework":"v5.4"
+    "laravel/framework":">=5.4"
   },
   "require-dev": {
     "laravel/lumen-framework": ">=5.4",
