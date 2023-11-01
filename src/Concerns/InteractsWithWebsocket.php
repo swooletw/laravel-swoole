@@ -136,9 +136,11 @@ trait InteractsWithWebsocket
 
             // dispatch message to registered event callback
             ['event' => $event, 'data' => $data] = $payload;
-            $websocket->eventExists($event)
-                ? $websocket->call($event, $data)
-                : $this->websocketHandler->onMessage($frame);
+            if ($event and $websocket->eventExists($event)) {
+                $websocket->call($event, $data);
+            } else {
+                $this->websocketHandler->onMessage($frame);
+            }
         } catch (Throwable $e) {
             $this->logServerError($e);
         } finally {
