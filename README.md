@@ -1,3 +1,9 @@
+> **Warning**
+>
+> This package is no longer maintained, we strongly recommend using Laravel's official [laravel/octane](https://github.com/laravel/octane) as an alternative. 
+> 
+> If you need coroutine support, consider trying [laravel-hyperf](https://github.com/swooletw/laravel-hyperf) for higher performance (This is a Laravel style Hyperf framework.)
+
 # Laravel-Swoole
 
 ![php-badge](https://img.shields.io/badge/php-%3E%3D%207.2-8892BF.svg)
@@ -7,6 +13,8 @@
 [![travis-badge](https://api.travis-ci.org/swooletw/laravel-swoole.svg?branch=master)](https://travis-ci.org/swooletw/laravel-swoole)
 
 This package provides a high performance HTTP server to speed up your Laravel/Lumen application based on [Swoole](http://www.swoole.com/).
+
+** This project is no longer maintained, we strongly suggest using 
 
 ## Version Compatibility
 
